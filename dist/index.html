@@ -1,0 +1,151 @@
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>AURO E2E Test Dapp</title>
+  <link rel="icon" type="image/svg" href="auro.png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.14.1/css/mdb.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" type="text/css" />
+</head>
+
+<body>
+  <main class="container-fluid">
+    <header>
+      <div id="logo-container">
+        <h1 id="logo-text" class="text-center">
+          E2E Test Dapp
+        </h1>
+      </div>
+    </header>
+    <section>
+      <h3 class="card-title">
+        Status
+      </h3>
+
+      <div class="row">
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12">
+          <p class="info-text alert alert-success">
+            Accounts: <span id="accounts"></span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="row">
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+          <div class="card full-width">
+            <div class="card-body">
+              <h4 class="card-title">
+                Basic Actions
+              </h4>
+
+              <button class="btn btn-mina btn-lg btn-block mb-3 btnClass" id="connectButton">
+                Connect
+              </button>
+
+              <button class="btn btn-mina btn-lg btn-block mb-3" id="getAccounts">
+                mina_accounts
+              </button>
+
+              <p class="info-text alert alert-secondary">
+                mina_accounts result: <span id="getAccountsResult"></span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+          <div class="card full-width">
+            <div class="card-body">
+              <h4 class="card-title">
+                Mina Send
+              </h4>
+              <hr />
+              <div id="encrypt-message-form">
+                <input class="form-control" type="text" placeholder="Set send amount" id="sendAmountInput" />
+                <hr />
+                <input class="form-control" type="text" placeholder="Set receive address" id="receiveAddressInput" />
+                <hr />
+                <!-- <input class="form-control" type="text" placeholder="Set Nonce (Option)" id="sendNonceInput" />
+                <hr /> -->
+                <button class="btn btn-mina btn-lg btn-block mb-3" id="sendButton">
+                  Send
+                </button>
+              </div>
+              <hr />
+              <p class="info-text alert alert-secondary">
+                Send Result: <span id="sendResultDisplay"></span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+          <div class="card full-width">
+            <div class="card-body">
+              <h4 class="card-title">
+                Mina Staking
+              </h4>
+              <hr />
+              <div id="encrypt-message-form">
+                <input class="form-control" type="text" placeholder="Set vaildator address" id="vaildatorAddressInput" />
+                  <hr />
+                  <!-- <input class="form-control" type="text" placeholder="Set Nonce (Option)" id="stakeNonceInput" />
+                  <hr /> -->
+                <button class="btn btn-mina btn-lg btn-block mb-3" id="stakingButton">
+                  Staking
+                </button>
+              </div>
+              <hr />
+              <p class="info-text alert alert-secondary">
+                Staking Result: <span id="stakingResultDisplay"></span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        
+      </div>
+    </section>
+
+    <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+      <div class="card full-width">
+        <div class="card-body">
+          <h4 class="card-title">
+            Mina Sign
+          </h4>
+          <hr />
+          <div id="encrypt-message-form">
+            <input class="form-control" type="text" placeholder="Set sign content" id="signMessageContent" />
+            <hr />
+            <!-- <input class="form-control" type="text" placeholder="Set Nonce (Option)" id="signMessageNonce" />
+
+            <hr /> -->
+            <button class="btn btn-mina btn-lg btn-block mb-3" id="signMessageButton">
+              Sign
+            </button>
+          </div>
+          <hr />
+          <p class="info-text alert alert-secondary">
+            Sign result: <span id="signMessageResult"></span>
+          </p>
+          <hr />
+          <button class="btn btn-mina btn-lg btn-block mb-3" id="signVerifyButton">
+            Sign Verify
+          </button>
+          <p class="info-text alert alert-secondary">
+            Verify result: <span id="verifyResult"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    
+  </main>
+
+  <script src="bundle.js" defer></script>
+</body>
+
+</html>
