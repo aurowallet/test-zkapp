@@ -13,12 +13,10 @@ const initializeMina = async () => {
       let data = await window.mina.requestAccounts().catch(err=>err)
       if(data.result){
         let approveAccount = data.result
-        // if (Array.isArray(approveAccount) && approveAccount.length > 0) {
           account = approveAccount
           document.getElementById('accounts').innerHTML = approveAccount;
           onboardButton.innerText = 'Connected'
           onboardButton.disabled = true
-        // } 
       }else{
         onboardButton.innerText = data.error.message
       }
@@ -112,8 +110,11 @@ const initializeMina = async () => {
    * Verify Message
    */
   signVerifyButton.onclick = async () => {
+    let from = account && account.length > 0 ? account[0] : ""
     let messageVerifyResult = await window.mina.verifyMessage({
-      message: signResult.result?.signature,
+      publicKey:from,
+      signature:signResult.result?.signature,
+      message:signMessageContent.value
     }).catch(err=>err)
     if(messageVerifyResult.result){
       verifyResult.innerHTML = messageVerifyResult.result
