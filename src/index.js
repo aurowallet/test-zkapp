@@ -125,8 +125,15 @@ const initializeMina = async () => {
   setTimeout(() => {
     if (window.mina) {
       window.mina.on('accountsChanged',handleNewAccounts)
+      window.mina.on('chainChanged',handleChainChange)
     }
   }, 200);
+
+  const networkDiv = document.getElementById('network')
+  function handleChainChange(newChain) {
+    networkDiv.innerHTML = newChain
+  }
+  
 
   function handleNewAccounts(newAccounts) {
     if (Array.isArray(newAccounts)) {
