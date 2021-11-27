@@ -11,14 +11,14 @@ const initializeMina = async () => {
     } else {
       onboardButton.innerText = 'Onboarding in progress'
       let data = await window.mina.requestAccounts().catch(err=>err)
-      if(!data.code){
+      if(data.message){
+        onboardButton.innerText = data.message
+      }else{
         let approveAccount = data
         account = approveAccount
         document.getElementById('accounts').innerHTML = approveAccount;
         onboardButton.innerText = 'Connected'
         onboardButton.disabled = true
-      }else{
-        onboardButton.innerText = data.message
       }
     }
   }
@@ -29,10 +29,10 @@ const initializeMina = async () => {
     if (window.mina) {
       let data = await window.mina.requestAccounts().catch(err=>err)
       let approveAccount = data
-      if(!data.code){
-        getAccountsResults.innerHTML = approveAccount;
-      }else{
+      if(data.message){
         getAccountsResults.innerHTML = data.message
+      }else{
+        getAccountsResults.innerHTML = approveAccount;
       }
     }
   }
