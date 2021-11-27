@@ -122,10 +122,13 @@ const initializeMina = async () => {
   }
 
 
-  setTimeout(() => {
+  setTimeout( async () => {
     if (window.mina) {
       window.mina.on('accountsChanged',handleNewAccounts)
       window.mina.on('chainChanged',handleChainChange)
+      
+      let data = await window.mina.requestNetwork().catch(err=>err)
+      handleChainChange(data)
     }
   }, 200);
 
