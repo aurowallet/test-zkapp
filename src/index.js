@@ -7,7 +7,7 @@ const initializeMina = async () => {
 
   onboardButton.onclick = async () => {
     if (!window.mina) {
-      alert("No provider was found 请先安装 auro-wallet")
+      alert("No provider was found 请先安装 Auro Wallet")
     } else {
       onboardButton.innerText = 'Onboarding in progress'
       let data = await window.mina.requestAccounts().catch(err=>err)
