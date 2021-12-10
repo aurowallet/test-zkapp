@@ -41,6 +41,7 @@ const initializeMina = async () => {
   const sendButton = document.getElementById('sendButton')
   const sendAmountInput = document.getElementById('sendAmountInput')
   const receiveAddressInput = document.getElementById('receiveAddressInput')
+  const sendMemoInput = document.getElementById('sendMemo')
   const sendResultDisplay = document.getElementById('sendResultDisplay')
 
   /**
@@ -52,6 +53,7 @@ const initializeMina = async () => {
       amount: sendAmountInput.value,
       from: from,
       to: receiveAddressInput.value,
+      memo:sendMemoInput.value
     }).catch(err=>err)
     if(sendResult.hash){
       sendResultDisplay.innerHTML = sendResult.hash
@@ -66,13 +68,15 @@ const initializeMina = async () => {
    */
   const stakingButton = document.getElementById('stakingButton')
   const vaildatorAddressInput = document.getElementById('vaildatorAddressInput')
+  const stakeMemoInput = document.getElementById('stakeMemo')
   const stakingResultDisplay = document.getElementById('stakingResultDisplay')
 
-  stakingButton.onclick = async () => {//质押不用输入金额
+  stakingButton.onclick = async () => {
     let from = account && account.length > 0 ? account[0] : ""
     let stakingResult = await window.mina.sendStakeDelegation({
       from: from,
       to: vaildatorAddressInput.value,
+      memo:stakeMemoInput.value
     }).catch(err=>err)
     if(stakingResult.hash){
       stakingResultDisplay.innerHTML = stakingResult.hash
