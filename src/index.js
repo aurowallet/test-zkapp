@@ -48,10 +48,8 @@ const initializeMina = async () => {
    * transfer 
    */
   sendButton.onclick = async () => {
-    let from = account && account.length > 0 ? account[0] : ""
     let sendResult = await window.mina.sendPayment({
       amount: sendAmountInput.value,
-      from: from,
       to: receiveAddressInput.value,
       memo:sendMemoInput.value
     }).catch(err=>err)
@@ -72,9 +70,7 @@ const initializeMina = async () => {
   const stakingResultDisplay = document.getElementById('stakingResultDisplay')
 
   stakingButton.onclick = async () => {
-    let from = account && account.length > 0 ? account[0] : ""
     let stakingResult = await window.mina.sendStakeDelegation({
-      from: from,
       to: vaildatorAddressInput.value,
       memo:stakeMemoInput.value
     }).catch(err=>err)
@@ -97,9 +93,7 @@ const initializeMina = async () => {
   let signResult
 
   signMessageButton.onclick = async () => {
-    let from = account && account.length > 0 ? account[0] : ""
     signResult = await window.mina.signMessage({
-      from: from,
       message: signMessageContent.value,
     }).catch(err=>err)
     if(signResult.signature){
