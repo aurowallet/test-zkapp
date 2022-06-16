@@ -164,9 +164,6 @@
               <div id="encrypt-message-form">
                 <input class="form-control" type="text" placeholder="Set sign content" id="signMessageContent" />
                 <hr />
-                <!-- <input class="form-control" type="text" placeholder="Set Nonce (Option)" id="signMessageNonce" />
-    
-                <hr /> -->
                 <button class="btn btn-mina btn-lg btn-block mb-3" id="signMessageButton">
                   Sign
                 </button>
@@ -175,6 +172,23 @@
               <p class="info-text alert alert-secondary">
                 Sign result: <span id="signMessageResult"></span>
               </p>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+          <div class="card full-width">
+            <div class="card-body">
+              <h4 class="card-title">
+                Mina Sign Verify
+              </h4>
+              <hr />
+              <div id="encrypt-message-form">
+                <input class="form-control" type="text" placeholder="Set Verify Signature" id="verifySignature" />
+                <hr />
+                <input class="form-control" type="text" placeholder="Set Verify Message" id="verifyMessage" />
+              </div>
               <hr />
               <button class="btn btn-mina btn-lg btn-block mb-3" id="signVerifyButton">
                 Sign Verify
