@@ -10,8 +10,8 @@ const initializeMina = async () => {
       alert("No provider was found 请先安装 Auro Wallet")
     } else {
       onboardButton.innerText = 'Onboarding in progress'
-      let data = await window.mina.requestAccounts().catch(err=>err)
-      if(data.message){
+      let data = await window.mina.requestAccounts().catch(err => err)
+      if (data.message) {
         onboardButton.innerText = data.message
       }else{
         let approveAccount = data
@@ -22,16 +22,37 @@ const initializeMina = async () => {
       }
     }
   }
+
+
+  const initAccount = async ()=>{
+    if (window.mina) {
+      let data = await window.mina.requestAccounts().catch(err => err)
+      let approveAccount = data
+      if (data.message) {
+        getAccountsResults.innerHTML = data.message
+      } else {
+
+        account = approveAccount
+        document.getElementById('accounts').innerHTML = approveAccount;
+        onboardButton.innerText = 'Connected'
+        onboardButton.disabled = true
+
+        getAccountsResults.innerHTML = approveAccount;
+      }
+    }
+  }
+
+  
   /**
    * get account
    */
   getAccountsButton.onclick = async () => {
     if (window.mina) {
-      let data = await window.mina.requestAccounts().catch(err=>err)
+      let data = await window.mina.requestAccounts().catch(err => err)
       let approveAccount = data
-      if(data.message){
+      if (data.message) {
         getAccountsResults.innerHTML = data.message
-      }else{
+      } else {
         getAccountsResults.innerHTML = approveAccount;
       }
     }
@@ -41,6 +62,7 @@ const initializeMina = async () => {
   const sendButton = document.getElementById('sendButton')
   const sendAmountInput = document.getElementById('sendAmountInput')
   const receiveAddressInput = document.getElementById('receiveAddressInput')
+  const sendFeeInput = document.getElementById('sendFee')
   const sendMemoInput = document.getElementById('sendMemo')
   const sendResultDisplay = document.getElementById('sendResultDisplay')
 
@@ -48,35 +70,39 @@ const initializeMina = async () => {
    * transfer 
    */
   sendButton.onclick = async () => {
-    let sendResult = await window.mina.sendPayment({
+
+    let sendResult = await window.mina.sendLegacyPayment({
       amount: sendAmountInput.value,
       to: receiveAddressInput.value,
-      memo:sendMemoInput.value
-    }).catch(err=>err)
-    if(sendResult.hash){
+      fee: sendFeeInput.value,
+      memo: sendMemoInput.value
+    }).catch(err => err)
+
+    if (sendResult.hash) {
       sendResultDisplay.innerHTML = sendResult.hash
-    }else{
+    } else {
       sendResultDisplay.innerHTML = sendResult.message
     }
   }
-
 
   /**
    * staking
    */
   const stakingButton = document.getElementById('stakingButton')
   const vaildatorAddressInput = document.getElementById('vaildatorAddressInput')
+  const stakeFeeInput = document.getElementById('stakeFee')
   const stakeMemoInput = document.getElementById('stakeMemo')
   const stakingResultDisplay = document.getElementById('stakingResultDisplay')
 
   stakingButton.onclick = async () => {
-    let stakingResult = await window.mina.sendStakeDelegation({
+    let stakingResult = await window.mina.sendLegacyStakeDelegation({
       to: vaildatorAddressInput.value,
-      memo:stakeMemoInput.value
-    }).catch(err=>err)
-    if(stakingResult.hash){
+      fee: stakeFeeInput.value,
+      memo: stakeMemoInput.value
+    }).catch(err => err)
+    if (stakingResult.hash) {
       stakingResultDisplay.innerHTML = stakingResult.hash
-    }else{
+    } else {
       stakingResultDisplay.innerHTML = stakingResult.message
     }
   }
@@ -86,8 +112,6 @@ const initializeMina = async () => {
   const signMessageButton = document.getElementById('signMessageButton')
   const signMessageContent = document.getElementById('signMessageContent')
   const signMessageResult = document.getElementById('signMessageResult')
-  const signVerifyButton = document.getElementById('signVerifyButton')
-  const verifyResult = document.getElementById('verifyResult')
 
 
   let signResult
@@ -95,38 +119,62 @@ const initializeMina = async () => {
   signMessageButton.onclick = async () => {
     signResult = await window.mina.signMessage({
       message: signMessageContent.value,
-    }).catch(err=>err)
-    if(signResult.signature){
+    }).catch(err => err)
+    if (signResult.signature) {
       signMessageResult.innerHTML = JSON.stringify(signResult.signature)
-    }else{
+    } else {
       signMessageResult.innerHTML = signResult.message
     }
   }
 
+  const signVerifyButton = document.getElementById('signVerifyButton')
+  const verifyResult = document.getElementById('verifyResult')
+
+
+  const verifySignatureContent = document.getElementById('verifySignature')
+  const verifyMessageContent = document.getElementById('verifyMessage')
   /**
    * Verify Message
    */
   signVerifyButton.onclick = async () => {
     let from = account && account.length > 0 ? account[0] : ""
-    let messageVerifyResult = await window.mina.verifyMessage({
-      publicKey:from,
-      signature:{
-        field:signResult?.signature?.field,
-        scalar:signResult?.signature?.scalar
+
+    let verifyContentStr = verifySignatureContent.value
+    let signature 
+    try {
+      signature = JSON.parse(verifyContentStr)
+    } catch (error) {
+    }
+    if(!signature){
+      console.log('please input value json')
+      return 
+    }
+
+    let verifyMessageBody = {
+      publicKey: from,
+      signature: {
+        field: signature?.field,
+        scalar: signature?.scalar
       },
-      payload:signMessageContent.value
-    }).catch(err=>err)
-    verifyResult.innerHTML = messageVerifyResult
+      payload: verifyMessageContent.value
+    }
+    let messageVerifyResult = await window.mina.verifyMessage(verifyMessageBody).catch(err => err)
+    verifyResult.innerHTML = messageVerifyResult.error?.message||messageVerifyResult
   }
 
 
-  setTimeout( async () => {
+
+
+
+
+  setTimeout(async () => {
     if (window.mina) {
-      window.mina.on('accountsChanged',handleNewAccounts)
-      window.mina.on('chainChanged',handleChainChange)
-      
-      let data = await window.mina.requestNetwork().catch(err=>err)
+      window.mina.on('accountsChanged', handleNewAccounts)
+      window.mina.on('chainChanged', handleChainChange)
+
+      let data = await window.mina.requestNetwork().catch(err => err)
       handleChainChange(data)
+      initAccount()
     }
   }, 200);
 
