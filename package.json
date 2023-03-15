@@ -27,7 +27,7 @@
   "license": "MIT",
   "homepage": "./",
   "dependencies": {
-    "@aurowallet/mina-provider": "0.1.4"
+    "@aurowallet/mina-provider": "0.1.5"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",

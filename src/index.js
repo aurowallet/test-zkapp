@@ -22,6 +22,18 @@ const initializeMina = async () => {
       }
     }
   }
+  const onlyGetAccountButton = document.getElementById('onlyGetAccountButton')
+  
+  
+  onlyGetAccountButton.onclick = async () => {
+    if (!window.mina) {
+      alert("No provider was found 请先安装 Auro Wallet")
+    } else {
+      onlyGetAccountButton.innerText = 'Onboarding in progress'
+      let data = await window.mina.getAccounts()
+      document.getElementById('accounts').innerHTML = data;
+    }
+  }
 
 
   const initAccount = async ()=>{
@@ -138,34 +150,75 @@ const initializeMina = async () => {
    */
   signVerifyButton.onclick = async () => {
     let from = account && account.length > 0 ? account[0] : ""
-
-    let verifyContentStr = verifySignatureContent.value
-    let signature 
-    try {
-      signature = JSON.parse(verifyContentStr)
-    } catch (error) {
-    }
-    if(!signature){
-      console.log('please input value json')
-      return 
-    }
-
     let verifyMessageBody = {
       publicKey: from,
-      signature: {
-        field: signature?.field,
-        scalar: signature?.scalar
-      },
+      signature: verifySignatureContent.value,
       payload: verifyMessageContent.value
-    }
+    } 
+
+    // let verifyContentStr = verifySignatureContent.value
+    // let signature 
+    // try {
+    //   signature = JSON.parse(verifyContentStr)
+    // } catch (error) {
+    // }
+    // if(!signature){
+    //   console.log('please input value json')
+    //   return 
+    // }
+
+    // let verifyMessageBody = {
+    //   publicKey: from,
+    //   signature: {
+    //     field: signature?.field,
+    //     scalar: signature?.scalar
+    //   },
+    //   payload: verifyMessageContent.value
+    // }
+
     let messageVerifyResult = await window.mina.verifyMessage(verifyMessageBody).catch(err => err)
     verifyResult.innerHTML = messageVerifyResult.error?.message||messageVerifyResult
   }
 
 
+  /**
+   * sign fields
+   */
+  const signFieldsButton = document.getElementById('signFieldsButton')
+  const signFieldsContent = document.getElementById('signFieldsContent')
+  const signFieldsResult = document.getElementById('signFieldsResult')
+
+  signFieldsButton.onclick = async () => { // 签名fields
+    signResult = await window.mina.signFields({
+      message: signFieldsContent.value,
+    }).catch(err => err)
+    if (signResult.signature) {
+      signFieldsResult.innerHTML = JSON.stringify(signResult.signature)
+    } else {
+      signFieldsResult.innerHTML = signResult.message
+    }
+  }
+
+  /**
+   * Verify fields
+   */
+  const signFieldsVerifyButton = document.getElementById('signFieldsVerifyButton')
+  const verifyFieldsResult = document.getElementById('verifyFieldsResult')
 
 
+  const verifyFieldsSignature = document.getElementById('verifyFieldsSignature')
+  const verifyFieldsMessage = document.getElementById('verifyFieldsMessage')
 
+  signFieldsVerifyButton.onclick = async () => {
+    let from = account && account.length > 0 ? account[0] : ""
+    let verifyMessageBody = {
+      publicKey: from,
+      signature: verifyFieldsSignature.value,
+      payload: verifyFieldsMessage.value
+    }
+    let messageVerifyResult = await window.mina.verifyFields(verifyMessageBody).catch(err => err)
+    verifyFieldsResult.innerHTML = messageVerifyResult.error?.message||messageVerifyResult
+  }
 
   setTimeout(async () => {
     if (window.mina) {

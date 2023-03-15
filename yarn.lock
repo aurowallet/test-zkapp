@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@aurowallet/mina-provider@0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@aurowallet/mina-provider/-/mina-provider-0.1.4.tgz#fcedb4b916906da62beffa48d572998c8b5f9550"
-  integrity sha512-oWL6UjHRyrA9n0EGIfHA+Qpi6xcaZjcge7I3NKDm0tA2U30F0oYdmsPpSw3wxbiZ5B0sFeGdw5JfS91dMVfkSQ==
+"@aurowallet/mina-provider@0.1.5":
+  version "0.1.5"
+  resolved "https://registry.npmmirror.com/@aurowallet/mina-provider/-/mina-provider-0.1.5.tgz#df2be4658e7244136e8c261c7c444541a8efcffd"
+  integrity sha512-dXMfe7bSfzF5BofIG9hat6Gp+LQ4wcA6sNWOlb1cVT3nL+sXT2FHiQmx/Fy0SDkHpV6XahAk3wzdXReG44BoMw==
   dependencies:
     "@types/eventemitter3" "^2.0.2"
     "@types/uuid" "^8.3.1"
