@@ -3,7 +3,7 @@ let account
 const initializeMina = async () => {
   const onboardButton = document.getElementById('connectButton')
   const getAccountsButton = document.getElementById('getAccounts')
-  const getAccountsResults = document.getElementById('getAccountsResult')
+  const requestAccountsResult = document.getElementById('requestAccountsResult')
 
   onboardButton.onclick = async () => {
     if (!window.mina) {
@@ -23,7 +23,7 @@ const initializeMina = async () => {
     }
   }
   const onlyGetAccountButton = document.getElementById('onlyGetAccountButton')
-  
+  const getAccountsResult = document.getElementById('getAccountsResult')
   
   onlyGetAccountButton.onclick = async () => {
     if (!window.mina) {
@@ -31,7 +31,8 @@ const initializeMina = async () => {
     } else {
       onlyGetAccountButton.innerText = 'Onboarding in progress'
       let data = await window.mina.getAccounts()
-      document.getElementById('accounts').innerHTML = data;
+      onlyGetAccountButton.innerText = "Get Account"
+      getAccountsResult.innerHTML = data;
     }
   }
 
@@ -41,7 +42,7 @@ const initializeMina = async () => {
       let data = await window.mina.requestAccounts().catch(err => err)
       let approveAccount = data
       if (data.message) {
-        getAccountsResults.innerHTML = data.message
+        requestAccountsResult.innerHTML = data.message
       } else {
 
         account = approveAccount
@@ -49,7 +50,7 @@ const initializeMina = async () => {
         onboardButton.innerText = 'Connected'
         onboardButton.disabled = true
 
-        getAccountsResults.innerHTML = approveAccount;
+        requestAccountsResult.innerHTML = approveAccount;
       }
     }
   }
@@ -63,9 +64,9 @@ const initializeMina = async () => {
       let data = await window.mina.requestAccounts().catch(err => err)
       let approveAccount = data
       if (data.message) {
-        getAccountsResults.innerHTML = data.message
+        requestAccountsResult.innerHTML = data.message
       } else {
-        getAccountsResults.innerHTML = approveAccount;
+        requestAccountsResult.innerHTML = approveAccount;
       }
     }
   }
