@@ -57,6 +57,11 @@
                 Connect
               </button>
 
+              <button class="btn btn-mina btn-lg btn-block mb-3 btnClass" id="onlyGetAccountButton">
+                Get Account
+              </button>
+
+
               <button class="btn btn-mina btn-lg btn-block mb-3" id="getAccounts">
                 mina_accounts
               </button>
@@ -165,6 +170,52 @@
               </button>
               <p class="info-text alert alert-secondary">
                 Verify result: <span id="verifyResult"></span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+          <div class="card full-width">
+            <div class="card-body">
+              <h4 class="card-title">
+                Mina Sign Fields
+              </h4>
+              <hr />
+              <div id="encrypt-message-form">
+                <input class="form-control" type="text" placeholder="Set sign content (eg: [1,2,3,...])" id="signFieldsContent" />
+                <hr />
+                <button class="btn btn-mina btn-lg btn-block mb-3" id="signFieldsButton">
+                  Sign
+                </button>
+              </div>
+              <hr />
+              <p class="info-text alert alert-secondary">
+                Sign result: <span id="signFieldsResult"></span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="col-xl-4 col-lg-6 col-md-12 col-sm-12 col-12 d-flex align-items-stretch">
+          <div class="card full-width">
+            <div class="card-body">
+              <h4 class="card-title">
+                Mina Sign Fields Verify
+              </h4>
+              <hr />
+              <div id="encrypt-message-form">
+                <input class="form-control" type="text" placeholder="Set Verify Signature" id="verifyFieldsSignature" />
+                <hr />
+                <input class="form-control" type="text" placeholder="Set Verify Fields(eg: [1,2,3,...])" id="verifyFieldsMessage" />
+              </div>
+              <hr />
+              <button class="btn btn-mina btn-lg btn-block mb-3" id="signFieldsVerifyButton">
+                Sign Verify
+              </button>
+              <p class="info-text alert alert-secondary">
+                Verify result: <span id="verifyFieldsResult"></span>
               </p>
             </div>
           </div>
