@@ -31,6 +31,7 @@ const initializeMina = async () => {
     } else {
       onlyGetAccountButton.innerText = 'Onboarding in progress'
       let data = await window.mina.getAccounts()
+      console.log('lsp==onlyGetAccountButton==data',data);
       onlyGetAccountButton.innerText = "Get Account"
       getAccountsResult.innerHTML = data;
     }
