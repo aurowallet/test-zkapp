@@ -194,6 +194,7 @@ const initializeMina = async () => {
     signResult = await window.mina.signFields({
       message: signFieldsContent.value,
     }).catch(err => err)
+    console.log('lsp==signFieldsButton=',signResult);
     if (signResult.signature) {
       signFieldsResult.innerHTML = JSON.stringify(signResult.signature)
     } else {
