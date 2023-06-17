@@ -1,6 +1,6 @@
 {
   "name": "auro-test-dapp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple dapp used in auro e2e tests.",
   "engines": {
     "node": ">= 12.0.0"
@@ -27,7 +27,8 @@
   "license": "MIT",
   "homepage": "./",
   "dependencies": {
-    "@aurowallet/mina-provider": "0.1.7"
+    "@aurowallet/mina-provider": "0.1.7",
+    "eventemitter3": "^4.0.7"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",

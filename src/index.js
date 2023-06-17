@@ -16,7 +16,7 @@ const initializeMina = async () => {
       }else{
         let approveAccount = data
         account = approveAccount
-        document.getElementById('accounts').innerHTML = approveAccount;
+        document.getElementById('accounts').innerHTML = data;
         onboardButton.innerText = 'Connected'
         onboardButton.disabled = true
       }
@@ -155,7 +155,7 @@ const initializeMina = async () => {
     let verifyMessageBody = {
       publicKey: from,
       signature: verifySignatureContent.value,
-      payload: verifyMessageContent.value
+      data: verifyMessageContent.value
     } 
 
     // let verifyContentStr = verifySignatureContent.value
@@ -192,9 +192,8 @@ const initializeMina = async () => {
 
   signFieldsButton.onclick = async () => { // 签名fields
     signResult = await window.mina.signFields({
-      message: signFieldsContent.value,
+      message: JSON.parse(signFieldsContent.value), //["1","2","3","4","5"]
     }).catch(err => err)
-    console.log('lsp==signFieldsButton=',signResult);
     if (signResult.signature) {
       signFieldsResult.innerHTML = JSON.stringify(signResult.signature)
     } else {
@@ -217,7 +216,7 @@ const initializeMina = async () => {
     let verifyMessageBody = {
       publicKey: from,
       signature: verifyFieldsSignature.value,
-      payload: verifyFieldsMessage.value
+      payload: JSON.parse(verifyFieldsMessage.value)
     }
     let messageVerifyResult = await window.mina.verifyFields(verifyMessageBody).catch(err => err)
     verifyFieldsResult.innerHTML = messageVerifyResult.error?.message||messageVerifyResult
