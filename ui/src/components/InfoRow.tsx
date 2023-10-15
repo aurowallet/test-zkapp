@@ -34,9 +34,11 @@ const StyledContainer = styled.div<{ type?: InfoType }>`
   color: #155724;
   background-color: #d4edda;
   border-color: #c3e6cb;
-  ${(props) => {
-    console.log("lsp==props==", props);
+  white-space: pre-wrap;
 
+  word-break: break-all;
+
+  ${(props) => {
     switch (props.type) {
       case InfoType.primary:
         return primaryCss;
@@ -51,23 +53,48 @@ const StyledContainer = styled.div<{ type?: InfoType }>`
 const StyledRowTitle = styled.div<{ isBoldTitle?: boolean }>`
   font-weight: ${(props) => (props.isBoldTitle ? 500 : 400)};
 `;
-const StyledRowContent = styled.div``;
+const StyledRowContent = styled.span`
+  font-weight: 400;
+`;
+const StyledLinkContent = styled.a`
+  text-decoration: none;
+  outline: none !important;
+
+  cursor: pointer;
+  color: #594af1;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
 
 export const InfoRow = ({
   type,
   title,
   content,
   isBoldTitle,
+  linkContent,
+  linkHref,
+  linkTarget,
 }: {
   type?: InfoType;
   title: string;
   content?: string;
+  linkContent?: string;
   isBoldTitle?: boolean;
+  linkHref?: string;
+  linkTarget?: string;
 }) => {
   return (
     <StyledContainer type={type}>
-      <StyledRowTitle isBoldTitle={isBoldTitle}>{title}</StyledRowTitle>
-      <StyledRowContent>{content}</StyledRowContent>
+      <StyledRowTitle isBoldTitle={isBoldTitle}>
+        {title}
+        {content && <StyledRowContent>{content}</StyledRowContent>}
+        {linkHref && (
+          <StyledLinkContent target={linkTarget || "_blank"} href={linkHref}>
+            {linkContent}
+          </StyledLinkContent>
+        )}
+      </StyledRowTitle>
     </StyledContainer>
   );
 };

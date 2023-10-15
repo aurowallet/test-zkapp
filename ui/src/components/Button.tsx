@@ -1,6 +1,7 @@
+import { useCallback } from "react";
 import styled from "styled-components";
 
-export const Button = styled.button`
+export const StyledButton = styled.button`
   background-color: #6b5dfb;
   color: white;
   display: block;
@@ -17,7 +18,7 @@ export const Button = styled.button`
 
   font-weight: 400;
 
-  font-size: 1.25rem;
+  font-size: 0.94rem;
   line-height: 1.5;
   border-radius: 0.3rem;
   border: 1px solid transparent;
@@ -39,3 +40,31 @@ export const Button = styled.button`
     opacity: 0.65;
   }
 `;
+
+export const Button = ({
+  children,
+  disabled,
+  onClick,
+  checkInstall = true,
+}: any) => {
+  const onClickBtn = useCallback(
+    (e: any) => {
+      if (checkInstall) {
+        if (!(window as any)?.mina) {
+          alert("No provider was found Please install Auro Wallet");
+          return;
+        } else {
+          onClick(e);
+        }
+      } else {
+        onClick(e);
+      }
+    },
+    [onClick]
+  );
+  return (
+    <StyledButton disabled={disabled} onClick={onClickBtn}>
+      {children}
+    </StyledButton>
+  );
+};
