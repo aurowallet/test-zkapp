@@ -8,13 +8,17 @@ type ISignature = {
   field: string;
   scalar: string;
 };
-
-type ISignResult = {
-  data?: string; // success
-  publicKey?: string; // success
-  signature?: ISignature; // success
-  message?: string; //failed
+type ISuccess = {
+  data: string; // success
+  publicKey: string; // success
+  signature: ISignature; // success
 };
+type IFailed = {
+  message: string; //failed
+};
+
+type ISignResult = ISuccess | IFailed;
+
 export const SignMessageBox = ({
   currentAccount,
 }: {
@@ -45,14 +49,14 @@ export const SignMessageBox = ({
       })
       .catch((err: any) => err);
 
-    if (signResult.signature) {
-      setSignRes(JSON.stringify(signResult.signature));
+    if ((signResult as ISuccess).signature) {
+      setSignRes(JSON.stringify((signResult as ISuccess).signature));
       setVerifyBtnStatus(false);
 
-      setVerifyContent(signResult.data + "");
-      setVerifySignature(JSON.stringify(signResult.signature));
+      setVerifyContent((signResult as ISuccess).data + "");
+      setVerifySignature(JSON.stringify((signResult as ISuccess).signature));
     } else {
-      setSignRes(signResult.message || "");
+      setSignRes((signResult as IFailed).message || "");
     }
   }, [signContent]);
   const onVerify = useCallback(async () => {

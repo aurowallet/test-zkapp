@@ -9,3 +9,7 @@ export const EXPLORER_URL = {
   [NET_CONFIG_TYPE.Devnet]: "https://minascan.io/devnet",
   [NET_CONFIG_TYPE.Berkeley]: "https://minascan.io/testworld2",
 };
+
+
+
+export const ZkExplorer_url = "https://berkeley.minaexplorer.com"

@@ -41,12 +41,18 @@ export const StyledButton = styled.button`
   }
 `;
 
+export type IButton ={
+  children?:any
+  disabled?:boolean
+  onClick:(e:React.MouseEvent<HTMLElement>)=>{},
+  checkInstall?:boolean 
+}
 export const Button = ({
   children,
   disabled,
   onClick,
   checkInstall = true,
-}: any) => {
+}: IButton) => {
   const onClickBtn = useCallback(
     (e: any) => {
       if (checkInstall) {
