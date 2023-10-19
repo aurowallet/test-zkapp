@@ -1,9 +1,9 @@
-import { ZkExplorer_url } from "@/constants/config";
+import { NetConfigMap } from "@/constants/config";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
 import { Field, PublicKey } from "o1js";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
@@ -16,13 +16,18 @@ const StyledButtonGroup = styled.div`
   }
 `;
 
-export const SignTransactionBox = () => {
+export const SignTransactionBox = ({network}:{network:string}) => {
   const [zkAddress, setZkAddress] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [updateBtnStatus, setUpdateBtnStatus] = useState(true);
   const [initBtnStatus, setInitBtnStatus] = useState(false);
   const [zkAppStatus, setZkAppStatus] = useState("");
+  
+
+  const currentNetConfig = useMemo(()=>{
+    return NetConfigMap[network] || {}
+  },[network])
 
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
@@ -62,8 +67,7 @@ export const SignTransactionBox = () => {
 
       setDisplayText("Done loading web worker");
       console.log("Done loading web worker");
-
-      await zkappWorkerClient.setActiveInstanceToBerkeley();
+      await zkappWorkerClient.setActiveInstanceToBerkeley(currentNetConfig.gql);
 
       const mina = (window as any).mina;
 
@@ -119,7 +123,7 @@ export const SignTransactionBox = () => {
       setUpdateBtnStatus(false);
       setInitBtnStatus(true);
     }
-  }, [zkAddress, state]);
+  }, [zkAddress, state,currentNetConfig]);
 
   const onClickUpdate = useCallback(async () => {
     if (!state.hasBeenSetup) {
@@ -159,14 +163,14 @@ export const SignTransactionBox = () => {
       },
     });
 
-    const transactionLink = ZkExplorer_url + `/transaction/${hash}`;
+    const transactionLink = currentNetConfig.explorer + `/transaction/${hash}`;
     console.log(`View transaction at ${transactionLink}`);
     setTxHash(hash);
     setTransactionLink(transactionLink);
     setDisplayText("");
 
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state]);
+  }, [fee, memo, state,currentNetConfig]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -181,12 +185,10 @@ export const SignTransactionBox = () => {
     setZkAppStatus("");
   }, [state]);
 
-  const showCurrentNumber = useMemo(() => {
-    if (state.currentNum) {
-      return " ( zkApp State: " + state.currentNum + " )";
-    }
-    return "";
-  }, [state]);
+  useEffect(()=>{
+    setInitBtnStatus(false)
+    setUpdateBtnStatus(true)
+  },[zkAddress])
   return (
     <Box>
       <StyledBoxTitle>Mina ZkApp</StyledBoxTitle>

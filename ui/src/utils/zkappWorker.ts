@@ -15,11 +15,12 @@ const state = {
 // ---------------------------------------------------------------------------------------
 
 const functions = {
-  setActiveInstanceToBerkeley: async (args: {}) => {
+  setActiveInstanceToBerkeley: async (args: {gqlUrl:string}) => {
+    
     const Berkeley = Mina.Network(
-      'https://proxy.berkeley.minaexplorer.com/graphql'
+      args.gqlUrl+'/graphql' 
     );
-    console.log('Berkeley Instance Created');
+    console.log('Zk Instance Created');
     Mina.setActiveInstance(Berkeley);
   },
   loadContract: async (args: {}) => {

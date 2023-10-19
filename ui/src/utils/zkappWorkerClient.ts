@@ -9,8 +9,8 @@ import type {
 export default class ZkappWorkerClient {
   // ---------------------------------------------------------------------------------------
 
-  setActiveInstanceToBerkeley() {
-    return this._call('setActiveInstanceToBerkeley', {});
+  setActiveInstanceToBerkeley(gqlUrl:string) {
+    return this._call('setActiveInstanceToBerkeley', {gqlUrl});
   }
 
   loadContract() {
