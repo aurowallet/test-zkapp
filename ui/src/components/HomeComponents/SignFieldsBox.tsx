@@ -54,10 +54,10 @@ export const SignFieldsBox = ({
     let verifyMessageBody = {
       publicKey: currentAccount,
       signature: verifySignature,
-      payload: verifyContent,
+      data: verifyContent,
     };
     try {
-      verifyMessageBody.payload = JSON.parse(verifyContent);
+      verifyMessageBody.data = JSON.parse(verifyContent);
     } catch (error) {
       setVerifyRes("Please check verify message");
       return;

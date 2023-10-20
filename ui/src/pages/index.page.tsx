@@ -3,6 +3,7 @@ import { MinaSendBox } from "@/components/HomeComponents/SendBox.tsx";
 import { SignFieldsBox } from "@/components/HomeComponents/SignFieldsBox.tsx";
 import { SignMessageBox } from "@/components/HomeComponents/SignMessageBox.tsx";
 import { SignTransactionBox } from "@/components/HomeComponents/SignTransactionBox";
+import { SignTypeMessageBox } from "@/components/HomeComponents/SignTypeMessageBox";
 import { StakingBox } from "@/components/HomeComponents/StakingBox.tsx";
 import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
 import {
@@ -97,6 +98,7 @@ export default function Home() {
         <StakingBox network={currentNetwork} />
         {/* sign message */}
         <SignMessageBox currentAccount={currentAccount} />
+        <SignTypeMessageBox currentAccount={currentAccount} network={currentNetwork}/>
         {/* sign fields */}
         <SignFieldsBox currentAccount={currentAccount} />
         {/* zk app */}
