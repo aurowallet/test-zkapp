@@ -25,6 +25,7 @@ export const StyledButton = styled.button`
   padding: 0.5rem 1rem;
   width: 100%;
   margin-bottom: 1rem;
+  max-height: 40px;
 
   &:hover {
     text-decoration: none;
