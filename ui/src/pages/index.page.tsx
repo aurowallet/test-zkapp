@@ -5,6 +5,7 @@ import { SignMessageBox } from "@/components/HomeComponents/SignMessageBox.tsx";
 import { SignTransactionBox } from "@/components/HomeComponents/SignTransactionBox";
 import { SignTypeMessageBox } from "@/components/HomeComponents/SignTypeMessageBox";
 import { StakingBox } from "@/components/HomeComponents/StakingBox.tsx";
+import { SwitchChainBox } from "@/components/HomeComponents/SwitchChainBox";
 import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
 import {
   Container,
@@ -29,6 +30,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    /** account change listener */
     (window as any)?.mina?.on("accountsChanged", async (accounts: string[]) => {
       console.log("accountsChanged", accounts);
       if (accounts.length > 0) {
@@ -46,6 +48,14 @@ export default function Home() {
       console.log("chainChanged");
       setCurrentNetwork(chain);
     });
+      (window as any)?.mina?.on("connect", async () => {
+        console.log("auro connect");
+      });
+    
+    (window as any)?.mina?.on("disconnect", async () => {
+      console.log("auro disconnect");
+    });
+
     initNetwork();
   }, []);
 
@@ -146,6 +156,7 @@ export default function Home() {
         />
         {/* sign fields */}
         <SignFieldsBox currentAccount={currentAccount} />
+        <SwitchChainBox network={currentNetwork}/>
         {/* zk app */}
         <SignTransactionBox network={currentNetwork} />
       </Container>
