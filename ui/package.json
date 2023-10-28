@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "cd .. && cd contracts && yarn install && yarn build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
