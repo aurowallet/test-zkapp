@@ -12,6 +12,7 @@
     "deploy": "next build && next export && touch out/.nojekyll && node ./ghp-postbuild && git add -f out && git commit -m \"Deploy gh-pages\" && cd .. && git subtree push --prefix ui/out origin gh-pages"
   },
   "dependencies": {
+    "@aurowallet/mina-provider": "0.2.1",
     "@types/node": "20.8.4",
     "@types/react": "18.2.27",
     "@types/react-dom": "18.2.12",
@@ -21,8 +22,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "styled-components": "^6.0.8",
-    "typescript": "5.2.2",
-    "@aurowallet/mina-provider": "0.2.1"
+    "typescript": "5.2.2"
   },
   "devDependencies": {
     "babel-plugin-styled-components": "2.1.4"
