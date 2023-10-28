@@ -6,15 +6,15 @@ import { InfoRow, InfoType } from "../InfoRow";
 
 export const SwitchChainBox = ({ network }: { network: string }) => {
   const [switchRes, setSwitchRes] = useState("");
-  const onSignType = useCallback(async () => {
+  const onSwitch = useCallback(async () => {
     const switchResult = await (window as any)?.mina
       ?.switchChain({
         chainId: NET_CONFIG_TYPE.Devnet,
       })
       .catch((err: any) => err);
-
-    if (switchResult.error) {
-      setSwitchRes(switchResult.error?.message);
+      
+    if (switchResult.message) {
+      setSwitchRes(switchResult.message);
     } else {
       setSwitchRes(JSON.stringify(switchResult));
     }
@@ -23,7 +23,7 @@ export const SwitchChainBox = ({ network }: { network: string }) => {
   return (
     <Box>
       <StyledBoxTitle>Mina Chain Interactions</StyledBoxTitle>
-      <Button onClick={onSignType}>Switch Chain</Button>
+      <Button onClick={onSwitch}>Switch Chain</Button>
       <InfoRow
         title="Switch Chain result: "
         content={switchRes}
