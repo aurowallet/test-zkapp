@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/deploy.js",
-    "build": "next build",
+    "prebuildPro": "node scripts/deploy.js",
+    "build": "next build && next export",
     "start": "next start",
     "lint": "next lint",
     "ts-watch": "tsc --noEmit --incremental --watch",

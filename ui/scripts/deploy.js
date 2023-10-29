@@ -28,13 +28,10 @@ async function copyContractFile() {
 }
 
 async function copyContractSourceFile() {
-    const sourceFile = path.resolve(
-      __dirname,
-      "../../contracts/src/Add.ts"
-    );
-    const targetFolder = path.resolve(__dirname, "../src/contracts/source");
-    await execShell(`cp -r ${sourceFile} ${targetFolder}`);
-  }
+  const sourceFile = path.resolve(__dirname, "../../contracts/src/Add.ts");
+  const targetFolder = path.resolve(__dirname, "../src/contracts/source");
+  await execShell(`cp -r ${sourceFile} ${targetFolder}`);
+}
 (async () => {
   await buildContract();
   await copyContractFile();
