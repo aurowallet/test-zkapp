@@ -83,27 +83,31 @@ iat: ${new Date().getTime()}`;
 
   const onSignJson = useCallback(async () => {
     const msgParams = [
-      { label: "Demo" },
+      { label: "Label:", value: "Sign Confirm" },
       {
-        Message: "Click to sign in and accept the Terms of Service",
+        label: "Message:",
+        value: "Click to sign in and accept the Terms of Service",
       },
       {
-        URI: window.location.href,
+        label: "URI:",
+        value: "window.location.href",
       },
       {
-        "Chain ID": network,
+        label: "Chain ID:",
+        value: "network",
       },
       {
-        "Issued At:": new Date().getTime(),
+        label: "Issued At:",
+        value: new Date().getTime(),
       },
       {
-        "Resources: 2":
-          "https://github.com/aurowallet/auro-test-dapp\nhttps://docs.aurowallet.com/",
+        label: "Resources: 2",
+        value: "https://docs.aurowallet.com/",
       },
     ];
     const signResult: ISignResult = await (window as any)?.mina
       ?.signJsonMessage({
-        message: JSON.stringify(msgParams),
+        message: msgParams//JSON.stringify(msgParams),
       })
       .catch((err: any) => err);
 
