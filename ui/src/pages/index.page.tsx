@@ -1,3 +1,4 @@
+import { GithubCorner } from "@/components/GithubCorner";
 import { BaseActionBox } from "@/components/HomeComponents/BasicActionBox.tsx";
 import { CreateNullifierBox } from "@/components/HomeComponents/CreateNullifierBox";
 import { MinaSendBox } from "@/components/HomeComponents/SendBox.tsx";
@@ -114,6 +115,7 @@ export default function Home() {
       <header>
         <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
       </header>
+      <GithubCorner/>
       <StyledRowSection>
         <StyledRowTitle>Status</StyledRowTitle>
         <Container>

@@ -3,7 +3,6 @@ export const NET_CONFIG_TYPE = {
   Devnet: "Devnet",
   Berkeley: "Berkeley",
   Testworld2: "Testworld2",
-  Unknown: "Unknown",
 };
 
 export const EXPLORER_URL = {
@@ -25,3 +24,5 @@ export const NetConfigMap = {
     explorer: "https://testworld.minaexplorer.com",
   },
 };
+
+export const GITHUB_URL = 'https://github.com/aurowallet/test-zkapp'
