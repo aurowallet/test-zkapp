@@ -1,4 +1,5 @@
 import { BaseActionBox } from "@/components/HomeComponents/BasicActionBox.tsx";
+import { CreateNullifierBox } from "@/components/HomeComponents/CreateNullifierBox";
 import { MinaSendBox } from "@/components/HomeComponents/SendBox.tsx";
 import { SignFieldsBox } from "@/components/HomeComponents/SignFieldsBox.tsx";
 import { SignMessageBox } from "@/components/HomeComponents/SignMessageBox.tsx";
@@ -48,14 +49,6 @@ export default function Home() {
       console.log("chainChanged");
       setCurrentNetwork(chain);
     });
-      (window as any)?.mina?.on("connect", async () => {
-        console.log("auro connect");
-      });
-    
-    (window as any)?.mina?.on("disconnect", async () => {
-      console.log("auro disconnect");
-    });
-
     initNetwork();
   }, []);
 
@@ -121,7 +114,6 @@ export default function Home() {
       <header>
         <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
       </header>
-      {/* status + account  */}
       <StyledRowSection>
         <StyledRowTitle>Status</StyledRowTitle>
         <Container>
@@ -131,8 +123,6 @@ export default function Home() {
               content={currentNetwork}
               type={InfoType.primary}
             />
-          </StyledStatusRowWrapper>
-          <StyledStatusRowWrapper>
             <InfoRow
               title="Accounts: "
               content={currentAccount}
@@ -144,11 +134,16 @@ export default function Home() {
       <Container>
         {/* connect and get account */}
         <BaseActionBox currentAccount={currentAccount} />
+        <SwitchChainBox network={currentNetwork} />
+      </Container>
+      <Container>
         {/* send  */}
         <MinaSendBox network={currentNetwork} />
         {/* stake */}
         <StakingBox network={currentNetwork} />
-        {/* sign message */}
+      </Container>
+      {/* sign message */}
+      <Container>
         <SignMessageBox currentAccount={currentAccount} />
         <SignTypeMessageBox
           currentAccount={currentAccount}
@@ -156,7 +151,9 @@ export default function Home() {
         />
         {/* sign fields */}
         <SignFieldsBox currentAccount={currentAccount} />
-        <SwitchChainBox network={currentNetwork}/>
+        <CreateNullifierBox />
+      </Container>
+      <Container>
         {/* zk app */}
         <SignTransactionBox network={currentNetwork} />
       </Container>

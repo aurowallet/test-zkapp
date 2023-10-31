@@ -94,7 +94,7 @@ iat: ${new Date().getTime()}`;
       },
       {
         label: "Chain ID:",
-        value: "network",
+        value: network,
       },
       {
         label: "Issued At:",
@@ -107,7 +107,7 @@ iat: ${new Date().getTime()}`;
     ];
     const signResult: ISignResult = await (window as any)?.mina
       ?.signJsonMessage({
-        message: msgParams//JSON.stringify(msgParams),
+        message: msgParams
       })
       .catch((err: any) => err);
 

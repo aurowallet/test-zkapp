@@ -23,7 +23,8 @@ const successCss = css`
 const StyledContainer = styled.div<{ type?: InfoType }>`
   width: 100%;
   display: flex;
-  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
 
   position: relative;
   padding: 0.75rem 1.25rem;
@@ -75,6 +76,7 @@ export const InfoRow = ({
   linkContent,
   linkHref,
   linkTarget,
+  children,
 }: {
   type?: InfoType;
   title: string;
@@ -83,6 +85,7 @@ export const InfoRow = ({
   isBoldTitle?: boolean;
   linkHref?: string;
   linkTarget?: string;
+  children?: any;
 }) => {
   return (
     <StyledContainer type={type}>
@@ -95,6 +98,7 @@ export const InfoRow = ({
           </StyledLinkContent>
         )}
       </StyledRowTitle>
+      {children}
     </StyledContainer>
   );
 };
