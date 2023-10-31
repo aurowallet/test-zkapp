@@ -1,4 +1,3 @@
-import { EXPLORER_URL } from "@/constants/config";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
@@ -9,19 +8,12 @@ type IStakingResult = {
   hash?: string;
   message?: string;
 };
-export const StakingBox = ({ network }: { network: string }) => {
+export const StakingBox = () => {
   const [vaildatorAddress, setVaildatorAddress] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [resHash, setResHash] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const explorerLink = useMemo(() => {
-    const url = EXPLORER_URL[network];
-    if (url) {
-      return url + "/tx/";
-    }
-    return "";
-  }, [network]);
 
   const onChangeVaildator = useCallback((e: any) => {
     setVaildatorAddress(e.target.value);
@@ -60,9 +52,7 @@ export const StakingBox = ({ network }: { network: string }) => {
       <Button onClick={onClickStaking}>Staking</Button>
       <InfoRow
         title="Staking Result: "
-        linkHref={resHash ? explorerLink + resHash : ""}
-        linkContent={resHash}
-        content={errMsg}
+        content={resHash||errMsg}
         type={InfoType.secondary}
       />
     </Box>

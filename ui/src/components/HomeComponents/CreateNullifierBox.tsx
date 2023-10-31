@@ -1,5 +1,5 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
@@ -31,6 +31,13 @@ export const CreateNullifierBox = () => {
       console.error(error);
     }
   }, [signFields]);
+  const nullifierContent = useMemo(()=>{
+    let content = ""
+    if(createRes){
+      content = JSON.stringify(createRes, null, 2)
+    }
+    return content
+  },[createRes])
 
   return (
     <Box>
@@ -41,7 +48,7 @@ export const CreateNullifierBox = () => {
       />
       <Button onClick={onCreate}>Create</Button>
       <InfoRow title="Create result: " type={InfoType.secondary}>
-        <div>{JSON.stringify(createRes, null, 2)}</div>
+        {nullifierContent && <div>{nullifierContent}</div>}
       </InfoRow>
 
       <StyledDividedLine />

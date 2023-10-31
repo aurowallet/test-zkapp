@@ -115,7 +115,7 @@ export default function Home() {
       <header>
         <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
       </header>
-      <GithubCorner/>
+      <GithubCorner />
       <StyledRowSection>
         <StyledRowTitle>Status</StyledRowTitle>
         <Container>
@@ -140,24 +140,23 @@ export default function Home() {
       </Container>
       <Container>
         {/* send  */}
-        <MinaSendBox network={currentNetwork} />
+        <MinaSendBox />
         {/* stake */}
-        <StakingBox network={currentNetwork} />
+        <StakingBox />
+      </Container>
+      <Container>
+        {/* zk app */}
+        <SignTransactionBox network={currentNetwork} />
       </Container>
       {/* sign message */}
       <Container>
+        <CreateNullifierBox />
         <SignMessageBox currentAccount={currentAccount} />
         <SignTypeMessageBox
           currentAccount={currentAccount}
           network={currentNetwork}
         />
-        {/* sign fields */}
         <SignFieldsBox currentAccount={currentAccount} />
-        <CreateNullifierBox />
-      </Container>
-      <Container>
-        {/* zk app */}
-        <SignTransactionBox network={currentNetwork} />
       </Container>
     </PageContainer>
   );

@@ -1,5 +1,4 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
-import { EXPLORER_URL } from "@/constants/config";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
@@ -9,20 +8,13 @@ type ISendResult = {
   hash?: string;
   message?: string;
 };
-export const MinaSendBox = ({ network }: { network: string }) => {
+export const MinaSendBox = () => {
   const [receiveAddress, setReceiveAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [resHash, setResHash] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const explorerLink = useMemo(() => {
-    const url = EXPLORER_URL[network];
-    if (url) {
-      return url + "/tx/";
-    }
-    return "";
-  }, [network]);
 
   const onChangeReceive = useCallback((e: any) => {
     setReceiveAddress(e.target.value);
@@ -64,11 +56,9 @@ export const MinaSendBox = ({ network }: { network: string }) => {
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
       <StyledDividedLine />
       <Button onClick={onClickSend}>Send</Button>
-      <InfoRow
+      <InfoRow 
         title="Send Result: "
-        linkHref={resHash ? explorerLink + resHash : ""}
-        linkContent={resHash}
-        content={errMsg}
+        content={resHash||errMsg}
         type={InfoType.secondary}
       />
     </Box>

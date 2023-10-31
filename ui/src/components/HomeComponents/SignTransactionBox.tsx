@@ -41,7 +41,6 @@ export const SignTransactionBox = ({network}:{network:string}) => {
   });
 
   const [displayText, setDisplayText] = useState("");
-  const [transactionlink, setTransactionLink] = useState("");
   const [txHash, setTxHash] = useState("");
 
   const onChangeZkAddress = useCallback((e: any) => {
@@ -131,7 +130,6 @@ export const SignTransactionBox = ({network}:{network:string}) => {
       return;
     }
     setTxHash("");
-    setTransactionLink("");
     setDisplayText("");
 
     setState({ ...state, creatingTransaction: true });
@@ -163,10 +161,7 @@ export const SignTransactionBox = ({network}:{network:string}) => {
       },
     });
 
-    const transactionLink = currentNetConfig.explorer + `/transaction/${hash}`;
-    console.log(`View transaction at ${transactionLink}`);
     setTxHash(hash);
-    setTransactionLink(transactionLink);
     setDisplayText("");
 
     setState({ ...state, creatingTransaction: false });
@@ -203,9 +198,7 @@ export const SignTransactionBox = ({network}:{network:string}) => {
       </Button>
       <InfoRow
         title={"Update Result: "}
-        linkHref={txHash ? transactionlink : ""}
-        linkContent={txHash}
-        content={displayText}
+        content={txHash||displayText}
         type={InfoType.secondary}
       />
       <StyledDividedLine />
