@@ -28,7 +28,7 @@ export const CreateNullifierBox = () => {
         setCreateRes(signResult.message || "");
       }
     } catch (error) {
-      console.error(error);
+      console.warn(error);
     }
   }, [signFields]);
   const nullifierContent = useMemo(()=>{

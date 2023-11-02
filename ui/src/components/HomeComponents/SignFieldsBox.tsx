@@ -34,20 +34,24 @@ export const SignFieldsBox = ({
   }, []);
 
   const onSign = useCallback(async () => {
-    const signResult: ISignResult = await (window as any)?.mina
-      ?.signFields({
-        message: JSON.parse(signContent),
-      })
-      .catch((err: any) => err);
+    try {
+      const signResult: ISignResult = await (window as any)?.mina
+        ?.signFields({
+          message: JSON.parse(signContent),
+        })
+        .catch((err: any) => err);
 
-    if (signResult.signature) {
-      setSignRes(signResult.signature);
-      setVerifyBtnStatus(false);
+      if (signResult.signature) {
+        setSignRes(signResult.signature);
+        setVerifyBtnStatus(false);
 
-      setVerifyContent(JSON.stringify(signResult.data));
-      setVerifySignature(signResult.signature);
-    } else {
-      setSignRes(signResult.message || "");
+        setVerifyContent(JSON.stringify(signResult.data));
+        setVerifySignature(signResult.signature);
+      } else {
+        setSignRes(signResult.message || "");
+      }
+    } catch (error) {
+      console.warn(error);
     }
   }, [signContent]);
   const onVerify = useCallback(async () => {
