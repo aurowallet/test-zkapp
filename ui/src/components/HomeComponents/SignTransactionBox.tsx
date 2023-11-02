@@ -8,6 +8,7 @@ import styled from "styled-components";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
+import { ChainInfoArgs } from "@aurowallet/mina-provider";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -16,7 +17,7 @@ const StyledButtonGroup = styled.div`
   }
 `;
 
-export const SignTransactionBox = ({network}:{network:string}) => {
+export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
   const [zkAddress, setZkAddress] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
@@ -26,7 +27,7 @@ export const SignTransactionBox = ({network}:{network:string}) => {
   
 
   const currentNetConfig = useMemo(()=>{
-    return NetConfigMap[network] || {}
+    return NetConfigMap[network.chainId] || {}
   },[network])
 
   const [state, setState] = useState({

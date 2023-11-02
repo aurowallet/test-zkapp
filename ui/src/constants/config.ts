@@ -1,8 +1,8 @@
 export const NET_CONFIG_TYPE:{ [key: string]: string } = {
-  Mainnet: "Mainnet",
-  Devnet: "Devnet",
-  Berkeley: "Berkeley",
-  Testworld2: "Testworld2",
+  Mainnet: "mainnet",
+  Devnet: "devnet",
+  Berkeley: "berkeley",
+  Testworld2: "testworld2",
 };
 
 

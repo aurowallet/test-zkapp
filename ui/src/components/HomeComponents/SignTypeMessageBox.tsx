@@ -2,6 +2,7 @@ import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { useCallback, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
+import { ChainInfoArgs } from "@aurowallet/mina-provider";
 
 type ISignature = {
   field: string;
@@ -23,7 +24,7 @@ export const SignTypeMessageBox = ({
   network,
 }: {
   currentAccount: string;
-  network: string;
+  network: ChainInfoArgs;
 }) => {
   const [verifyBtnStatus, setVerifyBtnStatus] = useState(true);
   const [verifyContent, setVerifyContent] = useState("");
@@ -94,7 +95,11 @@ iat: ${new Date().getTime()}`;
       },
       {
         label: "Chain ID:",
-        value: network,
+        value: network.chainId,
+      },
+      {
+        label: "Chain Name:",
+        value: network.name,
       },
       {
         label: "Issued At:",

@@ -17,15 +17,20 @@ import {
   StyledRowTitle,
   StyledStatusRowWrapper,
 } from "@/styles/HomeStyles.ts";
+import { formatNetwork } from "@/utils";
+import { ChainInfoArgs } from "@aurowallet/mina-provider";
 import Head from "next/head";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
-  const [currentNetwork, setCurrentNetwork] = useState("");
+  const [currentNetwork, setCurrentNetwork] = useState<ChainInfoArgs>({
+    chainId: "",
+    name: ""
+  });
 
   const initNetwork = useCallback(async () => {
-    const network = await (window as any)?.mina
+    const network: ChainInfoArgs = await (window as any)?.mina
       ?.requestNetwork()
       .catch((err: any) => err);
     setCurrentNetwork(network);
@@ -46,9 +51,9 @@ export default function Home() {
         }
       }
     });
-    (window as any)?.mina?.on("chainChanged", async (chain: string) => {
+    (window as any)?.mina?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
       console.log("chainChanged");
-      setCurrentNetwork(chain);
+      setCurrentNetwork(chainInfo);
     });
     initNetwork();
   }, []);
@@ -122,7 +127,7 @@ export default function Home() {
           <StyledStatusRowWrapper>
             <InfoRow
               title="Network: "
-              content={currentNetwork}
+              content={formatNetwork(currentNetwork)}
               type={InfoType.primary}
             />
             <InfoRow
