@@ -46,7 +46,7 @@ This request will not trigger a blockchain transaction or cost any gas fees.
 I accept the Auro Test ZKApp Terms of Service: ${window.location.href}
 
 address: ${currentAccount}
-iat: ${new Date().getTime()}`;
+iat: 2023`;
     const signResult: ISignResult = await (window as any)?.mina
       ?.signMessage({
         message: content,
@@ -103,7 +103,7 @@ iat: ${new Date().getTime()}`;
       },
       {
         label: "Issued At:",
-        value: new Date().getTime(),
+        value: "2023",
       },
       {
         label: "Resources: 2",

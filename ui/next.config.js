@@ -49,8 +49,7 @@ const nextConfig = {
   // assetPrefix: process.env.NODE_ENV === 'production' ? '/AURO-E2E-Test-zkApp/' : '', // update if your repo name changes for 'npm run deploy' to work successfully
   compiler: {
     styledComponents: true,
-  },
-  swcMinify: true,
+  }
 };
 
 module.exports = nextConfig
