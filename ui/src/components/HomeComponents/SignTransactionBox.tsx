@@ -27,7 +27,7 @@ export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
   
 
   const currentNetConfig = useMemo(()=>{
-    return NetConfigMap[network.chainId] || {}
+    return NetConfigMap[network?.chainId] || {}
   },[network])
 
   const [state, setState] = useState({
