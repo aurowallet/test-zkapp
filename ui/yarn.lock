@@ -1697,9 +1697,9 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   resolved "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
 
-o1js@0.*:
+o1js@0.13.*:
   version "0.13.1"
-  resolved "https://registry.npmjs.org/o1js/-/o1js-0.13.1.tgz"
+  resolved "https://registry.yarnpkg.com/o1js/-/o1js-0.13.1.tgz#8575a1a5eb4abeb493f9d60e9f29dd876f9520bc"
   integrity sha512-7QHHRRLmmyR8e+YmIFcgatS2q1on+SDD9h4NIK8JR/82eim7w8bQyBZqAwfCU2PmaQtqlZhkLoL4PmZRnxDzQQ==
   dependencies:
     blakejs "1.2.1"
