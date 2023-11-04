@@ -2,13 +2,13 @@ import { NetConfigMap } from "@/constants/config";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
-import { Field, PublicKey } from "o1js";
+import { ChainInfoArgs } from "@aurowallet/mina-provider";
+import { Field, PrivateKey, PublicKey } from "o1js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { ChainInfoArgs } from "@aurowallet/mina-provider";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -17,18 +17,28 @@ const StyledButtonGroup = styled.div`
   }
 `;
 
-export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
+export const SignTransactionBox = ({
+  network,
+  currentAccount,
+}: {
+  network: ChainInfoArgs;
+  currentAccount: string;
+}) => {
   const [zkAddress, setZkAddress] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [updateBtnStatus, setUpdateBtnStatus] = useState(true);
   const [initBtnStatus, setInitBtnStatus] = useState(false);
   const [zkAppStatus, setZkAppStatus] = useState("");
-  
+  const [createBtnStatus, setCreateBtnStatus] = useState(true);
+  const [keys, setKeys] = useState({
+    publicKey: "",
+    privateKey: "",
+  });
 
-  const currentNetConfig = useMemo(()=>{
-    return NetConfigMap[network?.chainId] || {}
-  },[network])
+  const [displayText, setDisplayText] = useState("");
+  const [txHash, setTxHash] = useState("");
+  const [createHash, setCreateHash] = useState("");
 
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
@@ -41,8 +51,9 @@ export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
     creatingTransaction: false,
   });
 
-  const [displayText, setDisplayText] = useState("");
-  const [txHash, setTxHash] = useState("");
+  const currentNetConfig = useMemo(() => {
+    return NetConfigMap[network?.chainId] || {};
+  }, [network]);
 
   const onChangeZkAddress = useCallback((e: any) => {
     setZkAddress(e.target.value);
@@ -123,7 +134,7 @@ export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
       setUpdateBtnStatus(false);
       setInitBtnStatus(true);
     }
-  }, [zkAddress, state,currentNetConfig]);
+  }, [zkAddress, state, currentNetConfig]);
 
   const onClickUpdate = useCallback(async () => {
     if (!state.hasBeenSetup) {
@@ -166,7 +177,7 @@ export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
     setDisplayText("");
 
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state,currentNetConfig]);
+  }, [fee, memo, state, currentNetConfig]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -181,13 +192,82 @@ export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
     setZkAppStatus("");
   }, [state]);
 
-  useEffect(()=>{
-    setInitBtnStatus(false)
-    setUpdateBtnStatus(true)
-  },[zkAddress])
+  useEffect(() => {
+    setInitBtnStatus(false);
+    setUpdateBtnStatus(true);
+  }, [zkAddress]);
+
+  const createContract = useCallback(
+    async (depolyPrivateKey: PrivateKey, zkAddress: PublicKey) => {
+      const zkappWorkerClient = new ZkappWorkerClient();
+      await timeout(5);
+      console.log("Done loading web worker");
+      await zkappWorkerClient.setActiveInstanceToBerkeley(currentNetConfig.gql);
+      const mina = (window as any).mina;
+      if (mina == null) {
+        return;
+      }
+      const publicKeyBase58: string = currentAccount;
+      const publicKey = PublicKey.fromBase58(publicKeyBase58);
+      console.log(`Using key:${publicKey.toBase58()}`);
+      console.log("Checking if fee payer account exists...");
+      const res = await zkappWorkerClient.fetchAccount({
+        publicKey: publicKey!,
+      });
+      await zkappWorkerClient.loadContract();
+      console.log("Compiling zkApp...");
+      await zkappWorkerClient.compileContract();
+      console.log("zkApp compiled");
+
+      await zkappWorkerClient.initZkappInstance(zkAddress);
+      await zkappWorkerClient.createDeployTransaction(
+        depolyPrivateKey,
+        currentAccount
+      );
+      await zkappWorkerClient.proveUpdateTransaction();
+      const transactionJSON = await zkappWorkerClient.getTransactionJSON();
+      const { hash } = await (window as any).mina.sendTransaction({
+        transaction: transactionJSON,
+        feePayer: {
+          memo: "",
+        },
+      });
+      setCreateHash(hash);
+    },
+    [currentNetConfig, currentAccount]
+  );
+
+  const onClickCreateKey = useCallback(async () => {
+    let zkAppPrivateKey = PrivateKey.random();
+    let zkAppAddress = zkAppPrivateKey.toPublicKey();
+    setKeys({
+      publicKey: PublicKey.toBase58(zkAppAddress),
+      privateKey: PrivateKey.toBase58(zkAppPrivateKey),
+    });
+    setCreateBtnStatus(false);
+  }, []);
+  const onClickCreate = useCallback(async () => {
+    let zkAppPrivateKey = PrivateKey.fromBase58(keys.privateKey);
+    let zkAppAddress = PublicKey.fromBase58(keys.publicKey);
+    await createContract(zkAppPrivateKey, zkAppAddress);
+  }, [currentAccount, keys]);
   return (
     <Box>
       <StyledBoxTitle>Mina ZkApp</StyledBoxTitle>
+      <Button onClick={onClickCreateKey}>Creat Zk-Contract-Key</Button>
+      <InfoRow title={"zkApp keys"} type={InfoType.secondary}>
+        <p>{"PublicKey: \n" + keys.publicKey}</p>
+        <p>{"PrivateKey: \n" + keys.privateKey}</p>
+      </InfoRow>
+      <Button disabled={createBtnStatus} onClick={onClickCreate}>
+        Creat Zk-Contract
+      </Button>
+      <InfoRow
+        title={"zkApp Create Result: "}
+        content={createHash}
+        type={InfoType.secondary}
+      />
+      <StyledDividedLine />
       <Input placeholder="Set ZkApp Address" onChange={onChangeZkAddress} />
       <Button disabled={initBtnStatus} onClick={onClickInit}>
         {"Init ZkState"}
@@ -199,7 +279,7 @@ export const SignTransactionBox = ({network}:{network:ChainInfoArgs}) => {
       </Button>
       <InfoRow
         title={"Update Result: "}
-        content={txHash||displayText}
+        content={txHash || displayText}
         type={InfoType.secondary}
       />
       <StyledDividedLine />

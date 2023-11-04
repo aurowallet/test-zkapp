@@ -151,7 +151,7 @@ export default function Home() {
       </Container>
       <Container>
         {/* zk app */}
-        <SignTransactionBox network={currentNetwork} />
+        <SignTransactionBox network={currentNetwork} currentAccount={currentAccount} />
       </Container>
       {/* sign message */}
       <Container>

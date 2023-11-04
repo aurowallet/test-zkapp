@@ -1,4 +1,4 @@
-import { fetchAccount, PublicKey, Field } from 'o1js';
+import { fetchAccount, PublicKey, Field, PrivateKey } from 'o1js';
 
 import type {
   ZkappWorkerRequest,
@@ -55,6 +55,13 @@ export default class ZkappWorkerClient {
     const result = await this._call('getTransactionJSON', {});
     return result;
   }
+  
+  async createDeployTransaction(privateKey: PrivateKey,feePayer:string) {
+    return await this._call('createDeployTransaction', {
+        privateKey58: PrivateKey.toBase58(privateKey),
+        feePayer
+    });
+}
 
   // ---------------------------------------------------------------------------------------
 
