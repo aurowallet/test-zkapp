@@ -1,3 +1,4 @@
+import React from "react";
 import styled, { css } from "styled-components";
 
 export enum InfoType {
@@ -68,7 +69,19 @@ const StyledLinkContent = styled.a`
   }
 `;
 
-export const InfoRow = ({
+type IInfoRow = {
+  type?: InfoType;
+  title: string;
+  content?: string;
+  linkContent?: string;
+  isBoldTitle?: boolean;
+  linkHref?: string;
+  linkTarget?: string;
+  children?: React.ReactNode;
+  innerChildren?: React.ReactNode;
+}
+
+export const InfoRow:React.FC<IInfoRow>  = ({
   type,
   title,
   content,
@@ -77,15 +90,6 @@ export const InfoRow = ({
   linkHref,
   linkTarget,
   children,
-}: {
-  type?: InfoType;
-  title: string;
-  content?: string;
-  linkContent?: string;
-  isBoldTitle?: boolean;
-  linkHref?: string;
-  linkTarget?: string;
-  children?: any;
 }) => {
   return (
     <StyledContainer type={type}>
@@ -98,7 +102,7 @@ export const InfoRow = ({
           </StyledLinkContent>
         )}
       </StyledRowTitle>
-      {children}
+        {children}
     </StyledContainer>
   );
 };

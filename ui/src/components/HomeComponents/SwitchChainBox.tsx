@@ -40,13 +40,8 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
       setSwitchRes(JSON.stringify(switchResult));
     }
   }, [chainType]);
-  const supportChain = useMemo(() => {
-    let list: Array<string> = [];
-    Object.keys(NET_CONFIG_TYPE).map((key: string) => {
-      list.push(NET_CONFIG_TYPE[key]);
-    });
-    const showValue = JSON.stringify(list, null, 2);
-    return showValue;
+  const supportChainList:string[] = useMemo(() => {
+    return Object.values(NET_CONFIG_TYPE);
   }, []);
 
 
@@ -71,7 +66,6 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
       <StyledBoxTitle>
         Mina Chain Interactions{"(" + formatNetwork(network) + ")"}
       </StyledBoxTitle>
-      {/* 添加网络 */}
       <Input placeholder="Input GraphQL Url" onChange={onChangeGraphQLUrl} />
       <Input placeholder="Input Network Name" onChange={onChangeNetworkName} />
       <Button onClick={onAdd}>Add Chain</Button>
@@ -84,7 +78,11 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
 
       <Input placeholder="Input Chain Type" onChange={onChangeChainType} />
       <InfoRow title="Current Support Chain Id: " type={InfoType.success}>
-        {supportChain}
+        {
+          supportChainList.map((supportChain)=>{
+            return supportChain + " , "
+          })
+        }
       </InfoRow>
       <Button onClick={onSwitch}>Switch Chain</Button>
       <InfoRow

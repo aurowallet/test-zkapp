@@ -201,8 +201,6 @@ export const SignTransactionBox = ({
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
       console.log("Done loading web worker");
-      console.log('lsp===gqlUrl',gqlUrl);
-      
       await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
       const mina = (window as any).mina;
       if (mina == null) {
@@ -266,8 +264,7 @@ export const SignTransactionBox = ({
       <StyledDividedLine />
       <Button onClick={onClickCreateKey}>Generate Zk-Contract-Key</Button>
       <InfoRow title={"zkApp keys"} type={InfoType.secondary}>
-        <p>{"PublicKey: \n" + keys.publicKey}</p>
-        <p>{"PrivateKey: \n" + keys.privateKey}</p>
+        <p>{JSON.stringify(keys)}</p>
       </InfoRow>
       <Button disabled={createBtnStatus} onClick={onClickCreate}>
         Creat Zk-Contract
