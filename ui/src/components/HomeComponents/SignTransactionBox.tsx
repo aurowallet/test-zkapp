@@ -1,4 +1,3 @@
-import { NetConfigMap } from "@/constants/config";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
@@ -39,7 +38,8 @@ export const SignTransactionBox = ({
   const [displayText, setDisplayText] = useState("");
   const [txHash, setTxHash] = useState("");
   const [createHash, setCreateHash] = useState("");
-
+  const [gqlUrl,setGqlUrl] = useState("")
+  
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
     hasWallet: null as null | boolean,
@@ -51,9 +51,10 @@ export const SignTransactionBox = ({
     creatingTransaction: false,
   });
 
-  const currentNetConfig = useMemo(() => {
-    return NetConfigMap[network?.chainId] || {};
-  }, [network]);
+
+  const onChangeGqlUrl = useCallback((e: any)=>{
+    setGqlUrl(e.target.value);
+  },[])
 
   const onChangeZkAddress = useCallback((e: any) => {
     setZkAddress(e.target.value);
@@ -78,7 +79,7 @@ export const SignTransactionBox = ({
 
       setDisplayText("Done loading web worker");
       console.log("Done loading web worker");
-      await zkappWorkerClient.setActiveInstanceToBerkeley(currentNetConfig.gql);
+      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
 
       const mina = (window as any).mina;
 
@@ -134,7 +135,7 @@ export const SignTransactionBox = ({
       setUpdateBtnStatus(false);
       setInitBtnStatus(true);
     }
-  }, [zkAddress, state, currentNetConfig]);
+  }, [zkAddress, state, gqlUrl]);
 
   const onClickUpdate = useCallback(async () => {
     if (!state.hasBeenSetup) {
@@ -177,7 +178,7 @@ export const SignTransactionBox = ({
     setDisplayText("");
 
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state, currentNetConfig]);
+  }, [fee, memo, state]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -202,7 +203,9 @@ export const SignTransactionBox = ({
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
       console.log("Done loading web worker");
-      await zkappWorkerClient.setActiveInstanceToBerkeley(currentNetConfig.gql);
+      console.log('lsp===gqlUrl',gqlUrl);
+      
+      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
       const mina = (window as any).mina;
       if (mina == null) {
         return;
@@ -234,9 +237,16 @@ export const SignTransactionBox = ({
       });
       setCreateHash(hash);
     },
-    [currentNetConfig, currentAccount]
+    [gqlUrl, currentAccount]
   );
 
+  useEffect(()=>{
+    if(gqlUrl.length>0 && keys.publicKey){
+      setCreateBtnStatus(false);
+    }else{
+      setCreateBtnStatus(true);
+    }
+  },[gqlUrl,keys])
   const onClickCreateKey = useCallback(async () => {
     let zkAppPrivateKey = PrivateKey.random();
     let zkAppAddress = zkAppPrivateKey.toPublicKey();
@@ -244,7 +254,6 @@ export const SignTransactionBox = ({
       publicKey: PublicKey.toBase58(zkAppAddress),
       privateKey: PrivateKey.toBase58(zkAppPrivateKey),
     });
-    setCreateBtnStatus(false);
   }, []);
   const onClickCreate = useCallback(async () => {
     let zkAppPrivateKey = PrivateKey.fromBase58(keys.privateKey);
@@ -254,7 +263,10 @@ export const SignTransactionBox = ({
   return (
     <Box>
       <StyledBoxTitle>Mina ZkApp</StyledBoxTitle>
-      <Button onClick={onClickCreateKey}>Creat Zk-Contract-Key</Button>
+      * need input url and generate Key first
+      <Input placeholder="Input Graphql Url" onChange={onChangeGqlUrl} />
+      <StyledDividedLine />
+      <Button onClick={onClickCreateKey}>Generate Zk-Contract-Key</Button>
       <InfoRow title={"zkApp keys"} type={InfoType.secondary}>
         <p>{"PublicKey: \n" + keys.publicKey}</p>
         <p>{"PrivateKey: \n" + keys.privateKey}</p>
