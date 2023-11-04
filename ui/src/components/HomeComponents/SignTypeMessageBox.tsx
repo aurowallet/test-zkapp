@@ -39,14 +39,14 @@ export const SignTypeMessageBox = ({
   const [verifyJsonRes, setVerifyJsonRes] = useState("");
 
   const onSignType = useCallback(async () => {
-    const content = `Click "Sign" to sign in. No password needed!
+    const content = `Click "Confirm" to sign in. No password needed!
 
 This request will not trigger a blockchain transaction or cost any gas fees.
 
 I accept the Auro Test ZKApp Terms of Service: ${window.location.href}
 
 address: ${currentAccount}
-iat: 2023`;
+iat: ${new Date().getTime()}`;
     const signResult: ISignResult = await (window as any)?.mina
       ?.signMessage({
         message: content,
@@ -103,7 +103,7 @@ iat: 2023`;
       },
       {
         label: "Issued At:",
-        value: "2023",
+        value: new Date().getTime(),
       },
       {
         label: "Resources: 2",

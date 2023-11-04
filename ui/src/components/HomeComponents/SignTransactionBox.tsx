@@ -17,10 +17,8 @@ const StyledButtonGroup = styled.div`
 `;
 
 export const SignTransactionBox = ({
-  network,
   currentAccount,
 }: {
-  network: ChainInfoArgs;
   currentAccount: string;
 }) => {
   const [zkAddress, setZkAddress] = useState("");

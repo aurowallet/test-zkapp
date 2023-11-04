@@ -139,21 +139,16 @@ export default function Home() {
         </Container>
       </StyledRowSection>
       <Container>
-        {/* connect and get account */}
         <BaseActionBox currentAccount={currentAccount} />
         <SwitchChainBox network={currentNetwork} />
       </Container>
       <Container>
-        {/* send  */}
         <MinaSendBox />
-        {/* stake */}
         <StakingBox />
       </Container>
       <Container>
-        {/* zk app */}
-        <SignTransactionBox network={currentNetwork} currentAccount={currentAccount} />
+        <SignTransactionBox currentAccount={currentAccount} />
       </Container>
-      {/* sign message */}
       <Container>
         <CreateNullifierBox />
         <SignMessageBox currentAccount={currentAccount} />
