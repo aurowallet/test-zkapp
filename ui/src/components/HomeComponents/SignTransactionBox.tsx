@@ -1,7 +1,7 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
-import { ChainInfoArgs } from "@aurowallet/mina-provider";
+import { ProviderError, SendTransactionResult } from "@aurowallet/mina-provider";
 import { Field, PrivateKey, PublicKey } from "o1js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
@@ -164,16 +164,20 @@ export const SignTransactionBox = ({
 
     setDisplayText("Getting transaction JSON...");
     console.log("Getting transaction JSON...");
-    const { hash } = await (window as any).mina?.sendTransaction({
+    const res:SendTransactionResult| ProviderError= await (window as any).mina?.sendTransaction({
       transaction: transactionJSON,
       feePayer: {
         fee: fee,
         memo: memo,
       },
     });
-
-    setTxHash(hash);
-    setDisplayText("");
+    if((res as SendTransactionResult).hash){
+      setTxHash((res as SendTransactionResult).hash);
+      setDisplayText("");
+    }else{
+      setTxHash("")
+      setDisplayText((res as ProviderError).message);
+    }
 
     setState({ ...state, creatingTransaction: false });
   }, [fee, memo, state]);
@@ -225,13 +229,18 @@ export const SignTransactionBox = ({
       );
       await zkappWorkerClient.proveUpdateTransaction();
       const transactionJSON = await zkappWorkerClient.getTransactionJSON();
-      const { hash } = await (window as any).mina.sendTransaction({
+      const sendRes:SendTransactionResult|ProviderError = await (window as any).mina.sendTransaction({
         transaction: transactionJSON,
         feePayer: {
           memo: "",
         },
       });
-      setCreateHash(hash);
+
+      if((sendRes as SendTransactionResult).hash){
+        setCreateHash((sendRes as SendTransactionResult).hash);
+      }else{
+        setCreateHash("")
+      }
     },
     [gqlUrl, currentAccount]
   );

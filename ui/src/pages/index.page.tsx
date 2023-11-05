@@ -18,7 +18,7 @@ import {
   StyledStatusRowWrapper,
 } from "@/styles/HomeStyles.ts";
 import { formatNetwork } from "@/utils";
-import { ChainInfoArgs } from "@aurowallet/mina-provider";
+import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -59,7 +59,7 @@ export default function Home() {
   }, []);
 
   const initAccount = useCallback(async () => {
-    const data = await (window as any)?.mina
+    const data:string[]|ProviderError = await (window as any)?.mina
       ?.requestAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {

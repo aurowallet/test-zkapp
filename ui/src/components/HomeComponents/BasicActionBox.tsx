@@ -2,6 +2,7 @@ import { Box, StyledBoxTitle } from "@/styles/HomeStyles";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { useCallback, useEffect, useState } from "react";
+import { ProviderError } from "@aurowallet/mina-provider";
 
 export const BaseActionBox = ({
   currentAccount,
@@ -24,13 +25,13 @@ export const BaseActionBox = ({
     setAccounts(currentAccount);
   }, [currentAccount]);
   const onClickConnect = useCallback(async () => {
-    const data = await (window as any)?.mina
+    const data:string[]|ProviderError = await (window as any)?.mina
       .requestAccounts()
       .catch((err: any) => err);
-    if (data.message) {
-      setAccountsMsg(data.message);
+    if ((data as ProviderError).message) {
+      setAccountsMsg((data as ProviderError).message);
     } else {
-      setAccounts(data[0]);
+      setAccounts((data as string[])[0]);
       setAccountsMsg("");
     }
   }, []);

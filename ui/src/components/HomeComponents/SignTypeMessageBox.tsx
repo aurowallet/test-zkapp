@@ -2,22 +2,7 @@ import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { useCallback, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
-import { ChainInfoArgs } from "@aurowallet/mina-provider";
-
-type ISignature = {
-  field: string;
-  scalar: string;
-};
-type ISuccess = {
-  data: string; // success
-  publicKey: string; // success
-  signature: ISignature; // success
-};
-type IFailed = {
-  message: string; //failed
-};
-
-type ISignResult = ISuccess | IFailed;
+import { ChainInfoArgs, ProviderError, SignedData } from "@aurowallet/mina-provider";
 
 export const SignTypeMessageBox = ({
   currentAccount,
@@ -47,20 +32,20 @@ I accept the Auro Test ZKApp Terms of Service: ${window.location.href}
 
 address: ${currentAccount}
 iat: ${new Date().getTime()}`;
-    const signResult: ISignResult = await (window as any)?.mina
+    const signResult: SignedData|ProviderError = await (window as any)?.mina
       ?.signMessage({
         message: content,
       })
       .catch((err: any) => err);
 
-    if ((signResult as ISuccess).signature) {
-      setSignRes(JSON.stringify((signResult as ISuccess).signature));
+    if ((signResult as SignedData).signature) {
+      setSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyBtnStatus(false);
 
-      setVerifyContent((signResult as ISuccess).data + "");
-      setVerifySignature(JSON.stringify((signResult as ISuccess).signature));
+      setVerifyContent((signResult as SignedData).data + "");
+      setVerifySignature(JSON.stringify((signResult as SignedData).signature));
     } else {
-      setSignRes((signResult as IFailed).message || "");
+      setSignRes((signResult as ProviderError).message || "");
       setVerifyBtnStatus(true);
       setVerifyRes("");
     }
@@ -72,11 +57,11 @@ iat: ${new Date().getTime()}`;
       data: verifyContent,
     };
 
-    let verifyResult = await (window as any)?.mina
+    let verifyResult:boolean|ProviderError = await (window as any)?.mina
       ?.verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
-    if (verifyResult.error) {
-      setVerifyRes(verifyResult.error?.message);
+    if ((verifyResult as ProviderError).message) {
+      setVerifyRes((verifyResult as ProviderError).message);
     } else {
       setVerifyRes(verifyResult + "");
     }
@@ -110,22 +95,22 @@ iat: ${new Date().getTime()}`;
         value: "https://docs.aurowallet.com/",
       },
     ];
-    const signResult: ISignResult = await (window as any)?.mina
+    const signResult:SignedData|ProviderError = await (window as any)?.mina
       ?.signJsonMessage({
         message: msgParams
       })
       .catch((err: any) => err);
 
-    if ((signResult as ISuccess).signature) {
-      setJsonSignRes(JSON.stringify((signResult as ISuccess).signature));
+    if ((signResult as SignedData).signature) {
+      setJsonSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyJsonBtnStatus(false);
 
-      setVerifyJsonContent((signResult as ISuccess).data + "");
+      setVerifyJsonContent((signResult as SignedData).data + "");
       setVerifyJsonSignature(
-        JSON.stringify((signResult as ISuccess).signature)
+        JSON.stringify((signResult as SignedData).signature)
       );
     } else {
-      setJsonSignRes((signResult as IFailed).message || "");
+      setJsonSignRes((signResult as ProviderError).message || "");
       setVerifyJsonBtnStatus(true);
       setVerifyJsonRes("");
     }
@@ -137,11 +122,11 @@ iat: ${new Date().getTime()}`;
       data: verifyJsonContent,
     };
 
-    let verifyResult = await (window as any)?.mina
+    let verifyResult:boolean|ProviderError = await (window as any)?.mina
       ?.verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
-    if (verifyResult.error) {
-      setVerifyJsonRes(verifyResult.error?.message);
+    if ((verifyResult as ProviderError).message) {
+      setVerifyJsonRes((verifyResult as ProviderError)?.message);
     } else {
       setVerifyJsonRes(verifyResult + "");
     }

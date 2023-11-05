@@ -3,21 +3,7 @@ import { useCallback, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-
-type ISignature = {
-  field: string;
-  scalar: string;
-};
-type ISuccess = {
-  data: string; // success
-  publicKey: string; // success
-  signature: ISignature; // success
-};
-type IFailed = {
-  message: string; //failed
-};
-
-type ISignResult = ISuccess | IFailed;
+import { ProviderError, SignedData } from "@aurowallet/mina-provider";
 
 export const SignMessageBox = ({
   currentAccount,
@@ -43,20 +29,20 @@ export const SignMessageBox = ({
   }, []);
 
   const onSign = useCallback(async () => {
-    const signResult: ISignResult = await (window as any)?.mina
+    const signResult: SignedData|ProviderError = await (window as any)?.mina
       ?.signMessage({
         message: signContent,
       })
       .catch((err: any) => err);
 
-    if ((signResult as ISuccess).signature) {
-      setSignRes(JSON.stringify((signResult as ISuccess).signature));
+    if ((signResult as SignedData).signature) {
+      setSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyBtnStatus(false);
 
-      setVerifyContent((signResult as ISuccess).data + "");
-      setVerifySignature(JSON.stringify((signResult as ISuccess).signature));
+      setVerifyContent((signResult as SignedData).data + "");
+      setVerifySignature(JSON.stringify((signResult as SignedData).signature));
     } else {
-      setSignRes((signResult as IFailed).message || "");
+      setSignRes((signResult as ProviderError).message || "");
     }
   }, [signContent]);
   const onVerify = useCallback(async () => {
@@ -66,11 +52,11 @@ export const SignMessageBox = ({
       data: verifyContent,
     };
 
-    let verifyResult = await (window as any)?.mina
+    let verifyResult:boolean|ProviderError = await (window as any)?.mina
       ?.verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
-    if (verifyResult.error) {
-      setVerifyRes(verifyResult.error?.message);
+    if ((verifyResult as ProviderError).message) {
+      setVerifyRes((verifyResult as ProviderError).message);
     } else {
       setVerifyRes(verifyResult + "");
     }

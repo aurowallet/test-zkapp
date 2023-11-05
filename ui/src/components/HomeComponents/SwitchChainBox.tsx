@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { ChainInfoArgs } from "@aurowallet/mina-provider";
+import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import { formatNetwork } from "@/utils";
 
 export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
@@ -29,13 +29,13 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
   
   
   const onSwitch = useCallback(async () => {
-    const switchResult = await (window as any)?.mina
+    const switchResult:ChainInfoArgs|ProviderError = await (window as any)?.mina
       ?.switchChain({
         chainId: chainType.trim(),
       })
       .catch((err: any) => err);
-    if (switchResult.message) {
-      setSwitchRes(switchResult.message);
+    if ((switchResult as ProviderError).message) {
+      setSwitchRes((switchResult as ProviderError).message);
     } else {
       setSwitchRes(JSON.stringify(switchResult));
     }
@@ -50,12 +50,12 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
       url: encodeURIComponent(graphQLUrl),
       name: networkName,
     }
-    const addResult = await (window as any)?.mina
+    const addResult:ChainInfoArgs|ProviderError = await (window as any)?.mina
       ?.addChain(addInfo)
       .catch((err: any) => err);
       
-    if (addResult.message) {
-      setAddRes(addResult.message);
+    if ((addResult as ProviderError).message) {
+      setAddRes((addResult as ProviderError).message);
     } else {
       setAddRes(JSON.stringify(addResult));
     }

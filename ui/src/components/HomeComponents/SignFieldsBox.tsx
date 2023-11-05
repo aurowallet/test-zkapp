@@ -3,13 +3,8 @@ import { useCallback, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
+import { ProviderError, SignedData } from "@aurowallet/mina-provider";
 
-type ISignResult = {
-  data?: string; // success
-  publicKey?: string; // success
-  signature?: string; // success
-  message?: string; //failed
-};
 export const SignFieldsBox = ({
   currentAccount,
 }: {
@@ -19,8 +14,8 @@ export const SignFieldsBox = ({
   const [verifyBtnStatus, setVerifyBtnStatus] = useState(true);
 
   const [verifyContent, setVerifyContent] = useState("");
-  const [verifySignature, setVerifySignature] = useState("");
-  const [signRes, setSignRes] = useState("");
+  const [verifySignature, setVerifySignature] = useState<any>();
+  const [signRes, setSignRes] = useState<any>();
   const [verifyRes, setVerifyRes] = useState("");
 
   const onChangeSignContent = useCallback((e: any) => {
@@ -35,20 +30,20 @@ export const SignFieldsBox = ({
 
   const onSign = useCallback(async () => {
     try {
-      const signResult: ISignResult = await (window as any)?.mina
+      const signResult: SignedData|ProviderError = await (window as any)?.mina
         ?.signFields({
           message: JSON.parse(signContent),
         })
         .catch((err: any) => err);
 
-      if (signResult.signature) {
-        setSignRes(signResult.signature);
+      if ((signResult as SignedData).signature) {
+        setSignRes((signResult as SignedData).signature);
         setVerifyBtnStatus(false);
 
         setVerifyContent(JSON.stringify(signResult.data));
-        setVerifySignature(signResult.signature);
+        setVerifySignature((signResult as SignedData).signature);
       } else {
-        setSignRes(signResult.message || "");
+        setSignRes((signResult as ProviderError).message || "");
       }
     } catch (error) {
       console.warn(error);
@@ -66,11 +61,11 @@ export const SignFieldsBox = ({
       setVerifyRes("Please check verify message");
       return;
     }
-    let verifyResult = await (window as any)?.mina
+    let verifyResult:boolean|ProviderError = await (window as any)?.mina
       ?.verifyFields(verifyMessageBody)
       .catch((err: any) => err);
-    if (verifyResult.error) {
-      setVerifyRes(verifyResult.error?.message);
+    if ((verifyResult as ProviderError).message) {
+      setVerifyRes((verifyResult as ProviderError).message);
     } else {
       setVerifyRes(verifyResult + "");
     }

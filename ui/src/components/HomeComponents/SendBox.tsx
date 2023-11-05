@@ -3,11 +3,8 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
+import { BroadcastTransactionResult, ProviderError } from "@aurowallet/mina-provider";
 
-type ISendResult = {
-  hash?: string;
-  message?: string;
-};
 export const MinaSendBox = () => {
   const [receiveAddress, setReceiveAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -31,7 +28,7 @@ export const MinaSendBox = () => {
   const onClickSend = useCallback(async () => {
     setResHash("");
     setErrMsg("");
-    let data:ISendResult = await (window as any)?.mina
+    let data:BroadcastTransactionResult|ProviderError = await (window as any)?.mina
       ?.sendLegacyPayment({
         amount: amount,
         to: receiveAddress,
@@ -40,10 +37,10 @@ export const MinaSendBox = () => {
       })
       .catch((err: any) => err);
 
-    if (data.hash) {
-      setResHash(data.hash);
+    if ((data as BroadcastTransactionResult).hash) {
+      setResHash((data as BroadcastTransactionResult).hash);
     } else {
-      setErrMsg(data.message||"");
+      setErrMsg((data as ProviderError).message||"");
     }
   }, [receiveAddress, amount, fee, memo]);
 

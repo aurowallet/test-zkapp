@@ -3,11 +3,8 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
+import { BroadcastTransactionResult, ProviderError } from "@aurowallet/mina-provider";
 
-type IStakingResult = {
-  hash?: string;
-  message?: string;
-};
 export const StakingBox = () => {
   const [vaildatorAddress, setVaildatorAddress] = useState("");
   const [fee, setFee] = useState("");
@@ -27,7 +24,7 @@ export const StakingBox = () => {
   const onClickStaking = useCallback(async () => {
     setResHash("");
     setErrMsg("");
-    let data: IStakingResult = await (window as any)?.mina
+    let data: BroadcastTransactionResult|ProviderError = await (window as any)?.mina
       ?.sendLegacyStakeDelegation({
         to: vaildatorAddress,
         fee: fee,
@@ -35,10 +32,10 @@ export const StakingBox = () => {
       })
       .catch((err: any) => err);
 
-    if (data.hash) {
-      setResHash(data.hash);
+    if ((data as BroadcastTransactionResult).hash) {
+      setResHash((data as BroadcastTransactionResult).hash);
     } else {
-      setErrMsg(data.message || "");
+      setErrMsg((data as ProviderError).message || "");
     }
   }, [vaildatorAddress, fee, memo]);
 

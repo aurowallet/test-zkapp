@@ -3,10 +3,11 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
+import { Nullifier, ProviderError } from "@aurowallet/mina-provider";
 
 export const CreateNullifierBox = () => {
   const [signFields, setSignFields] = useState("");
-  const [createRes, setCreateRes] = useState("");
+  const [createRes, setCreateRes] = useState<Nullifier|ProviderError|string>();
 
   const onChangeMessageContent = useCallback((e: any) => {
     setSignFields(e.target.value);
@@ -16,16 +17,16 @@ export const CreateNullifierBox = () => {
     let signContent = "";
     try {
       signContent = JSON.parse(signFields);
-      const signResult: any = await (window as any)?.mina
+      const signResult: Nullifier|ProviderError = await (window as any)?.mina
         .createNullifier({
           message: signContent,
         })
         .catch((err: any) => err);
 
-      if (signResult.private) {
+      if ((signResult as Nullifier).private) {
         setCreateRes(signResult);
       } else {
-        setCreateRes(signResult.message || "");
+        setCreateRes((signResult as ProviderError).message || "");
       }
     } catch (error) {
       console.warn(error);
