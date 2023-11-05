@@ -259,7 +259,7 @@ export const SignTransactionBox = ({
 
   const keysContent = useMemo(()=>{
     let content = ""
-    if(keys){
+    if(keys.privateKey){
       content = JSON.stringify(keys, null, 2)
     }
     return content
