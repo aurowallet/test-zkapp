@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@aurowallet/mina-provider@0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@aurowallet/mina-provider/-/mina-provider-0.2.6.tgz#34072a229eef664c968634843d739af7b53611be"
-  integrity sha512-F0XKka+P5qm4CHHGtvxYhTkMJ1XwNJX8wZXRuuEhgN1m514iOpuQtEwBF5snQ8steayp75g+kXm128ilAwiVKQ==
+"@aurowallet/mina-provider@0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@aurowallet/mina-provider/-/mina-provider-0.2.7.tgz#de704c442a6d934b0e734611778a6edb202fbd58"
+  integrity sha512-Yk5qDsiAKV6PAlIBImZEr04NinNzBEi4Iqx11LTYGVe/4bqt7Tyj7+5jS1S2JWniXnwGF6FwqxcXt+uq9ia8BQ==
   dependencies:
     "@types/eventemitter3" "^2.0.2"
     "@types/uuid" "^8.3.1"
