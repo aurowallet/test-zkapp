@@ -39,7 +39,7 @@ export const SignTypeMessageBox = ({
   const [verifyJsonRes, setVerifyJsonRes] = useState("");
 
   const onSignType = useCallback(async () => {
-    const content = `Click "Confirm" to sign in. No password needed!
+    const content = `Click "Sign" to sign in. No password needed!
 
 This request will not trigger a blockchain transaction or cost any gas fees.
 
@@ -106,7 +106,7 @@ iat: ${new Date().getTime()}`;
         value: new Date().getTime(),
       },
       {
-        label: "Resources: 2",
+        label: "Resources:",
         value: "https://docs.aurowallet.com/",
       },
     ];
