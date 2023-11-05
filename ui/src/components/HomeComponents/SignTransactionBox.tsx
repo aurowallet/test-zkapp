@@ -256,6 +256,14 @@ export const SignTransactionBox = ({
     let zkAppAddress = PublicKey.fromBase58(keys.publicKey);
     await createContract(zkAppPrivateKey, zkAppAddress);
   }, [currentAccount, keys]);
+
+  const keysContent = useMemo(()=>{
+    let content = ""
+    if(keys){
+      content = JSON.stringify(keys, null, 2)
+    }
+    return content
+  },[keys])
   return (
     <Box>
       <StyledBoxTitle>Mina ZkApp</StyledBoxTitle>
@@ -264,7 +272,7 @@ export const SignTransactionBox = ({
       <StyledDividedLine />
       <Button onClick={onClickCreateKey}>Generate Zk-Contract-Key</Button>
       <InfoRow title={"zkApp keys"} type={InfoType.secondary}>
-        <p>{JSON.stringify(keys)}</p>
+        {keysContent && <div>{keysContent}</div>}
       </InfoRow>
       <Button disabled={createBtnStatus} onClick={onClickCreate}>
         Creat Zk-Contract
