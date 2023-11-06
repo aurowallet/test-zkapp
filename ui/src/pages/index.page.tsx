@@ -67,7 +67,7 @@ export default function Home() {
     }
   }, []);
   useEffect(() => {
-    initAccount();
+    // initAccount();
   }, []);
 
   return (
