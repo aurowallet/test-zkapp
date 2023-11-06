@@ -1,3 +1,5 @@
+'use client';
+
 import { GithubCorner } from "@/components/GithubCorner";
 import { BaseActionBox } from "@/components/HomeComponents/BasicActionBox.tsx";
 import { CreateNullifierBox } from "@/components/HomeComponents/CreateNullifierBox";
@@ -21,6 +23,7 @@ import { formatNetwork } from "@/utils";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import StyledComponentsRegistry from "./registry";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -71,6 +74,7 @@ export default function Home() {
   }, []);
 
   return (
+    <StyledComponentsRegistry>
     <PageContainer>
       <Head>
         <link rel="shortcut icon" href="/imgs/auro.png" />
@@ -159,5 +163,6 @@ export default function Home() {
         <SignFieldsBox currentAccount={currentAccount} />
       </Container>
     </PageContainer>
+    </StyledComponentsRegistry>
   );
 }
