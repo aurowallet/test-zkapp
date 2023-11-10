@@ -63,14 +63,14 @@ export default function Home() {
 
   const initAccount = useCallback(async () => {
     const data:string[]|ProviderError = await (window as any)?.mina
-      ?.requestAccounts()
+      ?.getAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {
       setCurrentAccount(data[0]);
     }
   }, []);
   useEffect(() => {
-    // initAccount();
+    initAccount();
   }, []);
 
   return (

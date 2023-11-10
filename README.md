@@ -8,7 +8,7 @@ Code of the zkApp contract. If you need to update the contract, please modify it
 
 **ui**
 
-Code for interaction between zkApp and Auro wallet.
+Code for interaction between zkApp and Auro Wallet.
 
 
 

@@ -37,6 +37,7 @@ export const SignTransactionBox = ({
   const [txHash, setTxHash] = useState("");
   const [createHash, setCreateHash] = useState("");
   const [gqlUrl,setGqlUrl] = useState("")
+  const [createText, setCreateText] = useState("");
   
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
@@ -202,6 +203,7 @@ export const SignTransactionBox = ({
 
   const createContract = useCallback(
     async (depolyPrivateKey: PrivateKey, zkAddress: PublicKey) => {
+      setCreateText("start")
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
       console.log("Done loading web worker");
@@ -229,13 +231,14 @@ export const SignTransactionBox = ({
       );
       await zkappWorkerClient.proveUpdateTransaction();
       const transactionJSON = await zkappWorkerClient.getTransactionJSON();
+      setCreateText("waiting wallet confirm")
       const sendRes:SendTransactionResult|ProviderError = await (window as any).mina.sendTransaction({
         transaction: transactionJSON,
         feePayer: {
           memo: "",
         },
       });
-
+      setCreateText("")
       if((sendRes as SendTransactionResult).hash){
         setCreateHash((sendRes as SendTransactionResult).hash);
       }else{
@@ -275,7 +278,7 @@ export const SignTransactionBox = ({
   },[keys])
   return (
     <Box>
-      <StyledBoxTitle>Mina ZkApp</StyledBoxTitle>
+      <StyledBoxTitle>Mina zkApp</StyledBoxTitle>
       * need input url and generate Key first
       <Input placeholder="Input Graphql Url" onChange={onChangeGqlUrl} />
       <StyledDividedLine />
@@ -288,7 +291,7 @@ export const SignTransactionBox = ({
       </Button>
       <InfoRow
         title={"zkApp Create Result: "}
-        content={createHash}
+        content={createHash|| createText}
         type={InfoType.secondary}
       />
       <StyledDividedLine />

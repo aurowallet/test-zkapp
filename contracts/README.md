@@ -1,4 +1,4 @@
-# Mina zkApp: Auro E2e Test Zkapp
+# Mina zkApp: Auro E2e Test zkApp
 
 This template uses TypeScript.
 
