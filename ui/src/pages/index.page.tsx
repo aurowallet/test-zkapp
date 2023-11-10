@@ -24,6 +24,7 @@ import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import StyledComponentsRegistry from "./registry";
+import { VersionBox } from "@/components/VersionBox";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -163,6 +164,7 @@ export default function Home() {
         <SignFieldsBox currentAccount={currentAccount} />
       </Container>
     </PageContainer>
+    <VersionBox/>
     </StyledComponentsRegistry>
   );
 }
