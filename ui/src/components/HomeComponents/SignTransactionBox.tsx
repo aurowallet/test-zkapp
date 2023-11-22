@@ -264,6 +264,10 @@ export const SignTransactionBox = ({
     });
   }, []);
   const onClickCreate = useCallback(async () => {
+    if(!currentAccount){
+      setCreateText("Need connect wallet first")
+      return 
+    }
     let zkAppPrivateKey = PrivateKey.fromBase58(keys.privateKey);
     let zkAppAddress = PublicKey.fromBase58(keys.publicKey);
     await createContract(zkAppPrivateKey, zkAppAddress);
