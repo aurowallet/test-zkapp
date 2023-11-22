@@ -1,5 +1,5 @@
 # Auro-e2e-test-zkApp 
-This is an example of how zkApp interacts with Auro wallet. 
+This is an example of how zkApp interacts with Auro Wallet. 
 
 ## Project Structure
 **contracts**
@@ -37,4 +37,4 @@ yarn dev
 
 ## Source
 
-[Api-doc](https://docs.aurowallet.com/general/)
+[API Document](https://docs.aurowallet.com/general/)
