@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { Nullifier, ProviderError } from "@aurowallet/mina-provider";
+import { CreateNullifierArgs, Nullifier, ProviderError } from "@aurowallet/mina-provider";
 
 export const CreateNullifierBox = () => {
   const [signFields, setSignFields] = useState("");
@@ -14,12 +14,12 @@ export const CreateNullifierBox = () => {
   }, []);
 
   const onCreate = useCallback(async () => {
-    let signContent = "";
+    let signContent:CreateNullifierArgs
     try {
       signContent = JSON.parse(signFields);
       const signResult: Nullifier|ProviderError = await (window as any)?.mina
         .createNullifier({
-          message: signContent,
+          message: signContent as CreateNullifierArgs,
         })
         .catch((err: any) => err);
 
