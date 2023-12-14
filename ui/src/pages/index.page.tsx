@@ -46,6 +46,8 @@ export default function Home() {
       console.log("accountsChanged", accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
+      }else{
+        console.log('disconnect');// handled disconnect here
       }
     });
     (window as any)?.mina?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
