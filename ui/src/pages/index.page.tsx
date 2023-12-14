@@ -46,13 +46,6 @@ export default function Home() {
       console.log("accountsChanged", accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
-      } else {
-        const data = await (window as any)?.mina
-          .requestAccounts()
-          .catch((err: any) => err);
-        if (Array.isArray(data) && data.length > 0) {
-          setCurrentAccount(data[0]);
-        }
       }
     });
     (window as any)?.mina?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
