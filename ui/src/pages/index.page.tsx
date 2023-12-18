@@ -25,6 +25,7 @@ import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import StyledComponentsRegistry from "./registry";
 import { VersionBox } from "@/components/VersionBox";
+import { TokenBox } from "@/components/HomeComponents/TokenBox";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -148,6 +149,7 @@ export default function Home() {
       </Container>
       <Container>
         <SignTransactionBox currentAccount={currentAccount} />
+        <TokenBox currentAccount={currentAccount} />
       </Container>
       <Container>
         <CreateNullifierBox />
