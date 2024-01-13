@@ -6,8 +6,10 @@ import { ProviderError } from "@aurowallet/mina-provider";
 
 export const BaseActionBox = ({
   currentAccount,
+  onSetCurrentAccount,
 }: {
   currentAccount: string;
+  onSetCurrentAccount: (account: string) => void;
 }) => {
   const [accounts, setAccounts] = useState(currentAccount);
   const [accountsMsg, setAccountsMsg] = useState("");
@@ -25,21 +27,27 @@ export const BaseActionBox = ({
     setAccounts(currentAccount);
   }, [currentAccount]);
   const onClickConnect = useCallback(async () => {
-    const data:string[]|ProviderError = await (window as any)?.mina
+    const data: string[] | ProviderError = await (window as any)?.mina
       .requestAccounts()
       .catch((err: any) => err);
     if ((data as ProviderError).message) {
       setAccountsMsg((data as ProviderError).message);
     } else {
-      setAccounts((data as string[])[0]);
+      let account = (data as string[])[0];
+      onSetCurrentAccount(account);
+      setAccounts(account);
       setAccountsMsg("");
     }
-  }, []);
+  }, [onSetCurrentAccount]);
 
   const onGetAccount = useCallback(async () => {
     let data = await (window as any)?.mina?.getAccounts();
     setNoWindowAccount(data);
-  }, []);
+    if (Array.isArray(data) && data.length > 0) {
+      onSetCurrentAccount(data[0]);
+    }
+    setNoWindowAccount(data);
+  }, [onSetCurrentAccount]);
 
   return (
     <Box>
@@ -49,7 +57,7 @@ export const BaseActionBox = ({
       </Button>
       <InfoRow
         title="Get Account result: "
-        content={accountsMsg||accounts}
+        content={accountsMsg || accounts}
         type={InfoType.secondary}
       />
       <Button onClick={onGetAccount}>Get Account without pop-winow</Button>
