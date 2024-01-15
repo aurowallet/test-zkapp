@@ -21,7 +21,7 @@ export const SignTransactionBox = ({
 }: {
   currentAccount: string;
 }) => {
-  const [zkAddress, setZkAddress] = useState("");
+  const [zkAddress, setZkAddress] = useState("B62qkzQuTVCVomphQ22LUXXZUryNhnenLJ9BHXEzKb1DyVpWsFBJ1xu");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [updateBtnStatus, setUpdateBtnStatus] = useState(true);
@@ -36,7 +36,7 @@ export const SignTransactionBox = ({
   const [displayText, setDisplayText] = useState("");
   const [txHash, setTxHash] = useState("");
   const [createHash, setCreateHash] = useState("");
-  const [gqlUrl,setGqlUrl] = useState("")
+  const [gqlUrl,setGqlUrl] = useState("https://mina-testworld2-graphql.aurowallet.com/graphql")
   const [createText, setCreateText] = useState("");
   
   const [state, setState] = useState({
@@ -284,7 +284,7 @@ export const SignTransactionBox = ({
     <Box>
       <StyledBoxTitle>Mina zkApp</StyledBoxTitle>
       * need input url and generate Key first
-      <Input placeholder="Input Graphql Url" onChange={onChangeGqlUrl} />
+      <Input placeholder="Input Graphql Url" value={gqlUrl} onChange={onChangeGqlUrl} />
       <StyledDividedLine />
       <Button onClick={onClickCreateKey}>Generate Zk-Contract-Key</Button>
       <InfoRow title={"zkApp keys"} type={InfoType.secondary}>
@@ -299,7 +299,7 @@ export const SignTransactionBox = ({
         type={InfoType.secondary}
       />
       <StyledDividedLine />
-      <Input placeholder="Set ZkApp Address" onChange={onChangeZkAddress} />
+      <Input placeholder="Set ZkApp Address" value={zkAddress} onChange={onChangeZkAddress} />
       <Button disabled={initBtnStatus} onClick={onClickInit}>
         {"Init ZkState"}
       </Button>

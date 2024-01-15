@@ -44,7 +44,8 @@ export default function Home() {
   useEffect(() => {
     /** account change listener */
     (window as any)?.mina?.on("accountsChanged", async (accounts: string[]) => {
-      console.log("accountsChanged", accounts);
+      // console.log("accountsChanged", accounts);
+      console.log('lsp===accountsChanged==',accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
       }else{

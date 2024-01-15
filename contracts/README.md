@@ -24,3 +24,7 @@ npm run coverage
 ## License
 
 [Apache-2.0](LICENSE)
+
+## Thanks to:
+
+[Stove Labs](https://github.com/stove-labs/mip-token-standard/)

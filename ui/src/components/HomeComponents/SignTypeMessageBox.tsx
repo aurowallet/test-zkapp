@@ -37,7 +37,7 @@ iat: ${new Date().getTime()}`;
         message: content,
       })
       .catch((err: any) => err);
-
+      console.log('lsp===onSignType==',signResult);
     if ((signResult as SignedData).signature) {
       setSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyBtnStatus(false);
@@ -100,7 +100,7 @@ iat: ${new Date().getTime()}`;
         message: msgParams
       })
       .catch((err: any) => err);
-
+      console.log('lsp===onSignJson==',signResult);
     if ((signResult as SignedData).signature) {
       setJsonSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyJsonBtnStatus(false);
