@@ -1,6 +1,6 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
-import ZkappWorkerClient from "@/utils/zkappWorkerClient";
+import ZkappWorkerClient from "@/contracts/add/zkappWorkerClient";
 import { ProviderError, SendTransactionResult } from "@aurowallet/mina-provider";
 import { Field, PrivateKey, PublicKey } from "o1js";
 import { useCallback, useEffect, useMemo, useState } from "react";
