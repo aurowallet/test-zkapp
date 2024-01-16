@@ -45,7 +45,7 @@ import Hooks from './Hooks.js';
 import type Hookable from './interfaces/token/hookable.js';
 import type { ViewableOptions } from './interfaces/token/viewable.js';
 
-class Token
+export class Token
   extends SmartContract
   implements
     Hookable,
@@ -351,4 +351,4 @@ class Token
   }
 }
 
-export default Token;
+// export default Token;
