@@ -11,7 +11,7 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
-import type { Add } from "../contracts/source/Add.ts";
+import type { Add } from "../contracts/add/source/Add.ts";
 
 interface VerificationKeyData {
   data: string;
@@ -34,7 +34,7 @@ const functions = {
     Mina.setActiveInstance(Berkeley);
   },
   loadContract: async (args: {}) => {
-    const { Add } = await import("../contracts/Add");
+    const { Add } = await import("../contracts/add/Add.js");
     state.Add = Add;
   },
   compileContract: async (args: {}) => {
