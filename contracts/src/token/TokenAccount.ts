@@ -10,7 +10,7 @@ import {
 
 import Depositable from './interfaces/tokenAccount/depositable.js';
 import type Withdrawable from './interfaces/tokenAccount/withdrawable.js';
-import Token from './Token.js';
+import Token from './token.js';
 
 class TokenAccount extends SmartContract implements Withdrawable, Depositable {
   // eslint-disable-next-line no-warning-comments

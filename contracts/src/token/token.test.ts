@@ -12,7 +12,7 @@ import {
 
 import ThirdParty from '../test/ThirdParty.js';
 
-import Token from './Token.js';
+import Token from './token.js';
 import TokenAccount from './TokenAccount.js';
 import Hooks from './Hooks.js';
 

@@ -6,7 +6,7 @@ import type { TransferFromToOptions } from '../token/transferable.js';
 
 interface Hooks {
   canAdmin: (action: AdminAction) => Bool;
-  canTransfer: ({ from, to, amount }: TransferFromToOptions) => Bool;
+  canTransfer?: ({ from, to, amount }: TransferFromToOptions) => Bool;
 }
 
 export default Hooks;
