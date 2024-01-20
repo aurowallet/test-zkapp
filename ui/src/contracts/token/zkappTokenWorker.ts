@@ -12,7 +12,7 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
-import type {Token} from "../../../../contracts/src/token/token.js"
+import type {Token} from "../../../../contracts/src/token/token"
 
 interface VerificationKeyData {
   data: string;
@@ -35,8 +35,8 @@ const functions = {
     console.log("Zk Instance Created");
     Mina.setActiveInstance(Berkeley);
   },
-  loadContract: async (args: {}) => {
-    const {Token} = await import("../../../../contracts/src/token/token.js");
+  loadContract: async (args: {}) => {// done
+    const {Token} = await import("../../../../contracts/build/src/token/Token.js");
     const tokenAKey = PrivateKey.random();
     const tokenAAccount = tokenAKey.toPublicKey();
     state.Token = new Token(tokenAAccount);
@@ -104,10 +104,10 @@ const functions = {
     transaction.sign([zkAppPrivateKey])
     state.transaction = transaction;
   },
-  loadTokenContract: async (args: {}) => {
-    const { Token } = await import("../../../../contracts/src/token/token.ts");
-    state.Token = Token;
-  },
+  // loadTokenContract: async (args: {}) => {
+  //   const { Token } = await import("../../../../contracts/src/token/token.js");
+  //   state.Token = Token;
+  // },
   compileTokenContract: async (args: {}) => {
     const { verificationKey } = await state.Token!.compile();
     state.verificationKey = verificationKey;

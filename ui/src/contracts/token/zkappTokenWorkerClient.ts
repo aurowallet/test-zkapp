@@ -6,7 +6,7 @@ import type {
   WorkerFunctions,
 } from "../token/zkappTokenWorker"
 
-export default class ZkappWorkerClient {
+export default class ZkappTokenWorkerClient {
   // ---------------------------------------------------------------------------------------
 
   setActiveInstanceToBerkeley(gqlUrl:string) {
@@ -79,7 +79,7 @@ export default class ZkappWorkerClient {
   nextId: number;
 
   constructor() {
-    this.worker = new Worker(new URL('./zkappWorker.ts', import.meta.url));
+    this.worker = new Worker(new URL('./zkappTokenWorker.ts', import.meta.url));
     this.promises = {};
     this.nextId = 0;
 

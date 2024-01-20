@@ -12,7 +12,7 @@ import {
 
 // import Token from //'../src/Token.js';
 // import TokenAccount from '../src/TokenAccount.js';
-import Token from '../token/token.js';
+import { Token } from '../token/token.js';
 import TokenAccount from '../token/TokenAccount.js';
 
 class ThirdParty extends SmartContract {
