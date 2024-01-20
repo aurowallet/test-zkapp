@@ -6,21 +6,21 @@ import {
   PublicKey,
   UInt64,
   fetchAccount,
-} from "o1js"; 
+} from "o1js";
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
-import type {Token} from "../../../../contracts/src/token/token"
-
+import type { Token } from "../../../../contracts/src/token/token";
 interface VerificationKeyData {
   data: string;
   hash: Field;
 }
 
 const state = {
-  Token: null as any,
+  // Token: null as any,
+  Token: null as unknown as typeof Token,
   thirdParty: null as any,
   zkapp: null as null | Token,
   transaction: null as null | Transaction,
@@ -35,11 +35,12 @@ const functions = {
     console.log("Zk Instance Created");
     Mina.setActiveInstance(Berkeley);
   },
-  loadContract: async (args: {}) => {// done
-    const {Token} = await import("../../../../contracts/build/src/token/Token.js");
-    const tokenAKey = PrivateKey.random();
-    const tokenAAccount = tokenAKey.toPublicKey();
-    state.Token = new Token(tokenAAccount);
+  loadContract: async (args: {}) => {
+    // done
+    const { Token } = await import(
+      "../../../../contracts/build/src/token/Token.js"
+    );
+    state.Token = Token;
   },
   compileContract: async (args: {}) => {
     const { verificationKey } = await state.Token!.compile();
@@ -51,20 +52,26 @@ const functions = {
   },
   initZkappInstance: async (args: { publicKey58: string }) => {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
-    state.zkapp = new state.Token!(publicKey); //  update init 
+    state.zkapp = new state.Token!(publicKey); //  update init
   },
-  getBalance: async (args: {publicKey58: PublicKey}) => {
+  getBalance: async (args: { publicKey58: PublicKey }) => {
     const currentBalance = await state.zkapp!.getBalanceOf(args.publicKey58);
     return JSON.stringify(currentBalance.toBigInt());
   },
-  createMintTransaction: async (args: {senderAccount:PublicKey,mintAmount:UInt64}) => {
+  createMintTransaction: async (args: {
+    senderAccount: PublicKey;
+    mintAmount: UInt64;
+  }) => {
     const transaction = await Mina.transaction(() => {
       AccountUpdate.fundNewAccount(args.senderAccount, 2);
       state.zkapp!.mint(args.senderAccount, args.mintAmount);
     });
     state.transaction = transaction;
   },
-  createDepositTransaction: async (args: {senderAccount:PublicKey,depositAmount:UInt64}) => {
+  createDepositTransaction: async (args: {
+    senderAccount: PublicKey;
+    depositAmount: UInt64;
+  }) => {
     const transaction = await Mina.transaction(args.senderAccount, () => {
       const [fromAccountUpdate] = state.zkapp!.transferFrom(
         args.senderAccount,
@@ -101,7 +108,7 @@ const functions = {
         verificationKey: state.verificationKey as VerificationKeyData,
       });
     });
-    transaction.sign([zkAppPrivateKey])
+    transaction.sign([zkAppPrivateKey]);
     state.transaction = transaction;
   },
   // loadTokenContract: async (args: {}) => {
