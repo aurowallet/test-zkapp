@@ -21,7 +21,8 @@
     "prepare": "cd .. && husky install contracts/.husky",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "lint": "npx eslint src/* --fix"
+    "lint": "npx eslint src/* --fix",
+    "testDepoly": "node build/src/depoly/token"
   },
   "lint-staged": {
     "**/*": [
@@ -45,6 +46,7 @@
     "lint-staged": "^11.0.1",
     "prettier": "^2.3.2",
     "ts-jest": "^27.0.7",
-    "typescript": "^4.7.2"
+    "typescript": "^4.7.2",
+    "dotenv": "^16.3.1"
   }
 }
