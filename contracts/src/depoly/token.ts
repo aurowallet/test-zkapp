@@ -13,19 +13,30 @@ import {
 import { Token } from '../token/token.js';
 dotenv.config();
 
-async function deployToken() {
+function getDeployKey() {
   const deployerKey = PrivateKey.fromBase58(process.env.depoly_pri as string);
   const deployerAccount = PublicKey.fromBase58(
     process.env.depoly_pub as string
   );
+  return {
+    deployerKey,
+    deployerAccount,
+  };
+}
+
+async function deployToken() {
+  // 1. init depoly key
+  const deployKeys = getDeployKey();
+  const deployerKey = deployKeys.deployerKey;
+  const deployerAccount = deployKeys.deployerAccount;
   console.log('init success');
 
   const tokenAKey = PrivateKey.random();
-
   const tokenAAccount = tokenAKey.toPublicKey();
-
   const tokenA = new Token(tokenAAccount);
+
   const totalSupply = UInt64.from(10_000_000_000_000);
+  let transactionFee = 200_000_000;
 
   const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
   Mina.setActiveInstance(Berkeley);
@@ -37,7 +48,6 @@ async function deployToken() {
   console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
 
   await Token.compile();
-  let transactionFee = 200_000_000;
   console.log('deploy');
   let tx = await Mina.transaction(
     {
@@ -56,7 +66,41 @@ async function deployToken() {
   await tx.prove();
   console.log('prove');
   const res = await tx.send();
-  console.log('send res', res.hash());
+  console.log('send', res.hash());
 }
 
-deployToken();
+/**
+ * should deploy token hooks
+ */
+function deployTokenHooks() {
+  const deployKeys = getDeployKey();
+  // const deployerKey = deployKeys.deployerKey
+  const deployerAccount = deployKeys.deployerAccount;
+  console.log('init success', deployerAccount);
+}
+/**
+ * should deploy token contract A
+ */
+function deployTokenA() {
+  const deployKeys = getDeployKey();
+  // const deployerKey = deployKeys.deployerKey
+  const deployerAccount = deployKeys.deployerAccount;
+  console.log('init success', deployerAccount);
+}
+/**
+ * should mint for the sender account
+ */
+function mintTokenForSender() {
+  const deployKeys = getDeployKey();
+  // const deployerKey = deployKeys.deployerKey
+  const deployerAccount = deployKeys.deployerAccount;
+  console.log('init success', deployerAccount);
+}
+
+function main() {
+  deployToken();
+  deployTokenHooks();
+  deployTokenA();
+  mintTokenForSender();
+}
+main();
