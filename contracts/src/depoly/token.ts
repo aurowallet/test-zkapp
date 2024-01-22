@@ -94,8 +94,15 @@ async function deployTokenHooks() {
   const hooksAccount = hooksKey.toPublicKey();
   const hooks = new Hooks(hooksAccount);
 
+  console.log('hooks==', hooksKey.toBase58(), hooksAccount.toBase58());
+
   const directAdminKey = PrivateKey.random();
   const directAdminAccount = directAdminKey.toPublicKey();
+  console.log(
+    'directAdminKey==',
+    directAdminKey.toBase58(),
+    directAdminAccount.toBase58()
+  );
 
   await Hooks.compile();
   console.log('Hooks compile');
@@ -125,12 +132,40 @@ async function deployTokenHooks() {
 /**
  * should deploy token contract A
  */
-async function deployTokenA() {
+async function deployTokenA(hooksAccount: PublicKey) {
   const deployKeys = getDeployKey();
-  // const deployerKey = deployKeys.deployerKey
+  const deployerKey = deployKeys.deployerKey;
   const deployerAccount = deployKeys.deployerAccount;
   console.log('init success', deployerAccount);
-  // await init(deployerAccount);
+  await init(deployerAccount);
+
+  const tokenAKey = PrivateKey.random();
+  const tokenAAccount = tokenAKey.toPublicKey();
+  const tokenA = new Token(tokenAAccount);
+
+  const totalSupply = UInt64.from(10_000_000_000_000);
+  let transactionFee = 200_000_000;
+
+  await Token.compile();
+  console.log('Token compile');
+  const tx = await Mina.transaction(
+    {
+      sender: deployerAccount,
+      fee: transactionFee,
+    },
+    () => {
+      AccountUpdate.fundNewAccount(deployerAccount, 1);
+      tokenA.deploy();
+      tokenA.initialize(hooksAccount, totalSupply);
+    }
+  );
+  console.log('tx2', JSON.stringify(tx.transaction.feePayer.body));
+  tx.sign([deployerKey, tokenAKey]);
+  console.log('Token sign');
+  await tx.prove();
+  console.log('Token prove');
+  const sendRes = await tx.send();
+  console.log('send', sendRes.hash());
 }
 /**
  * should mint for the sender account
@@ -145,7 +180,16 @@ function mintTokenForSender() {
 async function main() {
   deployToken();
   await deployTokenHooks();
-  deployTokenA();
+  const hookKeys = {
+    pri: '',
+    pub: '',
+  };
+  const directAdminKey = {
+    pri: '',
+    pub: '',
+  }; // done
+  const hooksAccount = PublicKey.fromBase58(hookKeys.pub);
+  await deployTokenA(hooksAccount);
   mintTokenForSender();
 }
 main();
