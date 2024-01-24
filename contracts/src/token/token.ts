@@ -80,6 +80,11 @@ export class Token
     return new Hooks(admin);
   }
 
+  init() {
+    super.init();
+    this.account.tokenSymbol.set('TEST');
+  }
+
   @method
   public initialize(hooks: PublicKey, totalSupply: UInt64) {
     this.account.provedState.assertEquals(Bool(false));
