@@ -25,51 +25,6 @@ function getDeployKey() {
   };
 }
 
-// async function deployToken() {
-//   // 1. init depoly key
-//   const deployKeys = getDeployKey();
-//   const deployerKey = deployKeys.deployerKey;
-//   const deployerAccount = deployKeys.deployerAccount;
-//   console.log('init success');
-
-//   const tokenAKey = PrivateKey.random();
-//   const tokenAAccount = tokenAKey.toPublicKey();
-//   const tokenA = new Token(tokenAAccount);
-
-//   const totalSupply = UInt64.from(10_000_000_000_000);
-//   let transactionFee = 200_000_000;
-
-//   const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
-//   Mina.setActiveInstance(Berkeley);
-//   console.log('setActiveInstance');
-
-//   const fetchAccountRes = await fetchAccount({
-//     publicKey: deployerAccount,
-//   });
-//   console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
-
-//   await Token.compile();
-//   console.log('deploy');
-//   let tx = await Mina.transaction(
-//     {
-//       sender: deployerAccount,
-//       fee: transactionFee,
-//     },
-//     () => {
-//       AccountUpdate.fundNewAccount(deployerAccount);
-//       tokenA.deploy();
-//       tokenA.initialize(deployerAccount, totalSupply);
-//     }
-//   );
-//   console.log('build tx body');
-//   tx.sign([deployerKey, tokenAKey]);
-//   console.log('sign tx');
-//   await tx.prove();
-//   console.log('prove');
-//   const res = await tx.send();
-//   console.log('send', res.hash());
-// }
-
 async function init(deployerAccount: PublicKey) {
   const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
   Mina.setActiveInstance(Berkeley);
@@ -161,7 +116,7 @@ async function deployTokenA(hooksAccount: PublicKey) {
 
   console.log('tokenAKey==', tokenAKey.toBase58(), tokenAAccount.toBase58());
 
-  const totalSupply = UInt64.from(10_000_000_000_000);
+  const totalSupply = UInt64.from(1000_000_000_000_000);
   let transactionFee = 200_000_000;
 
   await Token.compile();
@@ -201,7 +156,7 @@ async function mintTokenForSender(
   tokenApublicKey: string,
   directAdminKey: PrivateKey
 ) {
-  const mintAmount = UInt64.from(1000);
+  const mintAmount = UInt64.from(1_000_000_000_000);
 
   const deployKeys = getDeployKey();
   const deployerKey = deployKeys.deployerKey;
@@ -245,12 +200,50 @@ async function mintTokenForSender(
     hash: sendRes.hash(),
   };
 }
+
+async function getContractInfo(tokenAKeyPub: string) {
+  // const tokenAKey = keyList.tokenAKeys;
+  const tokenA = new Token(PublicKey.fromBase58(tokenAKeyPub));
+
+  const deployerAccount = getDeployKey().deployerAccount;
+  await init(deployerAccount);
+
+  const zkAppAccount = await fetchAccount({
+    publicKey: tokenAKeyPub,
+  });
+  console.log('init success', JSON.stringify(zkAppAccount.account, null, 2));
+
+  // const account = tokenA.getAccountOf(deployerAccount);// result dismatch
+  // console.log('account==0', account.balance.get().toJSON());
+
+  // const balance = tokenA.getBalanceOf(deployerAccount); // result dismatch
+  // console.log('balance==0', balance.toJSON());
+
+  const totalSupply = tokenA.getTotalSupply();
+  console.log('totalSupply', totalSupply.toJSON());
+
+  const circulatingSupply = tokenA.getCirculatingSupply();
+  console.log('circulatingSupply', circulatingSupply.toJSON());
+
+  const decimals = tokenA.getDecimals();
+  console.log('decimals', decimals.toJSON());
+
+  const paused = tokenA.getPaused();
+  console.log('paused', paused.toJSON());
+
+  const hooks = tokenA.getHooks();
+  console.log('hooks', hooks.toJSON());
+
+  return {
+    decimals,
+  };
+}
 function getDeployRes() {
   let list = [
     {
       directAdminKey: {
         pri: '',
-        pub: '', // not found
+        pub: '',
       },
       hooksKey: {
         pri: '',
@@ -262,35 +255,54 @@ function getDeployRes() {
       },
     },
   ];
-  return list[0];
+  return list[3];
 }
 
-async function main() {
-  // deployToken();
+enum ActionType {
+  initHook,
+  initTokenA,
+  mintToken,
+  getBalance,
+}
+async function main(type?: ActionType) {
+  if (type === ActionType.initHook) {
+    // 1. init Hook
+    const deployRes = await deployTokenHooks();
+    console.log('deployRes', deployRes);
+  }
 
-  // 1. init Hook
-  const deployRes = await deployTokenHooks();
-  console.log('deployRes', deployRes);
   const keyList = getDeployRes();
+  if (type === ActionType.initTokenA) {
+    // 2. init tokenA
+    const hooksAccount = PublicKey.fromBase58(keyList.hooksKey.pub);
+    const res = await deployTokenA(hooksAccount);
+    console.log('deployTokenA', res);
+  }
 
-  // 2. init tokenA
-  const hooksAccount = PublicKey.fromBase58(keyList.hooksKey.pub);
-  const res = await deployTokenA(hooksAccount);
-  console.log('deployTokenA', res);
-  // ======
+  if (type === ActionType.mintToken) {
+    // 3. mint token
+    const tokenAKey = keyList.tokenAKeys;
+    const tokenA = new Token(PublicKey.fromBase58(tokenAKey?.pub as string));
 
-  const tokenAKey = keyList.tokenAKeys;
-  const tokenA = new Token(PublicKey.fromBase58(tokenAKey?.pub as string));
+    const mintRes = await mintTokenForSender(
+      tokenA,
+      tokenAKey?.pub as string,
+      PrivateKey.fromBase58(keyList.directAdminKey.pri)
+    );
+    console.log('mintRes', mintRes);
+  }
 
-  // 3. mint token
-  const mintRes = await mintTokenForSender(
-    tokenA,
-    tokenAKey?.pub as string,
-    PrivateKey.fromBase58(keyList.directAdminKey.pri)
-  );
-  console.log('mintRes', mintRes);
+  if (ActionType.getBalance) {
+    const tokenInfo = await getContractInfo(keyList.tokenAKeys.pub as string);
+    console.log('tokenInfo', tokenInfo);
+  }
+
   // 4. burn token
   // 5. deposit token
   // 6. paused
 }
-main();
+function entry() {
+  main(ActionType.getBalance);
+}
+
+entry();
