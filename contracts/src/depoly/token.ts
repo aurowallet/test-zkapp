@@ -10,8 +10,8 @@ import {
   UInt64,
   fetchAccount,
 } from 'o1js';
-import { Token } from '../token/token.js';
 import Hooks from '../token/Hooks.js';
+import { Token } from '../token/token.js';
 dotenv.config();
 
 function getDeployKey() {
@@ -25,50 +25,50 @@ function getDeployKey() {
   };
 }
 
-async function deployToken() {
-  // 1. init depoly key
-  const deployKeys = getDeployKey();
-  const deployerKey = deployKeys.deployerKey;
-  const deployerAccount = deployKeys.deployerAccount;
-  console.log('init success');
+// async function deployToken() {
+//   // 1. init depoly key
+//   const deployKeys = getDeployKey();
+//   const deployerKey = deployKeys.deployerKey;
+//   const deployerAccount = deployKeys.deployerAccount;
+//   console.log('init success');
 
-  const tokenAKey = PrivateKey.random();
-  const tokenAAccount = tokenAKey.toPublicKey();
-  const tokenA = new Token(tokenAAccount);
+//   const tokenAKey = PrivateKey.random();
+//   const tokenAAccount = tokenAKey.toPublicKey();
+//   const tokenA = new Token(tokenAAccount);
 
-  const totalSupply = UInt64.from(10_000_000_000_000);
-  let transactionFee = 200_000_000;
+//   const totalSupply = UInt64.from(10_000_000_000_000);
+//   let transactionFee = 200_000_000;
 
-  const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
-  Mina.setActiveInstance(Berkeley);
-  console.log('setActiveInstance');
+//   const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
+//   Mina.setActiveInstance(Berkeley);
+//   console.log('setActiveInstance');
 
-  const fetchAccountRes = await fetchAccount({
-    publicKey: deployerAccount,
-  });
-  console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
+//   const fetchAccountRes = await fetchAccount({
+//     publicKey: deployerAccount,
+//   });
+//   console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
 
-  await Token.compile();
-  console.log('deploy');
-  let tx = await Mina.transaction(
-    {
-      sender: deployerAccount,
-      fee: transactionFee,
-    },
-    () => {
-      AccountUpdate.fundNewAccount(deployerAccount);
-      tokenA.deploy();
-      tokenA.initialize(deployerAccount, totalSupply);
-    }
-  );
-  console.log('build tx body');
-  tx.sign([deployerKey, tokenAKey]);
-  console.log('sign tx');
-  await tx.prove();
-  console.log('prove');
-  const res = await tx.send();
-  console.log('send', res.hash());
-}
+//   await Token.compile();
+//   console.log('deploy');
+//   let tx = await Mina.transaction(
+//     {
+//       sender: deployerAccount,
+//       fee: transactionFee,
+//     },
+//     () => {
+//       AccountUpdate.fundNewAccount(deployerAccount);
+//       tokenA.deploy();
+//       tokenA.initialize(deployerAccount, totalSupply);
+//     }
+//   );
+//   console.log('build tx body');
+//   tx.sign([deployerKey, tokenAKey]);
+//   console.log('sign tx');
+//   await tx.prove();
+//   console.log('prove');
+//   const res = await tx.send();
+//   console.log('send', res.hash());
+// }
 
 async function init(deployerAccount: PublicKey) {
   const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
@@ -78,7 +78,11 @@ async function init(deployerAccount: PublicKey) {
   const fetchAccountRes = await fetchAccount({
     publicKey: deployerAccount,
   });
-  console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
+  console.log('fetchAccountRes');
+  return {
+    balance: fetchAccountRes.account?.balance.toString(),
+    nonce: fetchAccountRes.account?.nonce,
+  };
 }
 /**
  * should deploy token hooks
@@ -87,8 +91,8 @@ async function deployTokenHooks() {
   const deployKeys = getDeployKey();
   const deployerKey = deployKeys.deployerKey;
   const deployerAccount = deployKeys.deployerAccount;
-  await init(deployerAccount);
-  console.log('init success', deployerAccount);
+  const initRes = await init(deployerAccount);
+  console.log('init success', initRes);
 
   const hooksKey = PrivateKey.random();
   const hooksAccount = hooksKey.toPublicKey();
@@ -128,6 +132,17 @@ async function deployTokenHooks() {
   console.log('prove success');
   const sendRes = await tx.send();
   console.log('send', sendRes.hash());
+  return {
+    hash: sendRes.hash(),
+    directAdminKey: {
+      pri: directAdminKey.toBase58(),
+      pub: directAdminAccount.toBase58(),
+    },
+    hooksKey: {
+      pri: hooksKey.toBase58(),
+      pub: hooksAccount.toBase58(),
+    },
+  };
 }
 /**
  * should deploy token contract A
@@ -137,7 +152,8 @@ async function deployTokenA(hooksAccount: PublicKey) {
   const deployerKey = deployKeys.deployerKey;
   const deployerAccount = deployKeys.deployerAccount;
   console.log('init success', deployerAccount);
-  await init(deployerAccount);
+  const initRes = await init(deployerAccount);
+  console.log('init success', initRes);
 
   const tokenAKey = PrivateKey.random();
   const tokenAAccount = tokenAKey.toPublicKey();
@@ -157,6 +173,7 @@ async function deployTokenA(hooksAccount: PublicKey) {
     },
     () => {
       AccountUpdate.fundNewAccount(deployerAccount, 1);
+      // tokenA.account.tokenSymbol.set("TEST2")
       tokenA.deploy();
       tokenA.initialize(hooksAccount, totalSupply);
     }
@@ -168,6 +185,13 @@ async function deployTokenA(hooksAccount: PublicKey) {
   console.log('Token prove');
   const sendRes = await tx.send();
   console.log('send', sendRes.hash());
+  return {
+    hash: sendRes.hash(),
+    tokenAKeys: {
+      pri: tokenAKey.toBase58(),
+      pub: tokenAAccount.toBase58(),
+    },
+  };
 }
 /**
  * should mint for the sender account
@@ -182,13 +206,17 @@ async function mintTokenForSender(
   const deployKeys = getDeployKey();
   const deployerKey = deployKeys.deployerKey;
   const deployerAccount = deployKeys.deployerAccount;
-  console.log('init success', deployerAccount);
+  console.log('init success', deployerAccount.toBase58());
+  console.log('tokenApublicKey', tokenApublicKey);
 
+  const initRes = await init(deployerAccount);
+  console.log('initRes', initRes);
   const fetchAccountRes = await fetchAccount({
     publicKey: tokenApublicKey,
   });
   console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
 
+  await Hooks.compile();
   await Token.compile();
   console.log('Token compile');
   let transactionFee = 1_000_000_000;
@@ -213,31 +241,56 @@ async function mintTokenForSender(
   console.log('prove success');
   const sendRes = await tx.send();
   console.log('send', sendRes.hash());
+  return {
+    hash: sendRes.hash(),
+  };
+}
+function getDeployRes() {
+  let list = [
+    {
+      directAdminKey: {
+        pri: '',
+        pub: '', // not found
+      },
+      hooksKey: {
+        pri: '',
+        pub: '',
+      },
+      tokenAKeys: {
+        pri: '',
+        pub: '',
+      },
+    },
+  ];
+  return list[0];
 }
 
 async function main() {
-  deployToken();
-  await deployTokenHooks();
-  const hookKeys = {
-    pri: '',
-    pub: '',
-  };
-  const directAdminKey = {
-    pri: '',
-    pub: '',
-  }; // done
-  const tokenAKey = {
-    pri: '',
-    pub: '',
-  };
-  const hooksAccount = PublicKey.fromBase58(hookKeys.pub);
-  await deployTokenA(hooksAccount);
+  // deployToken();
 
-  const tokenA = new Token(PublicKey.fromBase58(tokenAKey.pub));
-  await mintTokenForSender(
+  // 1. init Hook
+  const deployRes = await deployTokenHooks();
+  console.log('deployRes', deployRes);
+  const keyList = getDeployRes();
+
+  // 2. init tokenA
+  const hooksAccount = PublicKey.fromBase58(keyList.hooksKey.pub);
+  const res = await deployTokenA(hooksAccount);
+  console.log('deployTokenA', res);
+  // ======
+
+  const tokenAKey = keyList.tokenAKeys;
+  const tokenA = new Token(PublicKey.fromBase58(tokenAKey?.pub as string));
+
+  // 3. mint token
+  const mintRes = await mintTokenForSender(
     tokenA,
-    tokenAKey.pub,
-    PrivateKey.fromBase58(directAdminKey.pri)
+    tokenAKey?.pub as string,
+    PrivateKey.fromBase58(keyList.directAdminKey.pri)
   );
+  console.log('mintRes', mintRes);
+  // 4. burn token
+  // 5. deposit token
+  // 6. paused
 }
 main();
