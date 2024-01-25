@@ -12,6 +12,7 @@ import {
 } from 'o1js';
 import Hooks from '../token/Hooks.js';
 import { Token } from '../token/token.js';
+import TokenAccount from '../token/TokenAccount.js';
 dotenv.config();
 
 function getDeployKey() {
@@ -211,32 +212,104 @@ async function getContractInfo(tokenAKeyPub: string) {
   const zkAppAccount = await fetchAccount({
     publicKey: tokenAKeyPub,
   });
+  await Token.compile();
   console.log('init success', JSON.stringify(zkAppAccount.account, null, 2));
 
-  // const account = tokenA.getAccountOf(deployerAccount);// result dismatch
-  // console.log('account==0', account.balance.get().toJSON());
+  const account = tokenA.getAccountOf(deployerAccount); // result dismatch
+  console.log('account==0', account.balance.get().toJSON());
 
-  // const balance = tokenA.getBalanceOf(deployerAccount); // result dismatch
-  // console.log('balance==0', balance.toJSON());
+  const balanceSource = tokenA.getBalanceOf(deployerAccount); // result dismatch
+  const balance = balanceSource.toJSON();
+  console.log('balance==0', balance);
 
-  const totalSupply = tokenA.getTotalSupply();
-  console.log('totalSupply', totalSupply.toJSON());
+  const totalSupplySouce = tokenA.getTotalSupply();
+  const totalSupply = totalSupplySouce.toJSON();
+  console.log('totalSupply');
 
-  const circulatingSupply = tokenA.getCirculatingSupply();
-  console.log('circulatingSupply', circulatingSupply.toJSON());
+  const circulatingSupplySource = tokenA.getCirculatingSupply();
+  const circulatingSupply = circulatingSupplySource.toJSON();
+  console.log('circulatingSupply', circulatingSupply);
 
-  const decimals = tokenA.getDecimals();
-  console.log('decimals', decimals.toJSON());
+  const decimalsSource = tokenA.getDecimals();
+  const decimals = decimalsSource.toJSON();
+  console.log('decimals');
 
-  const paused = tokenA.getPaused();
-  console.log('paused', paused.toJSON());
+  const pausedStatus = tokenA.getPaused();
+  const paused = pausedStatus.toJSON();
+  console.log('paused', paused);
 
-  const hooks = tokenA.getHooks();
-  console.log('hooks', hooks.toJSON());
+  const hooksData = tokenA.getHooks();
+  const hooks = hooksData.toJSON();
+  console.log('hooks', hooks);
 
   return {
+    balance,
+    totalSupply,
+    circulatingSupply,
     decimals,
+    paused,
+    hooks,
   };
+}
+
+async function depositTo(tokenAKeyPub: string, tokenAKeyPri: string) {
+  const deployKeys = getDeployKey();
+  const deployerKey = deployKeys.deployerKey;
+  const deployerAccount = deployKeys.deployerAccount;
+  const initRes = await init(deployerAccount);
+  console.log('initRes', initRes);
+  // const fetchAccountRes = await fetchAccount({
+  //   publicKey: tokenApublicKey,
+  // });
+  // console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
+
+  // await Hooks.compile();
+  await Token.compile();
+  await TokenAccount.compile();
+
+  const tokenA = new Token(PublicKey.fromBase58(tokenAKeyPub));
+  // const tokenHook = new Hooks(PublicKey.fromBase58(hooks));
+
+  // const deployerAccount = getDeployKey().deployerAccount;
+  await init(deployerAccount);
+
+  const zkAppAccount = await fetchAccount({
+    publicKey: tokenAKeyPub,
+  });
+
+  const depositAmount = UInt64.from(1_000_000_000);
+  let transactionFee = 200_000_000;
+
+  const tx = await Mina.transaction(
+    {
+      sender: deployerAccount,
+      fee: transactionFee,
+    },
+    () => {
+      const [fromAccountUpdate] = tokenA.transferFrom(
+        deployerAccount,
+        depositAmount,
+        AccountUpdate.MayUseToken.ParentsOwnToken
+      );
+
+      fromAccountUpdate.requireSignature();
+
+      // start here
+      const tokenAccount = new TokenAccount(tokenA.address, tokenA.token.id);
+      tokenAccount.tokenAddress = PublicKey.fromBase58(tokenAKeyPub);
+      tokenAccount.deposit(depositAmount);
+      tokenA.approveTransfer(fromAccountUpdate, tokenAccount.self);
+    }
+  );
+  console.log('transaction success');
+
+  tx.sign([deployerKey]);
+  console.log('sign success');
+
+  await tx.prove();
+  console.log('prove success');
+  const sendRes = await tx.send();
+  console.log('send success', sendRes.hash());
 }
 function getDeployRes() {
   let list = [
@@ -263,6 +336,7 @@ enum ActionType {
   initTokenA,
   mintToken,
   getBalance,
+  depositTo,
 }
 async function main(type?: ActionType) {
   if (type === ActionType.initHook) {
@@ -292,9 +366,14 @@ async function main(type?: ActionType) {
     console.log('mintRes', mintRes);
   }
 
-  if (ActionType.getBalance) {
+  if (type === ActionType.getBalance) {
     const tokenInfo = await getContractInfo(keyList.tokenAKeys.pub as string);
     console.log('tokenInfo', tokenInfo);
+  }
+  if (type === ActionType.depositTo) {
+    const tokenAKey = keyList.tokenAKeys;
+    const depositRes = await depositTo(tokenAKey.pub, tokenAKey.pri);
+    console.log('depositRes', depositRes);
   }
 
   // 4. burn token
@@ -302,7 +381,7 @@ async function main(type?: ActionType) {
   // 6. paused
 }
 function entry() {
-  main(ActionType.getBalance);
+  main(ActionType.depositTo);
 }
 
 entry();
