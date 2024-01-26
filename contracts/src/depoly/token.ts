@@ -10,7 +10,7 @@ import {
   UInt64,
   fetchAccount,
 } from 'o1js';
-import Hooks from '../token/Hooks.js';
+import { Hooks } from '../token/Hooks.js';
 import { Token } from '../token/token.js';
 import TokenAccount from '../token/TokenAccount.js';
 dotenv.config();
@@ -258,19 +258,11 @@ async function depositTo(tokenAKeyPub: string, tokenAKeyPri: string) {
   const deployerAccount = deployKeys.deployerAccount;
   const initRes = await init(deployerAccount);
   console.log('initRes', initRes);
-  // const fetchAccountRes = await fetchAccount({
-  //   publicKey: tokenApublicKey,
-  // });
-  // console.log('fetchAccountRes', fetchAccountRes.account?.balance.toString());
 
-  // await Hooks.compile();
   await Token.compile();
   await TokenAccount.compile();
 
   const tokenA = new Token(PublicKey.fromBase58(tokenAKeyPub));
-  // const tokenHook = new Hooks(PublicKey.fromBase58(hooks));
-
-  // const deployerAccount = getDeployKey().deployerAccount;
   await init(deployerAccount);
 
   const zkAppAccount = await fetchAccount({
@@ -280,36 +272,33 @@ async function depositTo(tokenAKeyPub: string, tokenAKeyPri: string) {
   const depositAmount = UInt64.from(1_000_000_000);
   let transactionFee = 200_000_000;
 
-  const tx = await Mina.transaction(
-    {
-      sender: deployerAccount,
-      fee: transactionFee,
-    },
-    () => {
-      const [fromAccountUpdate] = tokenA.transferFrom(
-        deployerAccount,
-        depositAmount,
-        AccountUpdate.MayUseToken.ParentsOwnToken
-      );
+  // const tx = await Mina.transaction(
+  //   {
+  //     sender: deployerAccount,
+  //     fee: transactionFee,
+  //   },
+  //   () => {
+  //     const [fromAccountUpdate, toAccountUpdate] = tokenA.transfer({
+  //       from: deployerAccount,
+  //       to: PublicKey.fromBase58(
+  //         'B62qpjxUpgdjzwQfd8q2gzxi99wN7SCgmofpvw27MBkfNHfHoY2VH32'
+  //       ),
+  //       amount: depositAmount,
+  //       mayUseToken: AccountUpdate.MayUseToken.ParentsOwnToken,
+  //     });
+  //     fromAccountUpdate?.requireSignature();
+  //     tokenA.approveTransfer(fromAccountUpdate as AccountUpdate, toAccountUpdate as AccountUpdate);
+  //   }
+  // );
+  // console.log('transaction success');
 
-      fromAccountUpdate.requireSignature();
+  // tx.sign([deployerKey]);
+  // console.log('sign success');
 
-      // start here
-      const tokenAccount = new TokenAccount(tokenA.address, tokenA.token.id);
-      tokenAccount.tokenAddress = PublicKey.fromBase58(tokenAKeyPub);
-      tokenAccount.deposit(depositAmount);
-      tokenA.approveTransfer(fromAccountUpdate, tokenAccount.self);
-    }
-  );
-  console.log('transaction success');
-
-  tx.sign([deployerKey]);
-  console.log('sign success');
-
-  await tx.prove();
-  console.log('prove success');
-  const sendRes = await tx.send();
-  console.log('send success', sendRes.hash());
+  // await tx.prove();
+  // console.log('prove success');
+  // const sendRes = await tx.send();
+  // console.log('send success', sendRes.hash());
 }
 function getDeployRes() {
   let list = [

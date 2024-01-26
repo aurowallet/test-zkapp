@@ -41,7 +41,7 @@ import {
 // eslint-disable-next-line
 import type Viewable from './interfaces/token/viewable.js';
 // eslint-disable-next-line no-duplicate-imports
-import Hooks from './Hooks.js';
+import { Hooks } from './Hooks.js';
 import type Hookable from './interfaces/token/hookable.js';
 import type { ViewableOptions } from './interfaces/token/viewable.js';
 

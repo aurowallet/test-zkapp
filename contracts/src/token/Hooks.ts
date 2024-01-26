@@ -15,7 +15,7 @@ import { AdminAction } from './interfaces/token/adminable.js';
 import type { ViewableOptions } from './interfaces/token/viewable.js';
 import { TransferFromToOptions } from './interfaces/token/transferable.js';
 
-class Hooks extends SmartContract implements _Hooks {
+export class Hooks extends SmartContract implements _Hooks {
   public static defaultViewableOptions: ViewableOptions = {
     preconditions: { shouldAssertEquals: true },
   };
@@ -60,4 +60,4 @@ class Hooks extends SmartContract implements _Hooks {
   }
 }
 
-export default Hooks;
+// export default Hooks;

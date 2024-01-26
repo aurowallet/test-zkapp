@@ -14,7 +14,7 @@ import ThirdParty from '../test/ThirdParty.js';
 
 import { Token } from './token.js';
 import TokenAccount from './TokenAccount.js';
-import Hooks from './Hooks.js';
+import { Hooks } from './Hooks.js';
 
 await isReady;
 
