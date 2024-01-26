@@ -12,8 +12,8 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
-import type { Token } from "../../../../contracts/src/token/token";
 import type { Hooks } from "../../../../contracts/src/token/Hooks.js";
+import type { Token } from "../../../../contracts/src/token/token";
 interface VerificationKeyData {
   data: string;
   hash: Field;
@@ -35,10 +35,10 @@ const state = {
 // ---- -----------------------------------------------------------------------------------
 
 const functions = {
-  setActiveInstanceToBerkeley: async (args: { gqlUrl: string }) => {
-    const Berkeley = Mina.Network(args.gqlUrl + "/graphql");
+  setActiveInstanceToZk: async (args: { gqlUrl: string }) => {
+    const client = Mina.Network(args.gqlUrl + "/graphql");
     console.log("Zk Instance Created");
-    Mina.setActiveInstance(Berkeley);
+    Mina.setActiveInstance(client);
   },
   // loadContract: async (args: {}) => {
   //   // done
@@ -135,28 +135,29 @@ const functions = {
     state.hooksVerificationKey = verificationKey;
   },
   createDeployHooksTransaction: async (args: {
-    deployerAccount: string;
-    directAdminAccount: string;
+    deployerAccount: PublicKey;
+    directAdminAccount: PublicKey;
     hooksKey: PrivateKey;
   }) => {
     if (state === null) {
       throw Error("state is null");
     }
     let transactionFee = 1_000_000_000;
-    const deployerAccount = PublicKey.fromBase58(args.deployerAccount);
-    const directAdminAccount = PublicKey.fromBase58(args.directAdminAccount);
     const tx = await Mina.transaction(
       {
-        sender: deployerAccount,
+        sender: args.deployerAccount,
         fee: transactionFee,
       },
       () => {
-        AccountUpdate.fundNewAccount(deployerAccount, 1);
+        AccountUpdate.fundNewAccount(args.deployerAccount, 1);
         state.zkHooks!.deploy();
-        state.zkHooks!.initialize(directAdminAccount);
+        state.zkHooks!.initialize(args.directAdminAccount);
       }
     );
+    console.log('worker tx',tx);
+    
     tx.sign([args.hooksKey]);
+    console.log('sign done');
     state.transactionHk = tx;
   },
   proveUpdateTransactionHk: async (args: {}) => {
