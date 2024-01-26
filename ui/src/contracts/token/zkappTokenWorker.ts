@@ -13,6 +13,7 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 // ---------------------------------------------------------------------------------------
 
 import type { Token } from "../../../../contracts/src/token/token";
+import type { Hooks } from "../../../../contracts/src/token/Hooks.js";
 interface VerificationKeyData {
   data: string;
   hash: Field;
@@ -21,10 +22,14 @@ interface VerificationKeyData {
 const state = {
   // Token: null as any,
   Token: null as unknown as typeof Token,
+  Hooks: null as unknown as typeof Hooks,
   thirdParty: null as any,
   zkapp: null as null | Token,
   transaction: null as null | Transaction,
   verificationKey: null as null | VerificationKeyData, //| VerificationKeyData;
+  hooksVerificationKey: null as null | VerificationKeyData,
+  zkHooks: null as null | Hooks,
+  transactionHk: null as null | Transaction,
 };
 
 // ---- -----------------------------------------------------------------------------------
@@ -35,29 +40,29 @@ const functions = {
     console.log("Zk Instance Created");
     Mina.setActiveInstance(Berkeley);
   },
-  loadContract: async (args: {}) => {
-    // done
-    const { Token } = await import(
-      "../../../../contracts/build/src/token/Token.js"
-    );
-    state.Token = Token;
-  },
-  compileContract: async (args: {}) => {
-    const { verificationKey } = await state.Token!.compile();
-    state.verificationKey = verificationKey;
-  },
+  // loadContract: async (args: {}) => {
+  //   // done
+  //   const { Token } = await import(
+  //     "../../../../contracts/build/src/token/Token.js"
+  //   );
+  //   state.Token = Token;
+  // },
+  // compileContract: async (args: {}) => {
+  //   const { verificationKey } = await state.Token!.compile();
+  //   state.verificationKey = verificationKey;
+  // },
   fetchAccount: async (args: { publicKey58: string }) => {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
     return await fetchAccount({ publicKey });
   },
-  initZkappInstance: async (args: { publicKey58: string }) => {
-    const publicKey = PublicKey.fromBase58(args.publicKey58);
-    state.zkapp = new state.Token!(publicKey); //  update init
-  },
-  getBalance: async (args: { publicKey58: PublicKey }) => {
-    const currentBalance = await state.zkapp!.getBalanceOf(args.publicKey58);
-    return JSON.stringify(currentBalance.toBigInt());
-  },
+  // initZkappInstance: async (args: { publicKey58: string }) => {
+  //   const publicKey = PublicKey.fromBase58(args.publicKey58);
+  //   state.zkapp = new state.Token!(publicKey); //  update init
+  // },
+  // getBalance: async (args: { publicKey58: PublicKey }) => {
+  //   const currentBalance = await state.zkapp!.getBalanceOf(args.publicKey58);
+  //   return JSON.stringify(currentBalance.toBigInt());
+  // },
   createMintTransaction: async (args: {
     senderAccount: PublicKey;
     mintAmount: UInt64;
@@ -84,9 +89,9 @@ const functions = {
     state.transaction = transaction;
   },
 
-  proveUpdateTransaction: async (args: {}) => {
-    await state.transaction!.prove();
-  },
+  // proveUpdateTransaction: async (args: {}) => {
+  //   await state.transaction!.prove();
+  // },
   getTransactionJSON: async (args: {}) => {
     return state.transaction!.toJSON();
   },
@@ -118,6 +123,51 @@ const functions = {
   compileTokenContract: async (args: {}) => {
     const { verificationKey } = await state.Token!.compile();
     state.verificationKey = verificationKey;
+  },
+  loadHooksContract: async (args: {}) => {
+    const { Hooks } = await import(
+      "../../../../contracts/build/src/token/Hooks.js"
+    );
+    state.Hooks = Hooks;
+  },
+  compileHooksContract: async (args: {}) => {
+    const { verificationKey } = await state.Hooks!.compile();
+    state.hooksVerificationKey = verificationKey;
+  },
+  createDeployHooksTransaction: async (args: {
+    deployerAccount: string;
+    directAdminAccount: string;
+    hooksKey: PrivateKey;
+  }) => {
+    if (state === null) {
+      throw Error("state is null");
+    }
+    let transactionFee = 1_000_000_000;
+    const deployerAccount = PublicKey.fromBase58(args.deployerAccount);
+    const directAdminAccount = PublicKey.fromBase58(args.directAdminAccount);
+    const tx = await Mina.transaction(
+      {
+        sender: deployerAccount,
+        fee: transactionFee,
+      },
+      () => {
+        AccountUpdate.fundNewAccount(deployerAccount, 1);
+        state.zkHooks!.deploy();
+        state.zkHooks!.initialize(directAdminAccount);
+      }
+    );
+    tx.sign([args.hooksKey]);
+    state.transactionHk = tx;
+  },
+  proveUpdateTransactionHk: async (args: {}) => {
+    await state.transactionHk!.prove();
+  },
+  initHooksInstance: async (args: { publicKey58: string }) => {
+    const publicKey = PublicKey.fromBase58(args.publicKey58);
+    state.zkHooks = new state.Hooks!(publicKey);
+  },
+  getTransactionHkJSON: async (args: {}) => {
+    return state.transactionHk!.toJSON();
   },
 };
 
