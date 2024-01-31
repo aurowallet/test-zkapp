@@ -269,36 +269,34 @@ async function depositTo(tokenAKeyPub: string, tokenAKeyPri: string) {
     publicKey: tokenAKeyPub,
   });
 
-  const depositAmount = UInt64.from(1_000_000_000);
+  const depositAmount = UInt64.from(1_000);
   let transactionFee = 200_000_000;
 
-  // const tx = await Mina.transaction(
-  //   {
-  //     sender: deployerAccount,
-  //     fee: transactionFee,
-  //   },
-  //   () => {
-  //     const [fromAccountUpdate, toAccountUpdate] = tokenA.transfer({
-  //       from: deployerAccount,
-  //       to: PublicKey.fromBase58(
-  //         'B62qpjxUpgdjzwQfd8q2gzxi99wN7SCgmofpvw27MBkfNHfHoY2VH32'
-  //       ),
-  //       amount: depositAmount,
-  //       mayUseToken: AccountUpdate.MayUseToken.ParentsOwnToken,
-  //     });
-  //     fromAccountUpdate?.requireSignature();
-  //     tokenA.approveTransfer(fromAccountUpdate as AccountUpdate, toAccountUpdate as AccountUpdate);
-  //   }
-  // );
-  // console.log('transaction success');
+  const tx = await Mina.transaction(
+    {
+      sender: deployerAccount,
+      fee: transactionFee,
+    },
+    () => {
+      const [fromAccountUpdate, toAccountUpdate] = tokenA.transfer({
+        from: deployerAccount,
+        to: PublicKey.fromBase58(
+          'B62qpjxUpgdjzwQfd8q2gzxi99wN7SCgmofpvw27MBkfNHfHoY2VH32'
+        ),
+        amount: depositAmount,
+      });
+      fromAccountUpdate?.requireSignature();
+    }
+  );
+  console.log('transaction success');
 
-  // tx.sign([deployerKey]);
-  // console.log('sign success');
+  tx.sign([deployerKey]);
+  console.log('sign success');
 
-  // await tx.prove();
-  // console.log('prove success');
-  // const sendRes = await tx.send();
-  // console.log('send success', sendRes.hash());
+  await tx.prove();
+  console.log('prove success');
+  const sendRes = await tx.send();
+  console.log('send success', sendRes.hash());
 }
 function getDeployRes() {
   let list = [
