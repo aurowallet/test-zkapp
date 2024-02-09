@@ -203,6 +203,7 @@ export const SignTransactionBox = ({
 
   const createContract = useCallback(
     async (depolyPrivateKey: PrivateKey, zkAddress: PublicKey) => {
+      setCreateHash("")
       setCreateText("start init")
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
