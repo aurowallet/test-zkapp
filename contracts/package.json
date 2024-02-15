@@ -22,7 +22,8 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "lint": "npx eslint src/* --fix",
-    "testDepoly": "node build/src/depoly/token"
+    "testDepoly": "node build/src/depoly/token",
+    "depolyBasic": "node build/src/depoly/basicToken"
   },
   "lint-staged": {
     "**/*": [
