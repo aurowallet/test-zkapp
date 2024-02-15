@@ -1,5 +1,13 @@
 import * as dotenv from 'dotenv';
-import { AccountUpdate, Mina, PrivateKey, PublicKey, fetchAccount } from 'o1js';
+import {
+  AccountUpdate,
+  Mina,
+  PrivateKey,
+  PublicKey,
+  Signature,
+  UInt64,
+  fetchAccount,
+} from 'o1js';
 import { BasicTokenContract } from '../basicToken/BasicTokenContract.js';
 import { AccountKeys } from './types';
 dotenv.config();
@@ -16,6 +24,8 @@ function getDeployKey() {
   return {
     pri: deployerKey,
     pub: deployerAccount,
+    pri_58: deployerKey.toBase58(),
+    pub_58: deployerAccount.toBase58(),
   };
 }
 
@@ -44,9 +54,10 @@ async function init() {
   const Berkeley = Mina.Network(process.env.gqlUrl + '');
   Mina.setActiveInstance(Berkeley);
   console.log('setActiveInstance');
+  console.log('fetchAccountRes=2', deployKeys);
 
   const fetchAccountRes = await fetchAccount({
-    publicKey: deployerAccount,
+    publicKey: deployKeys.pub_58,
   });
   console.log('fetchAccountRes=2', fetchAccountRes);
   const account = fetchAccountRes.account;
@@ -84,11 +95,40 @@ async function deployToken(accountKeys: AccountKeys, deployKeys: AccountKeys) {
   console.log('deployToken sign & send end', res.hash());
 }
 
+async function mintToken(zkAppKeys: AccountKeys, deployKeys: AccountKeys) {
+  const mintAmount = UInt64.from(10);
+  const contract = new BasicTokenContract(zkAppKeys.pub);
+
+  let transactionFee = 200_000_000;
+  const mintSignature = Signature.create(
+    zkAppKeys.pri,
+    mintAmount.toFields().concat(zkAppKeys.pub.toFields())
+  );
+
+  const mint_txn = await Mina.transaction(
+    {
+      sender: deployKeys.pub,
+      fee: transactionFee,
+    },
+    () => {
+      AccountUpdate.fundNewAccount(deployKeys.pub);
+      contract.mint(zkAppKeys.pub, mintAmount, mintSignature);
+    }
+  );
+
+  await mint_txn.prove();
+  const mintRes = await mint_txn.sign([deployKeys.pri]).send();
+
+  console.log('minted', mintRes.hash());
+}
+
 async function deploy() {
   await init();
   const deployKeys = getDeployKey();
   const accountKeys = getRandomKey();
   await deployToken(accountKeys, deployKeys);
+
+  await mintToken(accountKeys, deployKeys);
 }
 
 deploy();
