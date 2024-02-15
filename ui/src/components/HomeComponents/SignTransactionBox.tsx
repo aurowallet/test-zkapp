@@ -203,10 +203,12 @@ export const SignTransactionBox = ({
 
   const createContract = useCallback(
     async (depolyPrivateKey: PrivateKey, zkAddress: PublicKey) => {
-      setCreateText("start")
+      setCreateHash("")
+      setCreateText("start init")
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
       console.log("Done loading web worker");
+      setCreateText("Done loading web worker");
       await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
       const mina = (window as any).mina;
       if (mina == null) {
@@ -215,15 +217,18 @@ export const SignTransactionBox = ({
       const publicKeyBase58: string = currentAccount;
       const publicKey = PublicKey.fromBase58(publicKeyBase58);
       console.log(`Using key:${publicKey.toBase58()}`);
+      setCreateText(`Using key:${publicKey.toBase58()}`);
       console.log("Checking if fee payer account exists...");
+      setCreateText("Checking if fee payer account exists...");
       const res = await zkappWorkerClient.fetchAccount({
         publicKey: publicKey!,
       });
       await zkappWorkerClient.loadContract();
       console.log("Compiling zkApp...");
+      setCreateText("Compiling zkApp...");
       await zkappWorkerClient.compileContract();
       console.log("zkApp compiled");
-
+      setCreateText("zkApp compiled");
       await zkappWorkerClient.initZkappInstance(zkAddress);
       await zkappWorkerClient.createDeployTransaction(
         depolyPrivateKey,

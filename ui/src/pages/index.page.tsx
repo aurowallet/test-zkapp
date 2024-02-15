@@ -34,6 +34,10 @@ export default function Home() {
     name: ""
   });
 
+  const onSetCurrentAccount = useCallback((account:string)=>{
+    setCurrentAccount(account)
+  },[])
+
   const initNetwork = useCallback(async () => {
     const network: ChainInfoArgs = await (window as any)?.mina
       ?.requestNetwork()
@@ -141,7 +145,7 @@ export default function Home() {
         </Container>
       </StyledRowSection>
       <Container>
-        <BaseActionBox currentAccount={currentAccount} />
+        <BaseActionBox currentAccount={currentAccount} onSetCurrentAccount={onSetCurrentAccount}/>
         <SwitchChainBox network={currentNetwork} />
       </Container>
       <Container>
