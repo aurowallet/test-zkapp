@@ -27,14 +27,14 @@ function getDeployKey() {
 }
 
 async function init(deployerAccount: PublicKey) {
-  const Berkeley = Mina.Network(process.env.gqlUrl + '/graphql');
+  const Berkeley = Mina.Network(process.env.gqlUrl + '');
   Mina.setActiveInstance(Berkeley);
   console.log('setActiveInstance');
 
   const fetchAccountRes = await fetchAccount({
     publicKey: deployerAccount,
   });
-  console.log('fetchAccountRes');
+  console.log('fetchAccountRes', fetchAccountRes);
   return {
     balance: fetchAccountRes.account?.balance.toString(),
     nonce: fetchAccountRes.account?.nonce,
