@@ -95,15 +95,20 @@ async function deployToken(accountKeys: AccountKeys, deployKeys: AccountKeys) {
   console.log('deployToken sign & send end', res.hash());
 }
 
-async function mintToken(zkAppKeys: AccountKeys, deployKeys: AccountKeys) {
-  const mintAmount = UInt64.from(10);
+async function mintToken(
+  zkAppKeys: AccountKeys,
+  deployKeys: AccountKeys,
+  mintCount: number
+) {
+  const mintAmount = UInt64.from(mintCount);
   await BasicTokenContract.compile();
   const contract = new BasicTokenContract(zkAppKeys.pub);
 
   let transactionFee = 200_000_000;
   const mintSignature = Signature.create(
     zkAppKeys.pri,
-    mintAmount.toFields().concat(zkAppKeys.pub.toFields())
+    // mintAmount.toFields().concat(zkAppKeys.pub.toFields())
+    mintAmount.toFields().concat(deployKeys.pub.toFields())
   );
 
   const mint_txn = await Mina.transaction(
@@ -113,7 +118,8 @@ async function mintToken(zkAppKeys: AccountKeys, deployKeys: AccountKeys) {
     },
     () => {
       AccountUpdate.fundNewAccount(deployKeys.pub);
-      contract.mint(zkAppKeys.pub, mintAmount, mintSignature);
+      // contract.mint(zkAppKeys.pub, mintAmount, mintSignature);
+      contract.mint(deployKeys.pub, mintAmount, mintSignature);
     }
   );
 
@@ -123,8 +129,12 @@ async function mintToken(zkAppKeys: AccountKeys, deployKeys: AccountKeys) {
   console.log('minted', mintRes.hash());
 }
 
-async function sendToken(accountKeys: AccountKeys, deployKeys: AccountKeys) {
-  const sendAmount = UInt64.from(3);
+async function depositToken(
+  accountKeys: AccountKeys,
+  deployKeys: AccountKeys,
+  sendCount: number
+) {
+  const sendAmount = UInt64.from(sendCount);
   let transactionFee = 200_000_000;
   await BasicTokenContract.compile();
   const contract = new BasicTokenContract(accountKeys.pub);
@@ -151,20 +161,67 @@ async function sendToken(accountKeys: AccountKeys, deployKeys: AccountKeys) {
   );
 }
 
+async function sendToken(
+  accountKeys: AccountKeys,
+  deployKeys: AccountKeys,
+  sendCount: number,
+  receiveAccountKeys: string
+) {
+  const sendAmount = UInt64.from(sendCount);
+  let transactionFee = 200_000_000;
+  await BasicTokenContract.compile();
+  const contract = new BasicTokenContract(accountKeys.pub);
+
+  const send_txn = await Mina.transaction(
+    {
+      sender: deployKeys.pub,
+      fee: transactionFee,
+    },
+    () => {
+      AccountUpdate.fundNewAccount(deployKeys.pub);
+      contract.sendTokens(
+        deployKeys.pub,
+        PublicKey.fromBase58(receiveAccountKeys),
+        sendAmount
+      );
+    }
+  );
+  await send_txn.prove();
+  const sendRes = await send_txn.sign([deployKeys.pri]).send();
+
+  console.log('sent', sendRes.hash());
+
+  console.log(
+    contract.totalAmountInCirculation.get() +
+      ' ' +
+      Mina.getAccount(accountKeys.pub).tokenSymbol
+  );
+}
+
 async function deploy() {
   await init();
   const deployKeys = getDeployKey();
-  //   const accountKeys = getRandomKey();
-  //   console.log('accountKeys=', accountKeys);
-  //   await deployToken(accountKeys, deployKeys);
+  const accountKeys = getRandomKey();
+  console.log('accountKeys=', accountKeys);
+  // await deployToken(accountKeys, deployKeys);
+
   const accountKeysTemp = {
     pri_58: '',
     pub_58: '',
     pri: PrivateKey.fromBase58(''),
     pub: PublicKey.fromBase58(''),
   };
-  //   await mintToken(accountKeysTemp, deployKeys);
-  await sendToken(accountKeysTemp, deployKeys);
+  // const mintAmount = 100000 * 1e9;
+  // await mintToken(accountKeysTemp, deployKeys, mintAmount);
+
+  // const sendAmount = 10 * 1e9;
+  // await depositToken(accountKeysTemp, deployKeys, sendAmount);
+
+  const sendAmount2 = 2 * 1e9;
+  const receiveAddress =
+    'B62qpjxUpgdjzwQfd8q2gzxi99wN7SCgmofpvw27MBkfNHfHoY2VH32';
+  await sendToken(accountKeysTemp, deployKeys, sendAmount2, receiveAddress);
+  // 5Jv12XCNy3jNKeggqwBt5VFSWb268jEYsEPQbkTTE2q5jthMo8su
 }
 
 deploy();
