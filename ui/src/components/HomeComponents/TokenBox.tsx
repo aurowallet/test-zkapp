@@ -1,4 +1,4 @@
-import ZkappTokenWorkerClient from "@/contracts/basicToken/zkappWorkerClient";
+import { default as ZkappTokenWorkerClient, default as ZkappWorkerClient } from "@/contracts/basicToken/zkappWorkerClient";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { ZkTokenLoopType } from "@/types/zk";
 import { getNewAccount, timeout } from "@/utils";
@@ -17,8 +17,11 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
   const [mintBtnStatus, setMintBtnStatus] = useState(true);
   const [depositBtnStatus, setDepositBtnStatus] = useState(true);
   const [sendBtnStatus, setSendBtnStatus] = useState(true);
+  const [zkappWorkerClient, setZkappWorkerClient] =
+    useState<ZkappWorkerClient>();
 
   const [createTokenTxt, setCreateTokenTxt] = useState("");
+  const [mintTokenTxt, setMintTokenTxt] = useState("");
 
   const [sendTokenRes, setSendTokenRes] = useState({
     status: false,
@@ -28,7 +31,7 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
   const [sendAmount, setSendAmount] = useState(0);
   const [receiveAddress, setReceiveAddress] = useState("");
   const [gqlUrl, setGqlUrl] = useState(
-    "https://mina-berkeley-graphql.aurowallet.com"
+    ""
   );
   const [keys, setKeys] = useState({
     publicKey: "",
@@ -47,6 +50,44 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     setReceiveAddress(e.target.value);
   }, []);
 
+  const initZkWorker = useCallback(async () => {
+    if (zkappWorkerClient) {
+      console.log("initZkWorker=0", zkappWorkerClient);
+      return zkappWorkerClient;
+    }
+    // 2. init client
+    const workerClient = new ZkappTokenWorkerClient();
+    await timeout(5);
+    console.log("Done loading web worker");
+    setCreateTokenTxt("Done loading web worker");
+    await workerClient.setActiveInstanceToBerkeley(gqlUrl);
+
+    // 3. init paye key
+    const publicKey = PublicKey.fromBase58(currentAccount);
+    console.log(`Using key:${publicKey.toBase58()}`);
+    setCreateTokenTxt(`Using key:${publicKey.toBase58()}`);
+    console.log("Checking if fee payer account exists...");
+    setCreateTokenTxt("Checking if fee payer account exists...");
+
+    const res = await workerClient.fetchAccount({
+      publicKey: publicKey!,
+    });
+    console.log("res...", res);
+    await workerClient.loadContract();
+    console.log("Compiling zkApp...");
+    setCreateTokenTxt("Compiling zkApp...");
+    await workerClient.compileContract();
+    console.log("compiled");
+    setCreateTokenTxt("compiled");
+    // 4. build contract
+    await workerClient.initZkappInstance(keys.publicKey);
+    console.log("initZkappInstance done");
+    setCreateTokenTxt("initZkappInstance done");
+
+    setZkappWorkerClient(workerClient);
+    console.log("zkappWorkerClient=0", workerClient);
+    return workerClient;
+  }, [currentAccount, gqlUrl, keys, zkappWorkerClient]);
   // create token process
   const createTokenContract = useCallback(async () => {
     if (!gqlUrl) {
@@ -57,41 +98,15 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
       alert("Plase init account");
       return;
     }
-    // 2. init client
-    const zkappWorkerClient = new ZkappTokenWorkerClient();
-    await timeout(5);
-    console.log("Done loading web worker");
-    setCreateTokenTxt("Done loading web worker");
-    await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
-
-    // 3. init paye key
-    const publicKey = PublicKey.fromBase58(currentAccount);
-    console.log(`Using key:${publicKey.toBase58()}`);
-    setCreateTokenTxt(`Using key:${publicKey.toBase58()}`);
-    console.log("Checking if fee payer account exists...");
-    setCreateTokenTxt("Checking if fee payer account exists...");
-
-    const res = await zkappWorkerClient.fetchAccount({
-      publicKey: publicKey!,
-    });
-    console.log("res...", res);
-    await zkappWorkerClient.loadContract();
-    console.log("Compiling zkApp...");
-    setCreateTokenTxt("Compiling zkApp...");
-    await zkappWorkerClient.compileContract();
-    console.log("compiled");
-    setCreateTokenTxt("compiled");
-    // 4. build contract
-    await zkappWorkerClient.initZkappInstance(keys.publicKey);
-    console.log("initZkappInstance done");
-    setCreateTokenTxt("initZkappInstance done");
-    await zkappWorkerClient.createDeployTransaction(
+    const zkappWorkerClient = await initZkWorker();
+    console.log("zkappWorkerClient=", zkappWorkerClient);
+    await zkappWorkerClient!.createDeployTransaction(
       currentAccount,
       keys.privateKey
     );
     await zkappWorkerClient!.proveDeployTransaction();
 
-    const transactionJSON = await zkappWorkerClient.getDeployTransactionJSON();
+    const transactionJSON = await zkappWorkerClient!.getDeployTransactionJSON();
     console.log("waiting wallet confirm");
     setCreateTokenTxt("waiting wallet confirm");
 
@@ -111,7 +126,7 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     } else {
       setCreateTokenTxt((sendRes as ProviderError).message);
     }
-  }, [currentAccount, gqlUrl, keys]);
+  }, [currentAccount, gqlUrl, keys, zkappWorkerClient, initZkWorker]);
 
   const startLoop = useCallback(
     async (txHash: string, type: ZkTokenLoopType) => {
@@ -124,7 +139,9 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
           case "CREATE":
             setCreateTokenTxt(String(res.failureReason));
             break;
-
+          case "MINT":
+            setMintTokenTxt(String(res.failureReason));
+            break;
           default:
             break;
         }
@@ -150,7 +167,40 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     return content;
   }, [keys]);
 
-  const onMintToken = useCallback(async () => {}, []);
+  const onMintToken = useCallback(async () => {
+    const zkappWorkerClient = await initZkWorker();
+    console.log("zkappWorkerClient=", zkappWorkerClient);
+    const mintAmount = 100000 * 1e9;
+
+    await zkappWorkerClient!.createMintTransaction(
+      currentAccount,
+      keys.privateKey,
+      mintAmount
+    );
+    await zkappWorkerClient!.proveMintTransaction();
+
+    const transactionJSON = await zkappWorkerClient!.getMintTransactionJSON();
+    console.log("waiting wallet confirm");
+    setMintTokenTxt("waiting wallet confirm");
+
+    const sendRes: SendTransactionResult | ProviderError = await (
+      window as any
+    ).mina.sendTransaction({
+      transaction: transactionJSON,
+      feePayer: {
+        memo: "",
+      },
+    });
+    console.log("sendRes", sendRes);
+    if ((sendRes as SendTransactionResult).hash) {
+      const hash = (sendRes as SendTransactionResult).hash;
+      setMintTokenTxt(hash + "\n" + "Wainting confirm");
+      startLoop(hash, "MINT");
+    } else {
+      setMintTokenTxt((sendRes as ProviderError).message);
+    }
+  }, [currentAccount, gqlUrl, keys, zkappWorkerClient, initZkWorker]);
+
   const onDepositToken = useCallback(async () => {}, []);
   const onSendToken = useCallback(async () => {}, [sendAmount, receiveAddress]);
 
@@ -179,6 +229,11 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
       <Button disabled={mintBtnStatus} onClick={onMintToken}>
         Mint Token
       </Button>
+      <InfoRow
+        title={"Mint Token Result: "}
+        content={mintTokenTxt}
+        type={InfoType.secondary}
+      />
       <StyledDividedLine />
       <Button disabled={depositBtnStatus} onClick={onDepositToken}>
         Deposit Token

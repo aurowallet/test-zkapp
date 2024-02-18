@@ -1,7 +1,7 @@
 import { Mina, checkZkappTransaction } from "o1js";
 
 export default class TxLoopController {
-  private readonly pollingIntervalMs: number = 6000;
+  private readonly pollingIntervalMs: number = 60000;
   graphqlURL: string;
   constructor(graphqlURL: string) {
     this.graphqlURL = graphqlURL;
@@ -19,6 +19,7 @@ export default class TxLoopController {
       }
   > {
     const res = await checkZkappTransaction(transactionId);
+    console.log('checkTransaction:',res);
     return res;
   }
 

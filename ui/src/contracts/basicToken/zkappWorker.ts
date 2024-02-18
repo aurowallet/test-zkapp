@@ -4,6 +4,8 @@ import {
   Mina,
   PrivateKey,
   PublicKey,
+  Signature,
+  UInt64,
   fetchAccount,
 } from "o1js";
 
@@ -23,6 +25,7 @@ const state = {
   zkapp: null as null | BasicTokenContract,
   deployTransaction: null as null | Transaction,
   verificationKey: null as null | VerificationKeyData,
+  mintTransaction: null as null | Transaction,
 };
 
 // ---- -----------------------------------------------------------------------------------
@@ -84,6 +87,48 @@ const functions = {
     deploy_txn.sign([zkPrivateKey]);
     state.deployTransaction = deploy_txn;
   },
+  // mint
+  proveMintTransaction: async (args: {}) => {
+    await state.mintTransaction!.prove();
+  },
+  getMintTransactionJSON: async (args: {}) => {
+    return state.mintTransaction!.toJSON();
+  },
+  createMintTransaction: async (args: {
+    feePayer_58: string;
+    zkPri_58: string;
+    mintCount: number;
+  }) => {
+    if (state === null) {
+      throw Error("state is null");
+    }
+
+    const mintAmount = UInt64.from(args.mintCount);
+    let transactionFee = 200_000_000;
+
+    const feePayer = PublicKey.fromBase58(args.feePayer_58);
+    const zkPrivateKey = PrivateKey.fromBase58(args.zkPri_58);
+
+    const mintSignature = Signature.create(
+      zkPrivateKey,
+      mintAmount.toFields().concat(feePayer.toFields())
+    );
+
+    const mint_txn = await Mina.transaction(
+      {
+        sender: feePayer,
+        fee: transactionFee,
+      },
+      () => {
+        AccountUpdate.fundNewAccount(feePayer);
+        state.zkapp!.mint(feePayer, mintAmount, mintSignature);
+      }
+    );
+    mint_txn.sign([zkPrivateKey]);
+    state.mintTransaction = mint_txn;
+  },
+  // deposit
+  // send
 };
 
 // ---------------------------------------------------------------------------------------

@@ -39,7 +39,7 @@ export default class ZkappWorkerClient {
   }
 
   proveDeployTransaction() {
-    return this._call('proveDeployTransaction', {});
+    return this._call("proveDeployTransaction", {});
   }
   async getDeployTransactionJSON() {
     const result = await this._call("getDeployTransactionJSON", {});
@@ -50,6 +50,26 @@ export default class ZkappWorkerClient {
     return await this._call("createDeployTransaction", {
       feePayer_58,
       zkPri_58,
+    });
+  }
+  // mint
+  proveMintTransaction() {
+    return this._call("proveMintTransaction", {});
+  }
+  async getMintTransactionJSON() {
+    const result = await this._call("getMintTransactionJSON", {});
+    return result;
+  }
+
+  async createMintTransaction(
+    feePayer_58: string,
+    zkPri_58: string,
+    mintCount: number
+  ) {
+    return await this._call("createMintTransaction", {
+      feePayer_58,
+      zkPri_58,
+      mintCount,
     });
   }
 
