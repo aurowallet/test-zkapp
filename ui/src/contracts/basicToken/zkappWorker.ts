@@ -49,7 +49,9 @@ const functions = {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
     state.zkapp = new state.Token!(publicKey);
   },
-
+  proveDeployTransaction: async (args: {}) => {
+    await state.deployTransaction!.prove();
+  },
   getDeployTransactionJSON: async (args: {}) => {
     return state.deployTransaction!.toJSON();
   },
@@ -79,7 +81,6 @@ const functions = {
         });
       }
     );
-    await deploy_txn.prove();
     deploy_txn.sign([zkPrivateKey]);
     state.deployTransaction = deploy_txn;
   },

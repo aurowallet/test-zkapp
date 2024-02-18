@@ -38,6 +38,9 @@ export default class ZkappWorkerClient {
     });
   }
 
+  proveDeployTransaction() {
+    return this._call('proveDeployTransaction', {});
+  }
   async getDeployTransactionJSON() {
     const result = await this._call("getDeployTransactionJSON", {});
     return result;
