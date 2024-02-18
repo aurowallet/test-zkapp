@@ -1,4 +1,4 @@
-import ZkappTokenWorkerClient from "@/contracts/token/zkappTokenWorkerClient";
+import ZkappTokenWorkerClient from "@/contracts/basicToken/zkappWorkerClient";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import {
@@ -33,15 +33,8 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
   }, []);
 
   // create token process
-  const onClickToken = useCallback(async () => {
+  const deployTokenContract = useCallback(async () => {
     // 1. create token key
-    const hooksKey = PrivateKey.random();
-    const hooksAccount = hooksKey.toPublicKey();
-    const hooksKeys = {
-      pri: hooksKey.toBase58(),
-      pub: hooksAccount.toBase58(),
-    };
-    console.log("hooksKeys", hooksKeys);
     const directAdminKey = PrivateKey.random();
     const directAdminAccount = directAdminKey.toPublicKey();
 
@@ -57,7 +50,7 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     const zkappWorkerClient = new ZkappTokenWorkerClient();
     await timeout(5);
     console.log("Done loading web worker");
-    await zkappWorkerClient.setActiveInstanceToZk(gqlUrl);
+    await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
 
     // 3. init paye key
     const publicKey = PublicKey.fromBase58(currentAccount);
@@ -67,24 +60,20 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
       publicKey: publicKey!,
     });
     console.log("res...", res);
-    await zkappWorkerClient.loadHooksContract();
+    await zkappWorkerClient.loadContract();
     console.log("Compiling zkApp...");
-    await zkappWorkerClient.compileHooksContract();
+    await zkappWorkerClient.compileContract();
     console.log("compiled");
 
     // 4. build contract
-    await zkappWorkerClient.initHooksInstance(hooksKeys.pub);
-    console.log("initHooksInstance done");
+    await zkappWorkerClient.initZkappInstance(directAdminKeys.pub);
+    console.log("initZkappInstance done");
 
-    await zkappWorkerClient.createDeployHooksTransaction(
+    await zkappWorkerClient.createDeployTransaction(
       currentAccount,
-      directAdminKeys.pub,
-      hooksKeys.pri
+      directAdminKeys.pri
     );
-    console.log("createDeployHooksTransaction done");
-    await zkappWorkerClient.proveUpdateTransactionHk();
-    console.log("proveUpdateTransactionHk done");
-    const transactionJSON = await zkappWorkerClient.getTransactionHkJSON();
+    const transactionJSON = await zkappWorkerClient.getDeployTransactionJSON();
     console.log("waiting wallet confirm");
 
     const sendRes: SendTransactionResult | ProviderError = await (
@@ -98,18 +87,26 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     console.log("sendRes", sendRes);
   }, [currentAccount]);
 
+  const onMintToken = useCallback(async () => {}, []);
+  const onDepositToken = useCallback(async () => {}, []);
   const onCheckToken = useCallback(async () => {}, []);
   const onSendToken = useCallback(async () => {}, [sendAmount, receiveAddress]);
 
   return (
     <Box>
       <StyledBoxTitle>Mina Token</StyledBoxTitle>
-      <Button onClick={onClickToken}>Create Token</Button>
+      <Button onClick={deployTokenContract}>Deploy Token Contract</Button>
       <InfoRow
-        title={"Create Token Result: "}
+        title={"Deploy Token Result: "}
         content={createTokenRes.text}
         type={InfoType.secondary}
       />
+      <StyledDividedLine />
+      <Button onClick={onMintToken}>Mint Token</Button>
+      <StyledDividedLine />
+      <Button onClick={onDepositToken}>Deposit Token</Button>
+
+
       <Button disabled={createBtnStatus} onClick={onCheckToken}>
         Check Token Status
       </Button>
