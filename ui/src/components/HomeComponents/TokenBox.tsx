@@ -27,9 +27,7 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
   const [depositTokenTxt, setDepositTokenTxt] = useState("");
 
   const [receiveAddress, setReceiveAddress] = useState("");
-  const [gqlUrl, setGqlUrl] = useState(
-    ""
-  );
+  const [gqlUrl, setGqlUrl] = useState("");
   const [keys, setKeys] = useState({
     publicKey: "",
     privateKey: "",
@@ -38,7 +36,6 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
   const onChangeGqlUrl = useCallback((e: any) => {
     setGqlUrl(e.target.value);
   }, []);
-
 
   const onChangeReceiveAddress = useCallback((e: any) => {
     setReceiveAddress(e.target.value);
@@ -73,6 +70,8 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     await workerClient.compileContract();
     console.log("compiled");
     setCreateTokenTxt("compiled");
+    const data = PublicKey.fromBase58(keys.publicKey);
+
     // 4. build contract
     await workerClient.initZkappInstance(keys.publicKey);
     console.log("initZkappInstance done");
@@ -221,7 +220,6 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     const depositAmount = 2 * 1e9;
     await zkappWorkerClient!.createDepositTransaction(
       currentAccount,
-      keys.privateKey,
       receiveAddress || currentAccount,
       depositAmount
     );
@@ -229,7 +227,7 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
 
     const transactionJSON =
       await zkappWorkerClient!.getDepositTransactionJSON();
-    console.log("waiting wallet confirm");
+    console.log("waiting wallet confirm", JSON.stringify(transactionJSON));
     setDepositTokenTxt("waiting wallet confirm");
 
     const sendRes: SendTransactionResult | ProviderError = await (

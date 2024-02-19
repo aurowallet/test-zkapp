@@ -137,7 +137,6 @@ const functions = {
   },
   createDepositTransaction: async (args: {
     feePayer_58: string;
-    zkPri_58: string;
     receive_58: string;
     depositCount: number;
   }) => {
@@ -149,8 +148,6 @@ const functions = {
     let transactionFee = 200_000_000;
 
     const feePayer = PublicKey.fromBase58(args.feePayer_58);
-    const zkPrivateKey = PrivateKey.fromBase58(args.zkPri_58);
-    const zkPublicKey = zkPrivateKey.toPublicKey();
 
     const receiveAddress = PublicKey.fromBase58(args.receive_58);
 
@@ -161,10 +158,9 @@ const functions = {
       },
       () => {
         AccountUpdate.fundNewAccount(feePayer);
-        state.zkapp!.sendTokens(zkPublicKey, receiveAddress, depositAmount);
+        state.zkapp!.sendTokens(feePayer, receiveAddress, depositAmount);
       }
     );
-    deposit_txn.sign([zkPrivateKey]);
     state.depositTransaction = deposit_txn;
   },
 };

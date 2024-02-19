@@ -83,13 +83,11 @@ export default class ZkappWorkerClient {
 
   async createDepositTransaction(
     feePayer_58: string,
-    zkPri_58: string,
     receive_58: string,
     depositCount: number
   ) {
     return await this._call("createDepositTransaction", {
       feePayer_58,
-      zkPri_58,
       receive_58,
       depositCount,
     });
