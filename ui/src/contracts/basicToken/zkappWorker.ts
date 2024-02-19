@@ -26,6 +26,7 @@ const state = {
   deployTransaction: null as null | Transaction,
   verificationKey: null as null | VerificationKeyData,
   mintTransaction: null as null | Transaction,
+  depositTransaction: null as null | Transaction,
 };
 
 // ---- -----------------------------------------------------------------------------------
@@ -127,8 +128,45 @@ const functions = {
     mint_txn.sign([zkPrivateKey]);
     state.mintTransaction = mint_txn;
   },
-  // deposit
-  // send
+  // deposit from zk
+  proveDepositTransaction: async (args: {}) => {
+    await state.depositTransaction!.prove();
+  },
+  getDepositTransactionJSON: async (args: {}) => {
+    return state.depositTransaction!.toJSON();
+  },
+  createDepositTransaction: async (args: {
+    feePayer_58: string;
+    zkPri_58: string;
+    receive_58: string;
+    depositCount: number;
+  }) => {
+    if (state === null) {
+      throw Error("state is null");
+    }
+
+    const depositAmount = UInt64.from(args.depositCount);
+    let transactionFee = 200_000_000;
+
+    const feePayer = PublicKey.fromBase58(args.feePayer_58);
+    const zkPrivateKey = PrivateKey.fromBase58(args.zkPri_58);
+    const zkPublicKey = zkPrivateKey.toPublicKey();
+
+    const receiveAddress = PublicKey.fromBase58(args.receive_58);
+
+    const deposit_txn = await Mina.transaction(
+      {
+        sender: feePayer,
+        fee: transactionFee,
+      },
+      () => {
+        AccountUpdate.fundNewAccount(feePayer);
+        state.zkapp!.sendTokens(zkPublicKey, receiveAddress, depositAmount);
+      }
+    );
+    deposit_txn.sign([zkPrivateKey]);
+    state.depositTransaction = deposit_txn;
+  },
 };
 
 // ---------------------------------------------------------------------------------------

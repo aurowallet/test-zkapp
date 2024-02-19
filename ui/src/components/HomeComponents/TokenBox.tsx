@@ -1,4 +1,7 @@
-import { default as ZkappTokenWorkerClient, default as ZkappWorkerClient } from "@/contracts/basicToken/zkappWorkerClient";
+import {
+  default as ZkappTokenWorkerClient,
+  default as ZkappWorkerClient,
+} from "@/contracts/basicToken/zkappWorkerClient";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { ZkTokenLoopType } from "@/types/zk";
 import { getNewAccount, timeout } from "@/utils";
@@ -16,19 +19,13 @@ import { Input } from "../Input";
 export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
   const [mintBtnStatus, setMintBtnStatus] = useState(true);
   const [depositBtnStatus, setDepositBtnStatus] = useState(true);
-  const [sendBtnStatus, setSendBtnStatus] = useState(true);
   const [zkappWorkerClient, setZkappWorkerClient] =
     useState<ZkappWorkerClient>();
 
   const [createTokenTxt, setCreateTokenTxt] = useState("");
   const [mintTokenTxt, setMintTokenTxt] = useState("");
+  const [depositTokenTxt, setDepositTokenTxt] = useState("");
 
-  const [sendTokenRes, setSendTokenRes] = useState({
-    status: false,
-    text: "",
-  });
-
-  const [sendAmount, setSendAmount] = useState(0);
   const [receiveAddress, setReceiveAddress] = useState("");
   const [gqlUrl, setGqlUrl] = useState(
     ""
@@ -42,9 +39,6 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     setGqlUrl(e.target.value);
   }, []);
 
-  const onChangeAmount = useCallback((e: any) => {
-    setSendAmount(e.target.value);
-  }, []);
 
   const onChangeReceiveAddress = useCallback((e: any) => {
     setReceiveAddress(e.target.value);
@@ -132,19 +126,39 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     async (txHash: string, type: ZkTokenLoopType) => {
       const controller = new TxLoopController(gqlUrl);
       const res = await controller.pollTransaction(txHash);
-      if (res.success) {
-        setMintBtnStatus(false);
-      } else {
-        switch (type) {
-          case "CREATE":
+      const isSuccess = res.success;
+      switch (type) {
+        case "CREATE":
+          if (isSuccess) {
+            setMintBtnStatus(false);
+            setCreateTokenTxt((state) =>
+              state.replace(/\n.*/, "\nTransaction successful!")
+            );
+          } else {
             setCreateTokenTxt(String(res.failureReason));
-            break;
-          case "MINT":
+          }
+          break;
+        case "MINT":
+          if (isSuccess) {
+            setDepositBtnStatus(false);
+            setMintTokenTxt((state) =>
+              state.replace(/\n.*/, "\nTransaction successful!")
+            );
+          } else {
             setMintTokenTxt(String(res.failureReason));
-            break;
-          default:
-            break;
-        }
+          }
+          break;
+        case "DEPOSIT":
+          if (isSuccess) {
+            setDepositTokenTxt((state) =>
+              state.replace(/\n.*/, "\nTransaction successful!")
+            );
+          } else {
+            setDepositTokenTxt(String(res.failureReason));
+          }
+          break;
+        default:
+          break;
       }
     },
     [gqlUrl]
@@ -201,9 +215,47 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
     }
   }, [currentAccount, gqlUrl, keys, zkappWorkerClient, initZkWorker]);
 
-  const onDepositToken = useCallback(async () => {}, []);
-  const onSendToken = useCallback(async () => {}, [sendAmount, receiveAddress]);
+  const onDepositToken = useCallback(async () => {
+    const zkappWorkerClient = await initZkWorker();
+    console.log("zkappWorkerClient=", zkappWorkerClient);
+    const depositAmount = 2 * 1e9;
+    await zkappWorkerClient!.createDepositTransaction(
+      currentAccount,
+      keys.privateKey,
+      receiveAddress || currentAccount,
+      depositAmount
+    );
+    await zkappWorkerClient!.proveDepositTransaction();
 
+    const transactionJSON =
+      await zkappWorkerClient!.getDepositTransactionJSON();
+    console.log("waiting wallet confirm");
+    setDepositTokenTxt("waiting wallet confirm");
+
+    const sendRes: SendTransactionResult | ProviderError = await (
+      window as any
+    ).mina.sendTransaction({
+      transaction: transactionJSON,
+      feePayer: {
+        memo: "",
+      },
+    });
+    console.log("sendRes", sendRes);
+    if ((sendRes as SendTransactionResult).hash) {
+      const hash = (sendRes as SendTransactionResult).hash;
+      setDepositTokenTxt(hash + "\n" + "Wainting confirm");
+      startLoop(hash, "DEPOSIT");
+    } else {
+      setDepositTokenTxt((sendRes as ProviderError).message);
+    }
+  }, [
+    currentAccount,
+    gqlUrl,
+    keys,
+    zkappWorkerClient,
+    initZkWorker,
+    receiveAddress,
+  ]);
   return (
     <Box>
       <StyledBoxTitle>Mina Token</StyledBoxTitle>
@@ -235,24 +287,16 @@ export const TokenBox = ({ currentAccount }: { currentAccount: string }) => {
         type={InfoType.secondary}
       />
       <StyledDividedLine />
-      <Button disabled={depositBtnStatus} onClick={onDepositToken}>
-        Deposit Token
-      </Button>
-      {/* <Button disabled={mintBtnStatus} onClick={onCheckToken}>
-        Check Token Status
-      </Button> */}
-      <StyledDividedLine />
       <Input
         placeholder="Set Receive Address"
         onChange={onChangeReceiveAddress}
       />
-      <Input placeholder="Set Amount" onChange={onChangeAmount} />
-      <Button disabled={mintBtnStatus} onClick={onSendToken}>
-        {"Send Token"}
+      <Button disabled={depositBtnStatus} onClick={onDepositToken}>
+        Deposit Token
       </Button>
       <InfoRow
-        title={"Send Token State: "}
-        content={sendTokenRes.text}
+        title={"Deposit Token Result: "}
+        content={depositTokenTxt}
         type={InfoType.secondary}
       />
     </Box>

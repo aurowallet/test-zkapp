@@ -73,6 +73,28 @@ export default class ZkappWorkerClient {
     });
   }
 
+  proveDepositTransaction() {
+    return this._call("proveDepositTransaction", {});
+  }
+  async getDepositTransactionJSON() {
+    const result = await this._call("getDepositTransactionJSON", {});
+    return result;
+  }
+
+  async createDepositTransaction(
+    feePayer_58: string,
+    zkPri_58: string,
+    receive_58: string,
+    depositCount: number
+  ) {
+    return await this._call("createDepositTransaction", {
+      feePayer_58,
+      zkPri_58,
+      receive_58,
+      depositCount,
+    });
+  }
+
   // ---------------------------------------------------------------------------------------
 
   worker: Worker;
