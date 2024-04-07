@@ -296,7 +296,7 @@ export const SignTransactionBox = ({
         {keysContent && <div>{keysContent}</div>}
       </InfoRow>
       <Button disabled={createBtnStatus} onClick={onClickCreate}>
-        Creat Zk-Contract
+        Create Zk-Contract
       </Button>
       <InfoRow
         title={"zkApp Create Result: "}
