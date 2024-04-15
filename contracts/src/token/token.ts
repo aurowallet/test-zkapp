@@ -186,14 +186,14 @@ export class Token
   @method
   public approveTransfer(from: AccountUpdate, to: AccountUpdate): void {
     this.assertHasNoBalanceChange([from, to]);
-    this.approve(from, AccountUpdate.Layout.NoChildren);
-    this.approve(to, AccountUpdate.Layout.NoChildren);
+    // this.approve(AccountUpdate.Layout.NoChildren);
+    // this.approve(to, AccountUpdate.Layout.NoChildren);
   }
 
   @method
   public approveDeploy(deploy: AccountUpdate): void {
     this.assertHasNoBalanceChange([deploy]);
-    this.approve(deploy, AccountUpdate.Layout.NoChildren);
+    // this.approve(deploy, AccountUpdate.Layout.NoChildren);
   }
 
   /**

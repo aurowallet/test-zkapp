@@ -22,7 +22,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "lint": "npx eslint src/* --fix",
-    "testDepoly": "node build/src/depoly/token",
+    "testDepoly": "node build/src/depoly/fungibleToken",
     "depolyBasic": "node build/src/depoly/basicToken"
   },
   "lint-staged": {
@@ -32,7 +32,8 @@
     ]
   },
   "dependencies": {
-    "o1js": "0.16.0"
+    "o1js": "0.17.0",
+    "mina-fungible-token": "0.1.0-beta.3"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",

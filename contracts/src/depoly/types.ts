@@ -6,3 +6,10 @@ export type AccountKeys = {
   pri_58?: string;
   pub_58?: string;
 };
+
+export type AccountKeysToken = {
+  privateKey: PrivateKey;
+  publicKey: PublicKey;
+  pri_58?: string;
+  pub_58?: string;
+};

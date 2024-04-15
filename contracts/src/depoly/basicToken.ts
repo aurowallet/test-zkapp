@@ -92,7 +92,7 @@ async function deployToken(accountKeys: AccountKeys, deployKeys: AccountKeys) {
   await deploy_txn.prove();
   console.log('deployToken prove end');
   const res = await deploy_txn.sign([deployKeys.pri]).send();
-  console.log('deployToken sign & send end', res.hash());
+  console.log('deployToken sign & send end', res.hash);
 }
 
 async function mintToken(
@@ -126,7 +126,7 @@ async function mintToken(
   await mint_txn.prove();
   const mintRes = await mint_txn.sign([deployKeys.pri]).send();
 
-  console.log('minted', mintRes.hash());
+  console.log('minted', mintRes.hash);
 }
 
 async function depositToken(
@@ -152,7 +152,7 @@ async function depositToken(
   await send_txn.prove();
   const sendRes = await send_txn.sign([deployKeys.pri, accountKeys.pri]).send();
 
-  console.log('sent', sendRes.hash());
+  console.log('sent', sendRes.hash);
 
   console.log(
     contract.totalAmountInCirculation.get() +
@@ -189,7 +189,7 @@ async function sendToken(
   await send_txn.prove();
   const sendRes = await send_txn.sign([deployKeys.pri]).send();
 
-  console.log('sent', sendRes.hash());
+  console.log('sent', sendRes.hash);
 
   console.log(
     contract.totalAmountInCirculation.get() +

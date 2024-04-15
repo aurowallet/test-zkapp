@@ -87,9 +87,9 @@ async function deployTokenHooks() {
   await tx.prove();
   console.log('prove success');
   const sendRes = await tx.send();
-  console.log('send', sendRes.hash());
+  console.log('send', sendRes.hash);
   return {
-    hash: sendRes.hash(),
+    hash: sendRes.hash,
     directAdminKey: {
       pri: directAdminKey.toBase58(),
       pub: directAdminAccount.toBase58(),
@@ -140,9 +140,9 @@ async function deployTokenA(hooksAccount: PublicKey) {
   await tx.prove();
   console.log('Token prove');
   const sendRes = await tx.send();
-  console.log('send', sendRes.hash());
+  console.log('send', sendRes.hash);
   return {
-    hash: sendRes.hash(),
+    hash: sendRes.hash,
     tokenAKeys: {
       pri: tokenAKey.toBase58(),
       pub: tokenAAccount.toBase58(),
@@ -196,9 +196,9 @@ async function mintTokenForSender(
   await tx.prove();
   console.log('prove success');
   const sendRes = await tx.send();
-  console.log('send', sendRes.hash());
+  console.log('send', sendRes.hash);
   return {
-    hash: sendRes.hash(),
+    hash: sendRes.hash,
   };
 }
 
@@ -296,7 +296,7 @@ async function depositTo(tokenAKeyPub: string, tokenAKeyPri: string) {
   await tx.prove();
   console.log('prove success');
   const sendRes = await tx.send();
-  console.log('send success', sendRes.hash());
+  console.log('send success', sendRes.hash);
 }
 function getDeployRes() {
   let list = [
