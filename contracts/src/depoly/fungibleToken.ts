@@ -39,13 +39,16 @@ async function deployTokenContract(fee: any) {
         owner: keysMap().owner.publicKey,
         supply: UInt64.from(totalSupply),
         symbol: 'bbb',
-        src: '',
+        src: 'https://github.com/MinaFoundation/mina-fungible-token/blob/main/examples/e2e.eg.ts',
       });
     }
   );
   tx.sign([keysMap().deployer.privateKey, keysMap().token.privateKey]);
-
+  const timeStart = new Date();
+  console.log('deployKeys=4,', timeStart);
   await tx.prove();
+  const timeEnd = new Date();
+  console.log('deployKeys==5,', timeEnd, Number(timeEnd) - Number(timeStart));
 
   const deployTxResult = await tx.send();
   console.log('Deploy tx result hash,:', deployTxResult.hash);
@@ -64,11 +67,19 @@ async function mintTokenToAlexa(fee: any) {
       AccountUpdate.fundNewAccount(keysMap().owner.publicKey, 1);
       await token.mint(
         keysMap().billy.publicKey,
-        UInt64.from(1000_000_000_000_000)
+        UInt64.from(1_000_000_000_000)
       );
     }
   );
+  const timeStart = new Date();
+  console.log('Minting new tokens to Alexa. =2', timeStart);
   await mintTx.prove();
+  const timeEnd = new Date();
+  console.log(
+    'Minting new tokens to Alexa. =3',
+    timeEnd,
+    Number(timeEnd) - Number(timeStart)
+  );
   mintTx.sign([keysMap().owner.privateKey]);
   const mintTxResult = await mintTx.send();
   console.log('Mint tx result hash:', mintTxResult.hash);
@@ -80,17 +91,7 @@ function keysMap() {
     pri_58: '',
     pub_58: '',
   };
-  //   const token = {
-  //     pri_58: '',
-  //     pub_58: '',
-  //   };
   const token_2 = {
-    // pri_58: '',
-    // pub_58: '',
-
-    // pri_58: "",
-    // pub_58: "",
-
     pri_58: '',
     pub_58: '',
   };
@@ -187,12 +188,29 @@ async function sendTokenFromBill(fee: any) {
       );
     }
   );
-
+  const timeStart = new Date();
+  console.log('sendTokenFromAlexa==1,', timeStart);
   await transferTx.prove();
-
+  const timeEnd = new Date();
+  console.log(
+    'sendTokenFromAlexa new tokens to Alexa. =1-0',
+    timeEnd,
+    Number(timeEnd) - Number(timeStart)
+  );
   transferTx.sign([keysMap().billy.privateKey]);
+  const timeEnd2 = new Date();
+  console.log(
+    'sendTokenFromAlexa==3,',
+    timeEnd2,
+    Number(timeEnd2) - Number(timeEnd)
+  );
   const transferTxResult = await transferTx.send();
-
+  const timeEnd3 = new Date();
+  console.log(
+    'sendTokenFromAlexa==4,',
+    timeEnd3,
+    Number(timeEnd3) - Number(timeEnd2)
+  );
   console.log('Transfer tx hash,:', transferTxResult.hash);
   console.log('Transfer tx toPretty,:', transferTxResult.toPretty());
 }
@@ -214,8 +232,12 @@ async function burnToken(burnAccount: AccountKeysToken, fee: any) {
     }
   );
   const timeStart = new Date();
+  console.log('burnToken==3,', timeStart);
   await burnTx.prove();
+  const timeEnd = new Date();
+  console.log('burnToken==4,', timeEnd, Number(timeEnd) - Number(timeStart));
   burnTx.sign([burnAccount.privateKey]);
+  console.log('burnToken==5,');
 
   const burnTxResult = await burnTx.send();
   console.log('burnToken tx hash,:', burnTxResult.hash);
@@ -228,27 +250,21 @@ async function burnToken(burnAccount: AccountKeysToken, fee: any) {
 }
 
 async function getContractInfo() {
-  await FungibleToken.compile();
-
   await fetchAccount({
     publicKey: keysMap().token.publicKey,
   });
 
+  const token = new FungibleToken(keysMap().token.publicKey);
+
   await fetchAccount({
     publicKey: keysMap().billy.publicKey,
+    tokenId: token.deriveTokenId(),
   });
-
-  const token = new FungibleToken(keysMap().token.publicKey);
 
   const billyBalance = (
     await token.getBalanceOf(keysMap().billy.publicKey)
   ).toBigInt();
-  console.log('bill token balance,', billyBalance);
-
-  const alexaBalance = (
-    await token.getBalanceOf(keysMap().alexa.publicKey)
-  ).toBigInt();
-  console.log('alexa token balance,', alexaBalance);
+  console.log('billy token balance,', billyBalance);
 
   const supply = (await token.getSupply()).toBigInt();
   console.log('supply,', supply);
@@ -259,14 +275,15 @@ async function getContractInfo() {
   const decimals = (await token.getDecimals()).toBigInt();
   console.log('decimals,', decimals);
 }
+
 async function depoly() {
   await init(keysMap().deployer.publicKey);
   const fee = 5e8;
-  //   await deployTokenContract(fee);
-  //   await mintTokenToAlexa(fee);
+  // await deployTokenContract(fee);
+  // await mintTokenToAlexa(fee);
   // await sendTokenFromAlexa(fee);
-  //   await sendTokenFromBill(fee);
-  //   await burnToken(keysMap().billy,fee);
+  // await sendTokenFromBill(fee);
+  // await burnToken(keysMap().billy, fee);
 
   await getContractInfo();
 }
