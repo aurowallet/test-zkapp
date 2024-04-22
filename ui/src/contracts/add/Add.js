@@ -26,8 +26,8 @@ export class Add extends SmartContract {
         super.init();
         this.num.set(Field(1));
     }
-    update() {
-        const currentState = this.num.getAndAssertEquals();
+    async update() {
+        const currentState = this.num.getAndRequireEquals();
         const newState = currentState.add(2);
         this.num.set(newState);
     }
@@ -40,6 +40,6 @@ __decorate([
     method,
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], Add.prototype, "update", null);
 //# sourceMappingURL=Add.js.map

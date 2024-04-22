@@ -54,7 +54,7 @@ const functions = {
     return JSON.stringify(currentNum.toJSON());
   },
   createUpdateTransaction: async (args: {}) => {
-    const transaction = await Mina.transaction(() => {
+    const transaction = await Mina.transaction(async () => {
       state.zkapp!.update();
     });
     state.transaction = transaction;
@@ -76,14 +76,13 @@ const functions = {
       args.privateKey58
     );
     const feePayerPublickKey = PublicKey.fromBase58(args.feePayer);
-    const transaction = await Mina.transaction(feePayerPublickKey, () => {
+    const transaction = await Mina.transaction(feePayerPublickKey, async () => {
       AccountUpdate.fundNewAccount(feePayerPublickKey);
-      state.zkapp!.deploy({
-        zkappKey: zkAppPrivateKey,
+      await state.zkapp!.deploy({
         verificationKey: state.verificationKey as VerificationKeyData,
       });
     });
-    transaction.sign([zkAppPrivateKey])
+    transaction.sign([zkAppPrivateKey]);
     state.transaction = transaction;
   },
 };
