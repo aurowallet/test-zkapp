@@ -30,7 +30,7 @@
     ]
   },
   "dependencies": {
-    "o1js": "0.13.*"
+    "o1js": "1.0.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
