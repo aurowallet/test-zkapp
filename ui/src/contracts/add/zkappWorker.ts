@@ -55,7 +55,7 @@ const functions = {
   },
   createUpdateTransaction: async (args: {}) => {
     const transaction = await Mina.transaction(async () => {
-      state.zkapp!.update();
+      await state.zkapp!.update();
     });
     state.transaction = transaction;
   },

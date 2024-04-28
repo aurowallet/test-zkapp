@@ -32,7 +32,7 @@
     ]
   },
   "dependencies": {
-    "o1js": "^0.18.0",
+    "o1js": "1.0.1",
     "mina-fungible-token": "0.1.0"
   },
   "devDependencies": {
