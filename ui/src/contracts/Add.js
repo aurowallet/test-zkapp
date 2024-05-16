@@ -31,6 +31,9 @@ export class Add extends SmartContract {
         const newState = currentState.add(2);
         this.num.set(newState);
     }
+    async setValue(value) {
+        this.num.set(value);
+    }
 }
 __decorate([
     state(Field),
@@ -42,4 +45,10 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], Add.prototype, "update", null);
+__decorate([
+    method,
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Field]),
+    __metadata("design:returntype", Promise)
+], Add.prototype, "setValue", null);
 //# sourceMappingURL=Add.js.map
