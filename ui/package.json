@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuildPro": "node scripts/deploy.js",
-    "build": "next build && next export",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "ts-watch": "tsc --noEmit --incremental --watch",
