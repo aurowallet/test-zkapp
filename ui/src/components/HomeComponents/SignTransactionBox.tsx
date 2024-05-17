@@ -1,13 +1,19 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
-import { ProviderError, SendTransactionResult } from "@aurowallet/mina-provider";
+import {
+  ProviderError,
+  SendTransactionResult,
+  SendZkTransactionResult,
+  SignedZkappCommand,
+} from "@aurowallet/mina-provider";
 import { Field, PrivateKey, PublicKey } from "o1js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
+import Switch from "../Switch";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -16,12 +22,25 @@ const StyledButtonGroup = styled.div`
   }
 `;
 
+const StyledSwitchRow = styled.div`
+  height: 25px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+const StyledLeftName = styled.div`
+  font-size: 14px;
+  font-weight: 400;
+  margin-right: 10px;
+`;
 export const SignTransactionBox = ({
   currentAccount,
 }: {
   currentAccount: string;
 }) => {
+  const [gqlUrl,setGqlUrl] = useState("")
   const [zkAddress, setZkAddress] = useState("");
+
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [updateBtnStatus, setUpdateBtnStatus] = useState(true);
@@ -36,9 +55,22 @@ export const SignTransactionBox = ({
   const [displayText, setDisplayText] = useState("");
   const [txHash, setTxHash] = useState("");
   const [createHash, setCreateHash] = useState("");
-  const [gqlUrl,setGqlUrl] = useState("")
-  const [createText, setCreateText] = useState("");
   
+
+  const [createText, setCreateText] = useState("");
+  const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [depolyLocalStatus, setDepolyLocalStatus] = useState<boolean>(false);
+  const [nextSendTxBody, setNextSendTxBody] = useState<string>();
+  const [sendTxStatus, setSendTxStatus] = useState(true);
+
+  const toggleSwitch = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setIsChecked(event.target.checked);
+      setDepolyLocalStatus(false);
+    },
+    []
+  );
+
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
     hasWallet: null as null | boolean,
@@ -50,10 +82,9 @@ export const SignTransactionBox = ({
     creatingTransaction: false,
   });
 
-
-  const onChangeGqlUrl = useCallback((e: any)=>{
+  const onChangeGqlUrl = useCallback((e: any) => {
     setGqlUrl(e.target.value);
-  },[])
+  }, []);
 
   const onChangeZkAddress = useCallback((e: any) => {
     setZkAddress(e.target.value);
@@ -64,77 +95,101 @@ export const SignTransactionBox = ({
   const onChangeMemo = useCallback((e: any) => {
     setMemo(e.target.value);
   }, []);
-  const onClickInit = useCallback(async () => {
-    if (!zkAddress) {
-      alert("Please input contract first!");
-      return;
+
+  function randomIntFromInterval(max: number) {
+    return Math.floor(Math.random() * (max + 1));
+  }
+  const onClickTest = useCallback(async () => {
+    const zkappWorkerClient = new ZkappWorkerClient();
+    await timeout(5);
+    const nextStep = randomIntFromInterval(1);
+    if (nextStep) {
+      // sign and send in local
+      const signRes = await zkappWorkerClient.signAndSendTx("", "", gqlUrl);
+      console.log("signRes", signRes);
+    } else {
+      // sign in ext and send in local
+      const signRes = await zkappWorkerClient.buildTxBody("", "", gqlUrl);
+      console.log("signRes", signRes);
+      const sendRes = await zkappWorkerClient.onlyProving(
+        signRes as string,
+        gqlUrl
+      );
+      console.log("sendRes", sendRes);
     }
-
-    if (!state.hasBeenSetup) {
-      setDisplayText("Loading web worker...");
-      console.log("Loading web worker...");
-      const zkappWorkerClient = new ZkappWorkerClient();
-      await timeout(5);
-
-      setDisplayText("Done loading web worker");
-      console.log("Done loading web worker");
-      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
-
-      const mina = (window as any).mina;
-
-      if (mina == null) {
-        setState({ ...state, hasWallet: false });
+  }, [gqlUrl]);
+  const onClickInit = useCallback(
+    async (forceInit?: boolean) => {
+      if (!zkAddress) {
+        alert("Please input contract first!");
         return;
       }
 
-      const publicKeyBase58: string = (await mina.requestAccounts())[0];
-      const publicKey = PublicKey.fromBase58(publicKeyBase58);
+      if (!state.hasBeenSetup || forceInit) {
+        setDisplayText("Loading web worker...");
+        console.log("Loading web worker...");
+        const zkappWorkerClient = new ZkappWorkerClient();
+        await timeout(5);
 
-      console.log(`Using key:${publicKey.toBase58()}`);
-      setDisplayText(`Using key:${publicKey.toBase58()}`);
+        setDisplayText("Done loading web worker");
+        console.log("Done loading web worker");
+        await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
 
-      setDisplayText("Checking if fee payer account exists...");
-      console.log("Checking if fee payer account exists...");
+        const mina = (window as any).mina;
 
-      const res = await zkappWorkerClient.fetchAccount({
-        publicKey: publicKey!,
-      });
-      const accountExists = res.error == null;
+        if (mina == null) {
+          setState({ ...state, hasWallet: false });
+          return;
+        }
 
-      await zkappWorkerClient.loadContract();
+        const publicKeyBase58: string = (await mina.requestAccounts())[0];
+        const publicKey = PublicKey.fromBase58(publicKeyBase58);
 
-      console.log("Compiling zkApp...");
-      setDisplayText("Compiling zkApp...");
-      await zkappWorkerClient.compileContract();
-      console.log("zkApp compiled");
-      setDisplayText("zkApp compiled...");
+        console.log(`Using key:${publicKey.toBase58()}`);
+        setDisplayText(`Using key:${publicKey.toBase58()}`);
 
-      const zkappPublicKey = PublicKey.fromBase58(zkAddress);
+        setDisplayText("Checking if fee payer account exists...");
+        console.log("Checking if fee payer account exists...");
 
-      await zkappWorkerClient.initZkappInstance(zkappPublicKey);
+        const res = await zkappWorkerClient.fetchAccount({
+          publicKey: publicKey!,
+        });
+        const accountExists = res.error == null;
 
-      console.log("Getting zkApp state...");
-      setDisplayText("Getting zkApp state...");
-      await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
-      const currentNum = await zkappWorkerClient.getNum();
-      console.log(`Current state in zkApp: ${currentNum.toString()}`);
-      setDisplayText("");
+        await zkappWorkerClient.loadContract();
 
-      setState({
-        ...state,
-        zkappWorkerClient,
-        hasWallet: true,
-        hasBeenSetup: true,
-        publicKey,
-        zkappPublicKey,
-        accountExists,
-        currentNum,
-      });
+        console.log("Compiling zkApp...");
+        setDisplayText("Compiling zkApp...");
+        await zkappWorkerClient.compileContract();
+        console.log("zkApp compiled");
+        setDisplayText("zkApp compiled...");
+        const zkappPublicKey = PublicKey.fromBase58(zkAddress);
+        await zkappWorkerClient.initZkappInstance(zkappPublicKey);
 
-      setUpdateBtnStatus(false);
-      setInitBtnStatus(true);
-    }
-  }, [zkAddress, state, gqlUrl]);
+        console.log("Getting zkApp state...");
+        setDisplayText("Getting zkApp state...");
+        await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
+        const currentNum = await zkappWorkerClient.getNum();
+        console.log(`Current state in zkApp: ${currentNum.toString()}`);
+        setDisplayText("");
+
+        setState({
+          ...state,
+          zkappWorkerClient,
+          hasWallet: true,
+          hasBeenSetup: true,
+          publicKey,
+          zkappPublicKey,
+          accountExists,
+          currentNum,
+        });
+
+        setUpdateBtnStatus(false);
+        setInitBtnStatus(true);
+      }
+    },
+    [zkAddress, state, gqlUrl, isChecked]
+  );
 
   const onClickUpdate = useCallback(async () => {
     if (!state.hasBeenSetup) {
@@ -165,23 +220,25 @@ export const SignTransactionBox = ({
 
     setDisplayText("Getting transaction JSON...");
     console.log("Getting transaction JSON...");
-    const res:SendTransactionResult| ProviderError= await (window as any).mina?.sendTransaction({
+    const res: SendTransactionResult | ProviderError = await (
+      window as any
+    ).mina?.sendTransaction({
       transaction: transactionJSON,
       feePayer: {
         fee: fee,
         memo: memo,
       },
     });
-    if((res as SendTransactionResult).hash){
-      setTxHash((res as SendTransactionResult).hash);
-      setDisplayText("");
-    }else{
-      setTxHash("")
+    if ((res as ProviderError).code) {
+      setTxHash("");
       setDisplayText((res as ProviderError).message);
+    } else {
+      const sendTxResult = res as SendZkTransactionResult;
+      setTxHash((sendTxResult as SendTransactionResult).hash);
+      setDisplayText("");
     }
-
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state]);
+  }, [fee, memo, state, isChecked]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -203,8 +260,8 @@ export const SignTransactionBox = ({
 
   const createContract = useCallback(
     async (depolyPrivateKey: PrivateKey, zkAddress: PublicKey) => {
-      setCreateHash("")
-      setCreateText("start init")
+      setCreateHash("");
+      setCreateText("start init");
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
       console.log("Done loading web worker");
@@ -236,30 +293,34 @@ export const SignTransactionBox = ({
       );
       await zkappWorkerClient.proveUpdateTransaction();
       const transactionJSON = await zkappWorkerClient.getTransactionJSON();
-      setCreateText("waiting wallet confirm")
-      const sendRes:SendTransactionResult|ProviderError = await (window as any).mina.sendTransaction({
+      setCreateText("waiting wallet confirm");
+      const sendRes: SendTransactionResult | ProviderError = await (
+        window as any
+      ).mina.sendTransaction({
         transaction: transactionJSON,
         feePayer: {
           memo: "",
         },
       });
-      setCreateText("")
-      if((sendRes as SendTransactionResult).hash){
-        setCreateHash((sendRes as SendTransactionResult).hash);
-      }else{
-        setCreateHash("")
+      setCreateText("");
+      if ((sendRes as ProviderError).code) {
+        setCreateHash((sendRes as ProviderError).message);
+      } else {
+        const sendTxResult = sendRes as SendZkTransactionResult;
+        setCreateHash((sendTxResult as SendTransactionResult).hash);
+        setDisplayText("");
       }
     },
     [gqlUrl, currentAccount]
   );
 
-  useEffect(()=>{
-    if(gqlUrl.length>0 && keys.publicKey){
+  useEffect(() => {
+    if (gqlUrl.length > 0 && keys.publicKey) {
       setCreateBtnStatus(false);
-    }else{
+    } else {
       setCreateBtnStatus(true);
     }
-  },[gqlUrl,keys])
+  }, [gqlUrl, keys]);
   const onClickCreateKey = useCallback(async () => {
     let zkAppPrivateKey = PrivateKey.random();
     let zkAppAddress = zkAppPrivateKey.toPublicKey();
@@ -269,22 +330,86 @@ export const SignTransactionBox = ({
     });
   }, []);
   const onClickCreate = useCallback(async () => {
-    if(!currentAccount){
-      setCreateText("Need connect wallet first")
-      return 
+    if (!currentAccount) {
+      setCreateText("Need connect wallet first");
+      return;
     }
     let zkAppPrivateKey = PrivateKey.fromBase58(keys.privateKey);
     let zkAppAddress = PublicKey.fromBase58(keys.publicKey);
     await createContract(zkAppPrivateKey, zkAppAddress);
-  }, [currentAccount, keys]);
+  }, [currentAccount, keys, createContract]);
 
-  const keysContent = useMemo(()=>{
-    let content = ""
-    if(keys.privateKey){
-      content = JSON.stringify(keys, null, 2)
+  const onClickBuilTx = useCallback(async () => {
+    onClickInit(true);
+    await timeout(5);
+    if (!state.hasBeenSetup) {
+      alert("Please input contract address And init contract!");
+      return;
     }
-    return content
-  },[keys])
+    let onlySign = isChecked;
+    setTxHash("");
+    setDisplayText("");
+
+    setState({ ...state, creatingTransaction: true });
+
+    setDisplayText("Creating a transaction...");
+    console.log("Creating a transaction...");
+
+    await state.zkappWorkerClient!.fetchAccount({
+      publicKey: state.publicKey!,
+    });
+
+    const num = randomIntFromInterval(1000);
+    await state.zkappWorkerClient!.createManulUpdateTransaction(num, zkAddress);
+
+    setDisplayText("Creating proof...");
+    console.log("Creating proof...");
+
+    console.log("Requesting send transaction...");
+    setDisplayText("Requesting send transaction...");
+    const transactionJSON = await state.zkappWorkerClient!.getTransactionJSON();
+
+    setDisplayText("Getting transaction JSON...");
+    console.log("Getting transaction JSON...");
+    const res: SendTransactionResult | ProviderError = await (
+      window as any
+    ).mina?.sendTransaction({
+      onlySign: onlySign,
+      transaction: transactionJSON,
+      feePayer: {
+        fee: fee,
+        memo: memo,
+      },
+    });
+
+    if ((res as ProviderError).code) {
+      setTxHash("");
+      setDisplayText((res as ProviderError).message);
+    } else {
+      const sendTxResult = res as SendZkTransactionResult;
+      const signedData = (sendTxResult as SignedZkappCommand).signedData;
+      setTxHash(signedData);
+      setNextSendTxBody(signedData);
+      setDisplayText("");
+      setSendTxStatus(false);
+    }
+    setState({ ...state, creatingTransaction: false });
+  }, [fee, memo, state, isChecked, zkAddress]);
+
+  const onClickTxSend = useCallback(async () => {
+    const sendRes = await state.zkappWorkerClient!.sendProving(
+      nextSendTxBody as string
+    );
+    setTxHash(sendRes as string);
+  }, [fee, memo, state, isChecked, txHash, nextSendTxBody]);
+
+  const keysContent = useMemo(() => {
+    let content = "";
+    if (keys.privateKey) {
+      content = JSON.stringify(keys, null, 2);
+    }
+    return content;
+  }, [keys]);
   return (
     <Box>
       <StyledBoxTitle>Mina zkApp</StyledBoxTitle>
@@ -300,19 +425,37 @@ export const SignTransactionBox = ({
       </Button>
       <InfoRow
         title={"zkApp Create Result: "}
-        content={createHash|| createText}
+        content={createHash || createText}
         type={InfoType.secondary}
       />
       <StyledDividedLine />
       <Input placeholder="Set ZkApp Address" onChange={onChangeZkAddress} />
+      <StyledSwitchRow>
+        <StyledLeftName>{"sign in wallet, broadcast in zkApp"}</StyledLeftName>
+        <Switch isChecked={isChecked} toggleSwitch={toggleSwitch} />
+      </StyledSwitchRow>
+      {/* <Button disabled={initBtnStatus} onClick={onClickTest}>
+        {"testZK"}
+      </Button> */}
       <Button disabled={initBtnStatus} onClick={onClickInit}>
         {"Init ZkState"}
       </Button>
       <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
-      <Button disabled={updateBtnStatus} onClick={onClickUpdate}>
-        Update
-      </Button>
+      {isChecked ? (
+        <StyledButtonGroup>
+          <Button disabled={updateBtnStatus} onClick={onClickBuilTx}>
+            Build TxBody And Sign
+          </Button>
+          <Button disabled={sendTxStatus} onClick={onClickTxSend}>
+            Send Tx
+          </Button>
+        </StyledButtonGroup>
+      ) : (
+        <Button disabled={updateBtnStatus} onClick={onClickUpdate}>
+          Update
+        </Button>
+      )}
       <InfoRow
         title={"Update Result: "}
         content={txHash || displayText}
