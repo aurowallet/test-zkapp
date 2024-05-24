@@ -263,6 +263,7 @@ export const SignTransactionBox = ({
     }
   },[gqlUrl,keys])
   const onClickCreateKey = useCallback(async () => {
+    alert(self.crossOriginIsolated)
     let zkAppPrivateKey = PrivateKey.random();
     let zkAppAddress = zkAppPrivateKey.toPublicKey();
     setKeys({
