@@ -32,6 +32,7 @@ export const SignTransactionBox = ({
   const [keys, setKeys] = useState({
     publicKey: "",
     privateKey: "",
+    status:""
   });
 
   const [displayText, setDisplayText] = useState("");
@@ -263,12 +264,12 @@ export const SignTransactionBox = ({
     }
   },[gqlUrl,keys])
   const onClickCreateKey = useCallback(async () => {
-    alert(self.crossOriginIsolated)
     let zkAppPrivateKey = PrivateKey.random();
     let zkAppAddress = zkAppPrivateKey.toPublicKey();
     setKeys({
       publicKey: PublicKey.toBase58(zkAppAddress),
       privateKey: PrivateKey.toBase58(zkAppPrivateKey),
+      status:String(self.crossOriginIsolated)
     });
   }, []);
   const onClickCreate = useCallback(async () => {
