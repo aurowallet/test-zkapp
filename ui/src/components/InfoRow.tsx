@@ -36,9 +36,10 @@ const StyledContainer = styled.div<{ type?: InfoType }>`
   color: #155724;
   background-color: #d4edda;
   border-color: #c3e6cb;
-  white-space: pre-wrap;
-
   word-break: break-all;
+  max-height: 200px;
+  overflow: auto;
+  text-overflow: ellipsis;
 
   ${(props) => {
     switch (props.type) {
@@ -57,6 +58,7 @@ const StyledRowTitle = styled.div<{ isBoldTitle?: boolean }>`
 `;
 const StyledRowContent = styled.span`
   font-weight: 400;
+  
 `;
 const StyledLinkContent = styled.a`
   text-decoration: none;
@@ -79,9 +81,9 @@ type IInfoRow = {
   linkTarget?: string;
   children?: React.ReactNode;
   innerChildren?: React.ReactNode;
-}
+};
 
-export const InfoRow:React.FC<IInfoRow>  = ({
+export const InfoRow: React.FC<IInfoRow> = ({
   type,
   title,
   content,
@@ -102,7 +104,7 @@ export const InfoRow:React.FC<IInfoRow>  = ({
           </StyledLinkContent>
         )}
       </StyledRowTitle>
-        {children}
+      {children}
     </StyledContainer>
   );
 };

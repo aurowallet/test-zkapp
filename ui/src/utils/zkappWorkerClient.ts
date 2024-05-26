@@ -1,24 +1,24 @@
-import { fetchAccount, PublicKey, Field, PrivateKey } from 'o1js';
+import { fetchAccount, PublicKey, Field, PrivateKey } from "o1js";
 
 import type {
   ZkappWorkerRequest,
   ZkappWorkerReponse,
   WorkerFunctions,
-} from './zkappWorker';
+} from "./zkappWorker";
 
 export default class ZkappWorkerClient {
   // ---------------------------------------------------------------------------------------
 
-  setActiveInstanceToBerkeley(gqlUrl:string) {
-    return this._call('setActiveInstanceToBerkeley', {gqlUrl});
+  setActiveInstanceToBerkeley(gqlUrl: string) {
+    return this._call("setActiveInstanceToBerkeley", { gqlUrl });
   }
 
   loadContract() {
-    return this._call('loadContract', {});
+    return this._call("loadContract", {});
   }
 
   compileContract() {
-    return this._call('compileContract', {});
+    return this._call("compileContract", {});
   }
 
   fetchAccount({
@@ -26,43 +26,75 @@ export default class ZkappWorkerClient {
   }: {
     publicKey: PublicKey;
   }): ReturnType<typeof fetchAccount> {
-    const result = this._call('fetchAccount', {
+    const result = this._call("fetchAccount", {
       publicKey58: publicKey.toBase58(),
     });
     return result as ReturnType<typeof fetchAccount>;
   }
 
   initZkappInstance(publicKey: PublicKey) {
-    return this._call('initZkappInstance', {
+    return this._call("initZkappInstance", {
       publicKey58: publicKey.toBase58(),
     });
   }
 
   async getNum(): Promise<Field> {
-    const result = await this._call('getNum', {});
+    const result = await this._call("getNum", {});
     return Field.fromJSON(JSON.parse(result as string));
   }
 
   createUpdateTransaction() {
-    return this._call('createUpdateTransaction', {});
+    return this._call("createUpdateTransaction", {});
   }
-
+  createManulUpdateTransaction(value: number,zkAddress:string) {
+    return this._call("createManulUpdateTransaction", {
+      value,
+      zkAddress
+    });
+  }
+  
   proveUpdateTransaction() {
-    return this._call('proveUpdateTransaction', {});
+    return this._call("proveUpdateTransaction", {});
   }
 
   async getTransactionJSON() {
-    const result = await this._call('getTransactionJSON', {});
+    const result = await this._call("getTransactionJSON", {});
     return result;
   }
-  
-  async createDeployTransaction(privateKey: PrivateKey,feePayer:string) {
-    return await this._call('createDeployTransaction', {
-        privateKey58: PrivateKey.toBase58(privateKey),
-        feePayer
-    });
-}
 
+  async createDeployTransaction(privateKey: PrivateKey, feePayer: string) {
+    return await this._call("createDeployTransaction", {
+      privateKey58: PrivateKey.toBase58(privateKey),
+      feePayer,
+    });
+  }
+
+  async signAndSendTx(sendPrivateKey: string,publicKey:string,gqlUrl:string) {
+    return await this._call('signAndSendTx', {
+      sendPrivateKey,
+      publicKey,
+      gqlUrl
+    });
+  };
+  async buildTxBody(sendPrivateKey: string,zkPublicKey:string,gqlUrl:string) {
+    return await this._call('buildTxBody', {
+      sendPrivateKey,
+      zkPublicKey,
+      gqlUrl
+    });
+  };
+  async onlyProving(signedData: string,gqlUrl:string) {
+    return await this._call('onlyProving', {
+      signedData,
+      gqlUrl
+    });
+  };
+  async sendProving(signedData: string) {
+    return await this._call('sendProving', {
+      signedData,
+    });
+  };
+  
   // ---------------------------------------------------------------------------------------
 
   worker: Worker;
@@ -74,7 +106,7 @@ export default class ZkappWorkerClient {
   nextId: number;
 
   constructor() {
-    this.worker = new Worker(new URL('./zkappWorker.ts', import.meta.url));
+    this.worker = new Worker(new URL("./zkappWorker.ts", import.meta.url));
     this.promises = {};
     this.nextId = 0;
 

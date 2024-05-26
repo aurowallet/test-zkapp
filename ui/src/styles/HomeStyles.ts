@@ -61,11 +61,45 @@ export const StyledRowTitle = styled.div`
   text-align: left;
 `;
 
-export const StyledStatusRowWrapper = styled(Box)`
+export const StyledStatusRowWrapper = styled.div`
   display: flex;
+  
   box-shadow: none;
   border: none;
   padding: 0px;
+  
+  flex-direction: column;
+  margin: 10px;
+  width: -webkit-fill-available;
+
+  position: relative;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border-radius: 0.25rem;
+
+  flex: 0 0 100%;
+  max-width: calc(100% - 20px);
+
+  @media ${devices.mobile} {
+    flex: 0 0 100%;
+    max-width: calc(100% - 20px);
+  }
+
+  @media ${devices.tablet} {
+    flex: 0 0 100%;
+    max-width: calc(100% - 20px);
+  }
+  @media ${devices.tabletL} {
+    flex: 0 0 50%;
+    max-width: calc(50% - 20px);
+  }
+
+  @media ${devices.desktop} {
+    flex: 0 0 calc(33.3333% - 20px);
+    max-width: calc(33.3333% - 20px);
+  }
 `;
 
 export const StyledPageTitle = styled.h1`
