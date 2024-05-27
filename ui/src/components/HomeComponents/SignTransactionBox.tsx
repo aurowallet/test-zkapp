@@ -38,10 +38,9 @@ export const SignTransactionBox = ({
 }: {
   currentAccount: string;
 }) => {
-  const currentAccountTemp =
-    "B62qr2zNMypNKXmzMYSVotChTBRfXzHRtshvbuEjAQZLq6aEa8RxLyD";
-  const [gqlUrl, setGqlUrl] = useState("");
+  const [gqlUrl,setGqlUrl] = useState("")
   const [zkAddress, setZkAddress] = useState("");
+
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [updateBtnStatus, setUpdateBtnStatus] = useState(true);
@@ -51,12 +50,13 @@ export const SignTransactionBox = ({
   const [keys, setKeys] = useState({
     publicKey: "",
     privateKey: "",
-    status:""
   });
 
   const [displayText, setDisplayText] = useState("");
   const [txHash, setTxHash] = useState("");
   const [createHash, setCreateHash] = useState("");
+  
+
   const [createText, setCreateText] = useState("");
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [depolyLocalStatus, setDepolyLocalStatus] = useState<boolean>(false);
@@ -135,14 +135,14 @@ export const SignTransactionBox = ({
         console.log("Done loading web worker");
         await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
 
-        // const mina = (window as any).mina;
+        const mina = (window as any).mina;
 
-        // if (mina == null) {
-        //   setState({ ...state, hasWallet: false });
-        //   return;
-        // }
+        if (mina == null) {
+          setState({ ...state, hasWallet: false });
+          return;
+        }
 
-        const publicKeyBase58: string = currentAccountTemp//(await mina.requestAccounts())[0];
+        const publicKeyBase58: string = (await mina.requestAccounts())[0];
         const publicKey = PublicKey.fromBase58(publicKeyBase58);
 
         console.log(`Using key:${publicKey.toBase58()}`);
@@ -219,25 +219,25 @@ export const SignTransactionBox = ({
     const transactionJSON = await state.zkappWorkerClient!.getTransactionJSON();
 
     setDisplayText("Getting transaction JSON...");
-    console.log("Getting transaction JSON...", transactionJSON);
-    // const res: SendTransactionResult | ProviderError = await (
-    //   window as any
-    // ).mina?.sendTransaction({
-    //   transaction: transactionJSON,
-    //   feePayer: {
-    //     fee: fee,
-    //     memo: memo,
-    //   },
-    // });
-    // if ((res as ProviderError).code) {
-    //   setTxHash("");
-    //   setDisplayText((res as ProviderError).message);
-    // } else {
-    //   const sendTxResult = res as SendZkTransactionResult;
-    //   setTxHash((sendTxResult as SendTransactionResult).hash);
-    //   setDisplayText("");
-    // }
-    // setState({ ...state, creatingTransaction: false });
+    console.log("Getting transaction JSON...");
+    const res: SendTransactionResult | ProviderError = await (
+      window as any
+    ).mina?.sendTransaction({
+      transaction: transactionJSON,
+      feePayer: {
+        fee: fee,
+        memo: memo,
+      },
+    });
+    if ((res as ProviderError).code) {
+      setTxHash("");
+      setDisplayText((res as ProviderError).message);
+    } else {
+      const sendTxResult = res as SendZkTransactionResult;
+      setTxHash((sendTxResult as SendTransactionResult).hash);
+      setDisplayText("");
+    }
+    setState({ ...state, creatingTransaction: false });
   }, [fee, memo, state, isChecked]);
 
   const onRefreshCurrentNum = useCallback(async () => {
@@ -267,11 +267,11 @@ export const SignTransactionBox = ({
       console.log("Done loading web worker");
       setCreateText("Done loading web worker");
       await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
-      // const mina = (window as any).mina;
-      // if (mina == null) {
-      //   return;
-      // }
-      const publicKeyBase58: string = currentAccountTemp//currentAccount;
+      const mina = (window as any).mina;
+      if (mina == null) {
+        return;
+      }
+      const publicKeyBase58: string = currentAccount;
       const publicKey = PublicKey.fromBase58(publicKeyBase58);
       console.log(`Using key:${publicKey.toBase58()}`);
       setCreateText(`Using key:${publicKey.toBase58()}`);
@@ -289,30 +289,29 @@ export const SignTransactionBox = ({
       await zkappWorkerClient.initZkappInstance(zkAddress);
       await zkappWorkerClient.createDeployTransaction(
         depolyPrivateKey,
-        currentAccountTemp
+        currentAccount
       );
       await zkappWorkerClient.proveUpdateTransaction();
       const transactionJSON = await zkappWorkerClient.getTransactionJSON();
       setCreateText("waiting wallet confirm");
-      console.log('transactionJSON==0',transactionJSON);
-      // const sendRes: SendTransactionResult | ProviderError = await (
-      //   window as any
-      // ).mina.sendTransaction({
-      //   transaction: transactionJSON,
-      //   feePayer: {
-      //     memo: "",
-      //   },
-      // });
-      // setCreateText("");
-      // if ((sendRes as ProviderError).code) {
-      //   setCreateHash((sendRes as ProviderError).message);
-      // } else {
-      //   const sendTxResult = sendRes as SendZkTransactionResult;
-      //   setCreateHash((sendTxResult as SendTransactionResult).hash);
-      //   setDisplayText("");
-      // }
+      const sendRes: SendTransactionResult | ProviderError = await (
+        window as any
+      ).mina.sendTransaction({
+        transaction: transactionJSON,
+        feePayer: {
+          memo: "",
+        },
+      });
+      setCreateText("");
+      if ((sendRes as ProviderError).code) {
+        setCreateHash((sendRes as ProviderError).message);
+      } else {
+        const sendTxResult = sendRes as SendZkTransactionResult;
+        setCreateHash((sendTxResult as SendTransactionResult).hash);
+        setDisplayText("");
+      }
     },
-    [gqlUrl, currentAccountTemp]
+    [gqlUrl, currentAccount]
   );
 
   useEffect(() => {
@@ -328,18 +327,17 @@ export const SignTransactionBox = ({
     setKeys({
       publicKey: PublicKey.toBase58(zkAppAddress),
       privateKey: PrivateKey.toBase58(zkAppPrivateKey),
-      status:String(self.crossOriginIsolated)
     });
   }, []);
   const onClickCreate = useCallback(async () => {
-    // if (!currentAccount) {
-    //   setCreateText("Need connect wallet first");
-    //   return;
-    // }
+    if (!currentAccount) {
+      setCreateText("Need connect wallet first");
+      return;
+    }
     let zkAppPrivateKey = PrivateKey.fromBase58(keys.privateKey);
     let zkAppAddress = PublicKey.fromBase58(keys.publicKey);
     await createContract(zkAppPrivateKey, zkAppAddress);
-  }, [currentAccountTemp, keys, createContract]);
+  }, [currentAccount, keys, createContract]);
 
   const onClickBuilTx = useCallback(async () => {
     onClickInit(true);
@@ -373,29 +371,29 @@ export const SignTransactionBox = ({
 
     setDisplayText("Getting transaction JSON...");
     console.log("Getting transaction JSON...");
-    // const res: SendTransactionResult | ProviderError = await (
-    //   window as any
-    // ).mina?.sendTransaction({
-    //   onlySign: onlySign,
-    //   transaction: transactionJSON,
-    //   feePayer: {
-    //     fee: fee,
-    //     memo: memo,
-    //   },
-    // });
+    const res: SendTransactionResult | ProviderError = await (
+      window as any
+    ).mina?.sendTransaction({
+      onlySign: onlySign,
+      transaction: transactionJSON,
+      feePayer: {
+        fee: fee,
+        memo: memo,
+      },
+    });
 
-    // if ((res as ProviderError).code) {
-    //   setTxHash("");
-    //   setDisplayText((res as ProviderError).message);
-    // } else {
-    //   const sendTxResult = res as SendZkTransactionResult;
-    //   const signedData = (sendTxResult as SignedZkappCommand).signedData;
-    //   setTxHash(signedData);
-    //   setNextSendTxBody(signedData);
-    //   setDisplayText("");
-    //   setSendTxStatus(false);
-    // }
-    // setState({ ...state, creatingTransaction: false });
+    if ((res as ProviderError).code) {
+      setTxHash("");
+      setDisplayText((res as ProviderError).message);
+    } else {
+      const sendTxResult = res as SendZkTransactionResult;
+      const signedData = (sendTxResult as SignedZkappCommand).signedData;
+      setTxHash(signedData);
+      setNextSendTxBody(signedData);
+      setDisplayText("");
+      setSendTxStatus(false);
+    }
+    setState({ ...state, creatingTransaction: false });
   }, [fee, memo, state, isChecked, zkAddress]);
 
   const onClickTxSend = useCallback(async () => {
