@@ -240,20 +240,13 @@ if (typeof window !== "undefined") {
   addEventListener(
     "message",
     async (event: MessageEvent<ZkappWorkerRequest>) => {
-      try {
-        const returnData = await functions[event.data.fn](event.data.args);
-        const message = {
-            id: event.data.id,
-            data: returnData
-        };
-        postMessage(message);
-    } catch (error) {
-        console.error("Error in function call:", error);
-        postMessage({
-            id: event.data.id,
-            error: String(error)
-        });
-    }
+      const returnData = await functions[event.data.fn](event.data.args);
+
+      const message: ZkappWorkerReponse = {
+        id: event.data.id,
+        data: returnData,
+      };
+      postMessage(message);
     }
   );
 }
