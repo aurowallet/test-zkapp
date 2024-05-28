@@ -50,6 +50,7 @@ export const SignTransactionBox = ({
   const [keys, setKeys] = useState({
     publicKey: "",
     privateKey: "",
+    status:""
   });
 
   const [displayText, setDisplayText] = useState("");
@@ -327,6 +328,7 @@ export const SignTransactionBox = ({
     setKeys({
       publicKey: PublicKey.toBase58(zkAppAddress),
       privateKey: PrivateKey.toBase58(zkAppPrivateKey),
+      status:String(self.crossOriginIsolated)
     });
   }, []);
   const onClickCreate = useCallback(async () => {
