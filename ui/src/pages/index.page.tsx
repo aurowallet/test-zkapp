@@ -25,6 +25,7 @@ import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import StyledComponentsRegistry from "./registry";
 import { VersionBox } from "@/components/VersionBox";
+import { StatusCheck } from "@/components/HomeComponents/StatusCheck";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -124,6 +125,8 @@ export default function Home() {
           data-rh="true"
         />
       </Head>
+      <StatusCheck/>
+      {/*
       <header>
         <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
       </header>
@@ -164,7 +167,7 @@ export default function Home() {
           network={currentNetwork}
         />
         <SignFieldsBox currentAccount={currentAccount} />
-      </Container>
+      </Container> */}
     </PageContainer>
     <VersionBox/>
     </StyledComponentsRegistry>
