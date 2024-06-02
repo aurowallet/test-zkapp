@@ -11,11 +11,10 @@ export const StatusCheck = ({}: {}) => {
   const onClickCreateKey = useCallback(async () => {
     setCheckStatus(String(self.crossOriginIsolated));
     const data = {
-      userAgent:navigator.userAgent,
-      appVersion:navigator.userAgent,
-      userAgentData:JSON.stringify(navigator["userAgentData"])
-    }
-    setBrowserInfo(JSON.stringify(data))
+      appVersion: navigator.appVersion,
+      userAgent: navigator.userAgent,
+    };
+    setBrowserInfo(JSON.stringify(data, null, 4));
   }, []);
 
   return (
