@@ -7,10 +7,3 @@ export function timeout(seconds: number): Promise<void> {
     }, seconds * 1000);
   });
 }
-
-export function formatNetwork(network: ChainInfoArgs|undefined) {
-  if(!network){
-    return ""
-  }
-  return network?.name + " : " + network?.chainId ;
-}

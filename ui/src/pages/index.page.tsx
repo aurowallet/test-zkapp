@@ -19,7 +19,6 @@ import {
   StyledRowTitle,
   StyledStatusRowWrapper,
 } from "@/styles/HomeStyles.ts";
-import { formatNetwork } from "@/utils";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -29,8 +28,7 @@ import { VersionBox } from "@/components/VersionBox";
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentNetwork, setCurrentNetwork] = useState<ChainInfoArgs>({
-    chainId: "",
-    name: ""
+    networkID: "",
   });
 
   const onSetCurrentAccount = useCallback((account:string)=>{
@@ -131,7 +129,7 @@ export default function Home() {
           <StyledStatusRowWrapper>
             <InfoRow
               title="Network: "
-              content={formatNetwork(currentNetwork)}
+              content={currentNetwork.networkID}
               type={InfoType.primary}
             />
             <InfoRow

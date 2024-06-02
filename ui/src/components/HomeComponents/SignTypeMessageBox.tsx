@@ -80,11 +80,7 @@ iat: ${new Date().getTime()}`;
       },
       {
         label: "Chain ID:",
-        value: network.chainId,
-      },
-      {
-        label: "Chain Name:",
-        value: network.name,
+        value: network.networkID,
       },
       {
         label: "Issued At:",
