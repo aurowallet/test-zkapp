@@ -37,7 +37,7 @@ const StyledContainer = styled.div<{ type?: InfoType }>`
   background-color: #d4edda;
   border-color: #c3e6cb;
   word-break: break-all;
-  max-height: 200px;
+  max-height: 400px;
   overflow: auto;
   text-overflow: ellipsis;
 
