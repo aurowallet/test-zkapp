@@ -137,7 +137,7 @@ export const SignTransactionBox = ({
 
         setDisplayText("Done loading web worker");
         console.log("Done loading web worker");
-        await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);// 
+        await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);
 
         const mina = (window as any).mina;
 
@@ -270,7 +270,7 @@ export const SignTransactionBox = ({
       await timeout(5);
       console.log("Done loading web worker");
       setCreateText("Done loading web worker");
-      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
+      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);
       const mina = (window as any).mina;
       if (mina == null) {
         return;
@@ -315,7 +315,7 @@ export const SignTransactionBox = ({
         setDisplayText("");
       }
     },
-    [gqlUrl, currentAccount]
+    [gqlUrl, currentAccount,network]
   );
 
   useEffect(() => {
