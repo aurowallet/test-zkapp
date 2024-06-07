@@ -35,7 +35,7 @@ const state = {
 // ---- -----------------------------------------------------------------------------------
 
 const functions = {
-  setActiveInstanceToBerkeley: async (args: { gqlUrl: string,networkID:string }) => {
+  setActiveInstanceToBerkeley: async (args: { gqlUrl: string,networkID:any }) => {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
