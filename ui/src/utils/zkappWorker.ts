@@ -120,9 +120,15 @@ const functions = {
     publicKey: string;
     sendPrivateKey: string;
     gqlUrl: string;
+    networkID:any;
   }) => {
-    const Berkeley = Mina.Network(args.gqlUrl + "/graphql");
-    Mina.setActiveInstance(Berkeley);
+    const network = Mina.Network({
+      // the networkID is returned in daemon node
+      // extension now not support return networkID , so add cache to there
+      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      mina: args.gqlUrl + "/graphql",
+    });
+    Mina.setActiveInstance(network);
     const { Add } = await import("../contracts/Add");
     const zkPublicKey = PublicKey.fromBase58(args.publicKey);
     const zkApp = new Add(zkPublicKey);
@@ -145,9 +151,15 @@ const functions = {
     zkPublicKey: string;
     sendPrivateKey: string;
     gqlUrl: string;
+    networkID:any
   }) => {
-    const Berkeley = Mina.Network(args.gqlUrl + "/graphql");
-    Mina.setActiveInstance(Berkeley);
+    const network = Mina.Network({
+      // the networkID is returned in daemon node
+      // extension now not support return networkID , so add cache to there
+      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      mina: args.gqlUrl + "/graphql",
+    });
+    Mina.setActiveInstance(network);
     const { Add } = await import("../contracts/Add");
     const zkPublicKey = PublicKey.fromBase58(args.zkPublicKey);
     const zkApp = new Add(zkPublicKey);
@@ -172,7 +184,7 @@ const functions = {
     );
     return data;
   },
-  onlyProving: async (args: { signedData: string; gqlUrl: string }) => {
+  onlyProving: async (args: { signedData: string; gqlUrl: string,networkID:any }) => {
     const {
       tx: serializedTransaction,
       value,
@@ -180,8 +192,13 @@ const functions = {
     } = JSON.parse(args.signedData);
     const zkAppPublicKey = PublicKey.fromBase58(address);
     const { fee, sender, nonce } = transactionParams(serializedTransaction);
-    const Berkeley = Mina.Network(args.gqlUrl + "/graphql");
-    Mina.setActiveInstance(Berkeley);
+    const network = Mina.Network({
+      // the networkID is returned in daemon node
+      // extension now not support return networkID , so add cache to there
+      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      mina: args.gqlUrl + "/graphql",
+    });
+    Mina.setActiveInstance(network);
     const { Add } = await import("../contracts/Add");
     const zkApp = new Add(zkAppPublicKey);
     await fetchAccount({ publicKey: sender });

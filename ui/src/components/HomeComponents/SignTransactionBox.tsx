@@ -109,15 +109,16 @@ export const SignTransactionBox = ({
     const nextStep = randomIntFromInterval(1);
     if (nextStep) {
       // sign and send in local
-      const signRes = await zkappWorkerClient.signAndSendTx("", "", gqlUrl);
+      const signRes = await zkappWorkerClient.signAndSendTx("", "", gqlUrl,network.networkID);
       console.log("signRes", signRes);
     } else {
       // sign in ext and send in local
-      const signRes = await zkappWorkerClient.buildTxBody("", "", gqlUrl);
+      const signRes = await zkappWorkerClient.buildTxBody("", "", gqlUrl,network.networkID);
       console.log("signRes", signRes);
       const sendRes = await zkappWorkerClient.onlyProving(
         signRes as string,
-        gqlUrl
+        gqlUrl,
+        network.networkID
       );
       console.log("sendRes", sendRes);
     }

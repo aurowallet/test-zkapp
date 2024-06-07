@@ -69,24 +69,27 @@ export default class ZkappWorkerClient {
     });
   }
 
-  async signAndSendTx(sendPrivateKey: string,publicKey:string,gqlUrl:string) {
+  async signAndSendTx(sendPrivateKey: string,publicKey:string,gqlUrl:string,networkID:string) {
     return await this._call('signAndSendTx', {
       sendPrivateKey,
       publicKey,
-      gqlUrl
+      gqlUrl,
+      networkID
     });
   };
-  async buildTxBody(sendPrivateKey: string,zkPublicKey:string,gqlUrl:string) {
+  async buildTxBody(sendPrivateKey: string,zkPublicKey:string,gqlUrl:string,networkID:string) {
     return await this._call('buildTxBody', {
       sendPrivateKey,
       zkPublicKey,
-      gqlUrl
+      gqlUrl,
+      networkID
     });
   };
-  async onlyProving(signedData: string,gqlUrl:string) {
+  async onlyProving(signedData: string,gqlUrl:string,networkID:string) {
     return await this._call('onlyProving', {
       signedData,
-      gqlUrl
+      gqlUrl,
+      networkID
     });
   };
   async sendProving(signedData: string) {
