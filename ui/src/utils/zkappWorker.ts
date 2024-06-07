@@ -65,6 +65,7 @@ const functions = {
     return JSON.stringify(currentNum.toJSON());
   },
   createUpdateTransaction: async (args: {}) => {
+    console.log('createUpdateTransaction networkID',Mina.getNetworkId());
     const transaction = await Mina.transaction(async () => {
       await state.zkapp!.update();
     });
@@ -109,6 +110,7 @@ const functions = {
       args.privateKey58
     );
     const feePayerPublickKey = PublicKey.fromBase58(args.feePayer);
+    console.log('createDeployTransaction networkID',Mina.getNetworkId());
     const transaction = await Mina.transaction(feePayerPublickKey, async () => {
       AccountUpdate.fundNewAccount(feePayerPublickKey);
       await state.zkapp!.deploy({
@@ -131,6 +133,7 @@ const functions = {
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
+    console.log('signAndSendTx networkID',Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
     const zkPublicKey = PublicKey.fromBase58(args.publicKey);
     const zkApp = new Add(zkPublicKey);
@@ -162,6 +165,7 @@ const functions = {
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
+    console.log('buildTxBody networkID',Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
     const zkPublicKey = PublicKey.fromBase58(args.zkPublicKey);
     const zkApp = new Add(zkPublicKey);
@@ -201,6 +205,7 @@ const functions = {
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
+    console.log('onlyProving networkID',Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
     const zkApp = new Add(zkAppPublicKey);
     await fetchAccount({ publicKey: sender });
@@ -211,7 +216,7 @@ const functions = {
     const tx = deserializeTransaction(serializedTransaction, txNew);
     await Add.compile();
     await tx.prove();
-    const txSent = await tx.send();
+    const txSent = await tx.send();// have cors issue
     return txSent.hash;
   },
 
