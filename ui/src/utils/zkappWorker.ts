@@ -39,7 +39,7 @@ const functions = {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
-      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      networkId: getInitNetworkID(args.networkID),
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
@@ -125,7 +125,7 @@ const functions = {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
-      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      networkId: getInitNetworkID(args.networkID),
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
@@ -156,7 +156,7 @@ const functions = {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
-      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      networkId: getInitNetworkID(args.networkID),
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
@@ -195,7 +195,7 @@ const functions = {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
-      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
+      networkId: getInitNetworkID(args.networkID),
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
@@ -273,3 +273,10 @@ if (typeof window !== "undefined") {
 }
 
 console.log("Web Worker Successfully Initialized.");
+
+function getInitNetworkID(networkID:string){
+  console.log('getInitNetworkID params: ',networkID);
+  const nextID = networkID === 'mina:mainnet' ? "mainnet":"testnet"
+  console.log('getInitNetworkID nextID: ',networkID);
+  return nextID
+}

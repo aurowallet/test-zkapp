@@ -109,9 +109,12 @@ export const SignTransactionBox = ({
     const nextStep = randomIntFromInterval(1);
     if (nextStep) {
       // sign and send in local
+      console.log('onClickTest network 1: ',JSON.stringify(network));
+      
       const signRes = await zkappWorkerClient.signAndSendTx("", "", gqlUrl,network.networkID);
       console.log("signRes", signRes);
     } else {
+      console.log('onClickTest network 2: ',JSON.stringify(network));
       // sign in ext and send in local
       const signRes = await zkappWorkerClient.buildTxBody("", "", gqlUrl,network.networkID);
       console.log("signRes", signRes);
@@ -122,7 +125,7 @@ export const SignTransactionBox = ({
       );
       console.log("sendRes", sendRes);
     }
-  }, [gqlUrl]);
+  }, [gqlUrl,network]);
   const onClickInit = useCallback(
     async (forceInit?: boolean) => {
       if (!zkAddress) {
@@ -138,6 +141,7 @@ export const SignTransactionBox = ({
 
         setDisplayText("Done loading web worker");
         console.log("Done loading web worker");
+        console.log('onClickInit network : ',JSON.stringify(network));
         await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);
 
         const mina = (window as any).mina;
@@ -271,7 +275,8 @@ export const SignTransactionBox = ({
       await timeout(5);
       console.log("Done loading web worker");
       setCreateText("Done loading web worker");
-      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);
+      console.log('createContract network : ',JSON.stringify(network));
+      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID); 
       const mina = (window as any).mina;
       if (mina == null) {
         return;
