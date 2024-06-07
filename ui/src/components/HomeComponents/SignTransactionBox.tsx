@@ -400,7 +400,7 @@ export const SignTransactionBox = ({
       setSendTxStatus(false);
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state, isChecked, zkAddress]);
+  }, [fee, memo, state, isChecked, zkAddress,onClickInit]);
 
   const onClickTxSend = useCallback(async () => {
     const sendRes = await state.zkappWorkerClient!.sendProving(
