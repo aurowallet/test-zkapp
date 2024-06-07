@@ -74,10 +74,12 @@ const functions = {
     value: number;
     zkAddress: string;
   }) => {
+    console.log('createManulUpdateTransaction networkID = 0, ',Mina.getNetworkId());
     const nextValue = Field(args.value);
     const transaction = await Mina.transaction(async () => {
       await state.zkapp!.setValue(nextValue);
     });
+    console.log('createManulUpdateTransaction networkID = 1,',Mina.getNetworkId());
     state.transaction = transaction;
     const data: string = JSON.stringify(
       {
@@ -226,6 +228,7 @@ const functions = {
 
     const { Add } = await import("../contracts/Add");
     const zkApp = new Add(zkAppPublicKey);
+    console.log('sendProving networkID',Mina.getNetworkId());
     const txNew = await Mina.transaction({ sender, fee, nonce }, async () => {
       await zkApp!.setValue(Field.fromJSON(value));
     });
@@ -277,6 +280,6 @@ console.log("Web Worker Successfully Initialized.");
 function getInitNetworkID(networkID:string){
   console.log('getInitNetworkID params: ',networkID);
   const nextID = networkID === 'mina:mainnet' ? "mainnet":"testnet"
-  console.log('getInitNetworkID nextID: ',networkID);
+  console.log('getInitNetworkID nextID: ',nextID);
   return nextID
 }

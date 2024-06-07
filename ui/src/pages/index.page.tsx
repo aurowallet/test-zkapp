@@ -149,7 +149,7 @@ export default function Home() {
         <StakingBox />
       </Container>
       <Container>
-        <SignTransactionBox currentAccount={currentAccount} network={currentNetwork}/>
+        <SignTransactionBox currentAccount={currentAccount} network={{"networkID":"mina:mainnet"}}/>
       </Container>
       <Container>
         <CreateNullifierBox />
