@@ -39,7 +39,7 @@ const functions = {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
-      networkId: args.networkID ?? "mainnet",
+      networkId: args.networkID === 'mina:mainnet' ? "mainnet":"testnet",
       mina: args.gqlUrl + "/graphql",
     });
     Mina.setActiveInstance(network);
