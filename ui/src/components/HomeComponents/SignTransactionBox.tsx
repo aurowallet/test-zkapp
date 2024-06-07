@@ -2,6 +2,7 @@ import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
 import {
+  ChainInfoArgs,
   ProviderError,
   SendTransactionResult,
   SendZkTransactionResult,
@@ -35,8 +36,10 @@ const StyledLeftName = styled.div`
 `;
 export const SignTransactionBox = ({
   currentAccount,
+  network
 }: {
   currentAccount: string;
+  network: ChainInfoArgs
 }) => {
   const [gqlUrl,setGqlUrl] = useState("")
   const [zkAddress, setZkAddress] = useState("");
@@ -134,7 +137,7 @@ export const SignTransactionBox = ({
 
         setDisplayText("Done loading web worker");
         console.log("Done loading web worker");
-        await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl);
+        await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);// 
 
         const mina = (window as any).mina;
 
@@ -189,7 +192,7 @@ export const SignTransactionBox = ({
         setInitBtnStatus(true);
       }
     },
-    [zkAddress, state, gqlUrl, isChecked]
+    [zkAddress, state, gqlUrl, isChecked,network]
   );
 
   const onClickUpdate = useCallback(async () => {

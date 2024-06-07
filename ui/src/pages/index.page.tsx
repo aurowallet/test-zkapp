@@ -149,7 +149,7 @@ export default function Home() {
         <StakingBox />
       </Container>
       <Container>
-        <SignTransactionBox currentAccount={currentAccount} />
+        <SignTransactionBox currentAccount={currentAccount} network={currentNetwork}/>
       </Container>
       <Container>
         <CreateNullifierBox />

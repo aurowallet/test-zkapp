@@ -35,10 +35,14 @@ const state = {
 // ---- -----------------------------------------------------------------------------------
 
 const functions = {
-  setActiveInstanceToBerkeley: async (args: { gqlUrl: string }) => {
-    const Berkeley = Mina.Network(args.gqlUrl + "/graphql");
-    console.log("Zk Instance Created");
-    Mina.setActiveInstance(Berkeley);
+  setActiveInstanceToBerkeley: async (args: { gqlUrl: string,networkID:string }) => {
+    const network = Mina.Network({
+      // the networkID is returned in daemon node
+      // extension now not support return networkID , so add cache to there
+      networkId: args.networkID ?? "mainnet",
+      mina: args.gqlUrl + "/graphql",
+    });
+    Mina.setActiveInstance(network);
   },
   loadContract: async (args: {}) => {
     const { Add } = await import("../contracts/Add");
