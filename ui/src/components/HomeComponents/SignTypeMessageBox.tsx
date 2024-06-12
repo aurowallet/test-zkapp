@@ -79,7 +79,7 @@ iat: ${new Date().getTime()}`;
         value: "window.location.href",
       },
       {
-        label: "Chain ID:",
+        label: "networkID:",
         value: network.networkID,
       },
       {
