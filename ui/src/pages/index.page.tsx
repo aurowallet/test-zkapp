@@ -39,7 +39,8 @@ export default function Home() {
     const network: ChainInfoArgs = await (window as any)?.mina
       ?.requestNetwork()
       .catch((err: any) => err);
-    console.log("initNetwork==",JSON.stringify(network));
+    console.log("initNetwork==0",JSON.stringify(network));
+    console.log("initNetwork==1",(window as any)?.mina);
     setCurrentNetwork(network);
   }, []);
 
