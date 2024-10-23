@@ -10,6 +10,7 @@ export const StakingBox = () => {
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
   const [resHash, setResHash] = useState("");
+  const [nonce, setNonce] = useState("");
   const [errMsg, setErrMsg] = useState("");
 
   const onChangeVaildator = useCallback((e: any) => {
@@ -21,6 +22,9 @@ export const StakingBox = () => {
   const onChangeMemo = useCallback((e: any) => {
     setMemo(e.target.value);
   }, []);
+  const onChangeNonce = useCallback((e: any) => {
+    setNonce(e.target.value);
+  }, []);
   const onClickStaking = useCallback(async () => {
     setResHash("");
     setErrMsg("");
@@ -29,6 +33,7 @@ export const StakingBox = () => {
         to: vaildatorAddress,
         fee: fee,
         memo: memo,
+        nonce:nonce
       })
       .catch((err: any) => err);
 
@@ -37,7 +42,7 @@ export const StakingBox = () => {
     } else {
       setErrMsg((data as ProviderError).message || "");
     }
-  }, [vaildatorAddress, fee, memo]);
+  }, [vaildatorAddress, fee, memo,nonce]);
 
   return (
     <Box>
@@ -45,6 +50,7 @@ export const StakingBox = () => {
       <Input placeholder="Set vaildator address" onChange={onChangeVaildator} />
       <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
+      <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       <StyledDividedLine />
       <Button onClick={onClickStaking}>Staking</Button>
       <InfoRow

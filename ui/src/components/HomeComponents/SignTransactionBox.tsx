@@ -46,6 +46,7 @@ export const SignTransactionBox = ({
 
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
+  const [nonce, setNonce] = useState("");
   const [updateBtnStatus, setUpdateBtnStatus] = useState(true);
   const [initBtnStatus, setInitBtnStatus] = useState(false);
   const [zkAppStatus, setZkAppStatus] = useState("");
@@ -99,7 +100,9 @@ export const SignTransactionBox = ({
   const onChangeMemo = useCallback((e: any) => {
     setMemo(e.target.value);
   }, []);
-
+  const onChangeNonce = useCallback((e: any) => {
+    setNonce(e.target.value);
+  }, []);
   function randomIntFromInterval(max: number) {
     return Math.floor(Math.random() * (max + 1));
   }
@@ -233,6 +236,7 @@ export const SignTransactionBox = ({
       window as any
     ).mina?.sendTransaction({
       transaction: transactionJSON,
+      nonce:nonce,
       feePayer: {
         fee: fee,
         memo: memo,
@@ -247,7 +251,7 @@ export const SignTransactionBox = ({
       setDisplayText("");
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state, isChecked]);
+  }, [fee, memo,nonce, state, isChecked]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -308,6 +312,7 @@ export const SignTransactionBox = ({
         window as any
       ).mina.sendTransaction({
         transaction: transactionJSON,
+        nonce:nonce,
         feePayer: {
           memo: "",
         },
@@ -321,7 +326,7 @@ export const SignTransactionBox = ({
         setDisplayText("");
       }
     },
-    [gqlUrl, currentAccount,network]
+    [gqlUrl,nonce, currentAccount,network]
   );
 
   useEffect(() => {
@@ -387,9 +392,10 @@ export const SignTransactionBox = ({
     ).mina?.sendTransaction({
       onlySign: onlySign,
       transaction: transactionJSON,
+      nonce:nonce,
       feePayer: {
         fee: fee,
-        memo: memo,
+        memo: memo, 
       },
     });
 
@@ -405,7 +411,7 @@ export const SignTransactionBox = ({
       setSendTxStatus(false);
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, state, isChecked, zkAddress,onClickInit]);
+  }, [fee, memo, nonce,state, isChecked, zkAddress,onClickInit]);
 
   const onClickTxSend = useCallback(async () => {
     const sendRes = await state.zkappWorkerClient!.sendProving(
@@ -453,6 +459,7 @@ export const SignTransactionBox = ({
       </Button>
       <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
+      <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       {isChecked ? (
         <StyledButtonGroup>
           <Button disabled={updateBtnStatus} onClick={onClickBuilTx}>

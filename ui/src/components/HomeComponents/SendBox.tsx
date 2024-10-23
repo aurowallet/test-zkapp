@@ -10,6 +10,7 @@ export const MinaSendBox = () => {
   const [amount, setAmount] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
+  const [nonce, setNonce] = useState("");
   const [resHash, setResHash] = useState("");
   const [errMsg, setErrMsg] = useState("");
 
@@ -25,16 +26,23 @@ export const MinaSendBox = () => {
   const onChangeMemo = useCallback((e: any) => {
     setMemo(e.target.value);
   }, []);
+  const onChangeNonce = useCallback((e: any) => {
+    setNonce(e.target.value);
+  }, []);
   const onClickSend = useCallback(async () => {
     setResHash("");
     setErrMsg("");
+    let params  = {
+      amount: amount,
+      to: receiveAddress,
+      fee: fee,
+      memo: memo,
+      nonce:nonce
+    }
+    console.log('params==',params);
+    
     let data:SendTransactionResult|ProviderError = await (window as any)?.mina
-      ?.sendPayment({
-        amount: amount,
-        to: receiveAddress,
-        fee: fee,
-        memo: memo,
-      })
+      ?.sendPayment(params)
       .catch((err: any) => err);
 
     if ((data as SendTransactionResult).hash) {
@@ -42,7 +50,7 @@ export const MinaSendBox = () => {
     } else {
       setErrMsg((data as ProviderError).message||"");
     }
-  }, [receiveAddress, amount, fee, memo]);
+  }, [receiveAddress, amount, fee, memo,nonce]); 
 
   return (
     <Box>
@@ -51,6 +59,7 @@ export const MinaSendBox = () => {
       <Input placeholder="Set send amount" onChange={onChangeAmount} />
       <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
+      <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       <StyledDividedLine />
       <Button onClick={onClickSend}>Send</Button>
       <InfoRow 
