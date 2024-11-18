@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { GithubCorner } from "@/components/GithubCorner";
 import { BaseActionBox } from "@/components/HomeComponents/BasicActionBox.tsx";
@@ -24,6 +24,7 @@ import Head from "next/head";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import StyledComponentsRegistry from "./registry";
 import { VersionBox } from "@/components/VersionBox";
+import { AppLinksBox } from "@/components/HomeComponents/AppLinkBox";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -31,16 +32,16 @@ export default function Home() {
     networkID: "",
   });
 
-  const onSetCurrentAccount = useCallback((account:string)=>{
-    setCurrentAccount(account)
-  },[])
+  const onSetCurrentAccount = useCallback((account: string) => {
+    setCurrentAccount(account);
+  }, []);
 
   const initNetwork = useCallback(async () => {
     const network: ChainInfoArgs = await (window as any)?.mina
       ?.requestNetwork()
       .catch((err: any) => err);
-    console.log("initNetwork==0",JSON.stringify(network));
-    console.log("initNetwork==1",(window as any)?.mina);
+    console.log("initNetwork==0", JSON.stringify(network));
+    console.log("initNetwork==1", (window as any)?.mina);
     setCurrentNetwork(network);
   }, []);
 
@@ -50,20 +51,23 @@ export default function Home() {
       console.log("accountsChanged", accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
-      }else{
-        console.log('disconnect');// handled disconnect here
+      } else {
+        console.log("disconnect"); // handled disconnect here
       }
     });
-    (window as any)?.mina?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
-      console.log("chainChanged==",JSON.stringify(chainInfo));
-      console.log("chainChanged");
-      setCurrentNetwork(chainInfo);
-    });
+    (window as any)?.mina?.on(
+      "chainChanged",
+      async (chainInfo: ChainInfoArgs) => {
+        console.log("chainChanged==", JSON.stringify(chainInfo));
+        console.log("chainChanged");
+        setCurrentNetwork(chainInfo);
+      }
+    );
     initNetwork();
   }, []);
 
   const initAccount = useCallback(async () => {
-    const data:string[]|ProviderError = await (window as any)?.mina
+    const data: string[] | ProviderError = await (window as any)?.mina
       ?.getAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {
@@ -76,95 +80,105 @@ export default function Home() {
 
   return (
     <StyledComponentsRegistry>
-    <PageContainer>
-      <Head>
-        <link rel="shortcut icon" href="/imgs/auro.png" />
-        <title>AURO E2E Test zkApp</title>
-        <meta
-          name="robots"
-          content="max-snippet:-1,max-image-preview:standard,max-video-preview:-1"
-        />
-        <meta
-          name="description"
-          content="Available as a browser extension and as a mobile app, Auro Wallet perfectly supports Mina Protocol. easily send, receive or stake your MINA anytime."
-        />
-        <meta
-          property="og:image"
-          content="%PUBLIC_URL%/imgs/og_priview.png"
-          data-rh="true"
-        />
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:title"
-          content="Auro Wallet - Mina Protocol Wallet"
-          data-rh="true"
-        />
-        <meta
-          property="og:description"
-          content="Available as a browser extension and as a mobile app, Auro Wallet perfectly supports Mina Protocol. easily send, receive or stake your MINA anytime."
-        />
-        {/* <meta property="og:url" content="https://www.aurowallet.com/" /> */}
-        <meta property="og:site_name" content="Auro Wallet" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:title"
-          content="Auro Wallet - Mina Protocol Wallet"
-          data-rh="true"
-        />
-        <meta
-          name="twitter:description"
-          content="Available as a browser extension and as a mobile app, Auro Wallet perfectly supports Mina Protocol. easily send, receive or stake your MINA anytime."
-        />
-        <meta
-          name="twitter:image"
-          content="%PUBLIC_URL%/imgs/og_priview.png"
-          data-rh="true"
-        />
-      </Head>
-      <header>
-        <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
-      </header>
-      <GithubCorner />
-      <StyledRowSection>
-        <StyledRowTitle>Status</StyledRowTitle>
+      <PageContainer>
+        <Head>
+          <link rel="shortcut icon" href="/imgs/auro.png" />
+          <title>AURO E2E Test zkApp</title>
+          <meta
+            name="robots"
+            content="max-snippet:-1,max-image-preview:standard,max-video-preview:-1"
+          />
+          <meta
+            name="description"
+            content="Available as a browser extension and as a mobile app, Auro Wallet perfectly supports Mina Protocol. easily send, receive or stake your MINA anytime."
+          />
+          <meta
+            property="og:image"
+            content="%PUBLIC_URL%/imgs/og_priview.png"
+            data-rh="true"
+          />
+          <meta property="og:locale" content="en_US" />
+          <meta property="og:type" content="website" />
+          <meta
+            property="og:title"
+            content="Auro Wallet - Mina Protocol Wallet"
+            data-rh="true"
+          />
+          <meta
+            property="og:description"
+            content="Available as a browser extension and as a mobile app, Auro Wallet perfectly supports Mina Protocol. easily send, receive or stake your MINA anytime."
+          />
+          {/* <meta property="og:url" content="https://www.aurowallet.com/" /> */}
+          <meta property="og:site_name" content="Auro Wallet" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta
+            name="twitter:title"
+            content="Auro Wallet - Mina Protocol Wallet"
+            data-rh="true"
+          />
+          <meta
+            name="twitter:description"
+            content="Available as a browser extension and as a mobile app, Auro Wallet perfectly supports Mina Protocol. easily send, receive or stake your MINA anytime."
+          />
+          <meta
+            name="twitter:image"
+            content="%PUBLIC_URL%/imgs/og_priview.png"
+            data-rh="true"
+          />
+        </Head>
+        <header>
+          <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
+        </header>
+        <GithubCorner />
+        <StyledRowSection>
+          <StyledRowTitle>Status</StyledRowTitle>
+          <Container>
+            <StyledStatusRowWrapper>
+              <InfoRow
+                title="Network: "
+                content={currentNetwork.networkID}
+                type={InfoType.primary}
+              />
+              <InfoRow
+                title="Accounts: "
+                content={currentAccount}
+                type={InfoType.success}
+              />
+            </StyledStatusRowWrapper>
+          </Container>
+        </StyledRowSection>
         <Container>
-          <StyledStatusRowWrapper>
-            <InfoRow
-              title="Network: "
-              content={currentNetwork.networkID}
-              type={InfoType.primary}
-            />
-            <InfoRow
-              title="Accounts: "
-              content={currentAccount}
-              type={InfoType.success}
-            />
-          </StyledStatusRowWrapper>
+          <BaseActionBox
+            currentAccount={currentAccount}
+            onSetCurrentAccount={onSetCurrentAccount}
+          />
+          <SwitchChainBox network={currentNetwork} />
         </Container>
-      </StyledRowSection>
-      <Container>
-        <BaseActionBox currentAccount={currentAccount} onSetCurrentAccount={onSetCurrentAccount}/>
-        <SwitchChainBox network={currentNetwork} />
-      </Container>
-      <Container>
-        <MinaSendBox />
-        <StakingBox />
-      </Container>
-      <Container>
-        <SignTransactionBox currentAccount={currentAccount} network={currentNetwork}/>
-      </Container>
-      <Container>
-        <CreateNullifierBox />
-        <SignMessageBox currentAccount={currentAccount} />
-        <SignTypeMessageBox
-          currentAccount={currentAccount}
-          network={currentNetwork}
-        />
-        <SignFieldsBox currentAccount={currentAccount} />
-      </Container>
-    </PageContainer>
-    <VersionBox/>
+        <Container>
+          <MinaSendBox />
+          <StakingBox />
+        </Container>
+        <Container>
+          <SignTransactionBox
+            currentAccount={currentAccount}
+            network={currentNetwork}
+          />
+        </Container>
+        <Container>
+          <CreateNullifierBox />
+          <SignMessageBox currentAccount={currentAccount} />
+          <SignTypeMessageBox
+            currentAccount={currentAccount}
+            network={currentNetwork}
+          />
+          <SignFieldsBox currentAccount={currentAccount} />
+        </Container>
+        <StyledRowTitle>Dev</StyledRowTitle>
+        <Container>
+          <AppLinksBox />
+        </Container>
+      </PageContainer>
+      <VersionBox />
     </StyledComponentsRegistry>
   );
 }
