@@ -7,3 +7,17 @@ export function timeout(seconds: number): Promise<void> {
     }, seconds * 1000);
   });
 }
+
+export function addressSlice(
+  address: string,
+  sliceLength = 8,
+  lastLength = ""
+) {
+  if (address) {
+    let realLastLength = lastLength ? lastLength : sliceLength;
+    return `${address.slice(0, sliceLength)}...${address.slice(
+      -realLastLength
+    )}`;
+  }
+  return address;
+}
