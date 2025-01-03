@@ -86,7 +86,7 @@ export const AppLinksBox = ({}: {}) => {
         >
           <StyledOption value="">-- Select a network --</StyledOption>
           {Object.values(DefaultSupportNetorkIDs).map((value) => {
-            return <StyledOption value={value}>{value}</StyledOption>;
+            return <StyledOption value={value} key={value}>{value}</StyledOption>;
           })}
         </StyledSelect>
       </SelectWrapper>

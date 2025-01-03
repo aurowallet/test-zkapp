@@ -41,8 +41,9 @@ export default function Home() {
     const network: ChainInfoArgs = await (window as any)?.mina
       ?.requestNetwork()
       .catch((err: any) => err);
-    console.log("initNetwork==0", JSON.stringify(network));
-    console.log("initNetwork==1", (window as any)?.mina);
+    if(!network?.networkID){
+      return
+    }
     setCurrentNetwork(network);
   }, []);
 
@@ -59,8 +60,10 @@ export default function Home() {
     (window as any)?.mina?.on(
       "chainChanged",
       async (chainInfo: ChainInfoArgs) => {
-        console.log("chainChanged==", JSON.stringify(chainInfo));
         console.log("chainChanged");
+        if(!chainInfo?.networkID){
+          return
+        }
         setCurrentNetwork(chainInfo);
       }
     );
