@@ -38,7 +38,7 @@ export const StakingBox = () => {
       .catch((err: any) => err);
 
     if ((data as SendTransactionResult).hash) {
-      setResHash((data as SendTransactionResult).hash);
+      setResHash(JSON.stringify(data));
     } else {
       setErrMsg((data as ProviderError).message || "");
     }

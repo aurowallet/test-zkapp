@@ -16,6 +16,7 @@ export const BaseActionBox = ({
   const [btnTxt, setBtnTxt] = useState("connect");
   const [btnStatus, setBtnStatus] = useState(!currentAccount);
   const [noWindowAccount, setNoWindowAccount] = useState("");
+  const [walletInfo, setWalletInfo] = useState("");
   useEffect(() => {
     if (currentAccount) {
       setBtnTxt("Connected");
@@ -49,6 +50,11 @@ export const BaseActionBox = ({
     setNoWindowAccount(data);
   }, [onSetCurrentAccount]);
 
+  const onGetWalletInfo = useCallback(async () => {
+    let data = await (window as any)?.mina?.getWalletInfo();
+    setWalletInfo(JSON.stringify(data));
+  }, []);
+
   return (
     <Box>
       <StyledBoxTitle>Basic Actions</StyledBoxTitle>
@@ -64,6 +70,13 @@ export const BaseActionBox = ({
       <InfoRow
         title="without pop-winow Account: "
         content={noWindowAccount}
+        type={InfoType.secondary}
+      />
+
+      <Button onClick={onGetWalletInfo}>Get wallet base info</Button>
+      <InfoRow
+        title="wallet base info: "
+        content={walletInfo}
         type={InfoType.secondary}
       />
     </Box>

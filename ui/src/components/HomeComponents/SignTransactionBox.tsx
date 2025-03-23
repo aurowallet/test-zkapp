@@ -247,7 +247,7 @@ export const SignTransactionBox = ({
       setDisplayText((res as ProviderError).message);
     } else {
       const sendTxResult = res as SendZkTransactionResult;
-      setTxHash((sendTxResult as SendTransactionResult).hash);
+      setTxHash(JSON.stringify(sendTxResult));
       setDisplayText("");
     }
     setState({ ...state, creatingTransaction: false });
@@ -322,7 +322,7 @@ export const SignTransactionBox = ({
         setCreateHash((sendRes as ProviderError).message);
       } else {
         const sendTxResult = sendRes as SendZkTransactionResult;
-        setCreateHash((sendTxResult as SendTransactionResult).hash);
+        setCreateHash(JSON.stringify(sendTxResult));
         setDisplayText("");
       }
     },

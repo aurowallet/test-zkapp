@@ -1,31 +1,31 @@
 {
   "name": "ui",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "prebuildPro": "node scripts/deploy.js",
     "build": "next build",
-    "start": "next start",
+    "start": "next build && next start",
     "lint": "next lint",
     "ts-watch": "tsc --noEmit --incremental --watch",
     "export": "next export",
     "deploy": "next build && next export && touch out/.nojekyll && node ./ghp-postbuild && git add -f out && git commit -m \"Deploy gh-pages\" && cd .. && git subtree push --prefix ui/out origin gh-pages"
   },
   "dependencies": {
-    "@aurowallet/mina-provider": "1.0.5",
+    "@aurowallet/mina-provider": "1.0.7",
     "@types/node": "20.12.12",
     "@types/react": "18.3.2",
     "@types/react-dom": "18.3.0",
     "coi-serviceworker": "^0.1.7",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.3",
     "next": "14.2.3",
     "o1js": "1.3.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "styled-components": "^6.0.8",
-    "typescript": "5.4.5",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.3"
+    "typescript": "5.4.5"
   },
   "devDependencies": {
     "babel-plugin-styled-components": "2.1.4"

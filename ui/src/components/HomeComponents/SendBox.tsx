@@ -5,7 +5,7 @@ import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
 import { SendTransactionResult, ProviderError } from "@aurowallet/mina-provider";
 
-export const MinaSendBox = () => {
+export const MinaSendBox = () => { 
   const [receiveAddress, setReceiveAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [fee, setFee] = useState("");
@@ -14,7 +14,7 @@ export const MinaSendBox = () => {
   const [resHash, setResHash] = useState("");
   const [errMsg, setErrMsg] = useState("");
 
-  const onChangeReceive = useCallback((e: any) => {
+  const onChangeReceive = useCallback((e: any) => { 
     setReceiveAddress(e.target.value);
   }, []);
   const onChangeAmount = useCallback((e: any) => {
@@ -46,7 +46,7 @@ export const MinaSendBox = () => {
       .catch((err: any) => err);
 
     if ((data as SendTransactionResult).hash) {
-      setResHash((data as SendTransactionResult).hash);
+      setResHash(JSON.stringify(data));
     } else {
       setErrMsg((data as ProviderError).message||"");
     }
