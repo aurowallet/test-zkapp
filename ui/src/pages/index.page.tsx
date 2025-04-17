@@ -1,8 +1,10 @@
 "use client";
 
 import { GithubCorner } from "@/components/GithubCorner";
+import { AppLinksBox } from "@/components/HomeComponents/AppLinkBox";
 import { BaseActionBox } from "@/components/HomeComponents/BasicActionBox.tsx";
 import { CreateNullifierBox } from "@/components/HomeComponents/CreateNullifierBox";
+import { CredentialBox } from "@/components/HomeComponents/CredentialBox";
 import { MinaSendBox } from "@/components/HomeComponents/SendBox.tsx";
 import { SignFieldsBox } from "@/components/HomeComponents/SignFieldsBox.tsx";
 import { SignMessageBox } from "@/components/HomeComponents/SignMessageBox.tsx";
@@ -11,6 +13,8 @@ import { SignTypeMessageBox } from "@/components/HomeComponents/SignTypeMessageB
 import { StakingBox } from "@/components/HomeComponents/StakingBox.tsx";
 import { SwitchChainBox } from "@/components/HomeComponents/SwitchChainBox";
 import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
+import { PageHead } from "@/components/PageHead";
+import { VersionBox } from "@/components/VersionBox";
 import {
   Container,
   PageContainer,
@@ -20,12 +24,9 @@ import {
   StyledStatusRowWrapper,
 } from "@/styles/HomeStyles.ts";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
-import Head from "next/head";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
 import StyledComponentsRegistry from "./registry";
-import { VersionBox } from "@/components/VersionBox";
-import { AppLinksBox } from "@/components/HomeComponents/AppLinkBox";
-import { PageHead } from "@/components/PageHead";
 
 export default function Home() {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -41,8 +42,8 @@ export default function Home() {
     const network: ChainInfoArgs = await (window as any)?.mina
       ?.requestNetwork()
       .catch((err: any) => err);
-    if(!network?.networkID){
-      return
+    if (!network?.networkID) {
+      return;
     }
     setCurrentNetwork(network);
   }, []);
@@ -61,8 +62,8 @@ export default function Home() {
       "chainChanged",
       async (chainInfo: ChainInfoArgs) => {
         console.log("chainChanged");
-        if(!chainInfo?.networkID){
-          return
+        if (!chainInfo?.networkID) {
+          return;
         }
         setCurrentNetwork(chainInfo);
       }
@@ -85,7 +86,7 @@ export default function Home() {
   return (
     <StyledComponentsRegistry>
       <PageContainer>
-        <PageHead/>
+        <PageHead />
         <header>
           <StyledPageTitle>AURO E2E Test zkApp</StyledPageTitle>
         </header>
@@ -133,12 +134,17 @@ export default function Home() {
           />
           <SignFieldsBox currentAccount={currentAccount} />
         </Container>
+
+        <Container>
+          <CredentialBox currentAccount={currentAccount} />
+        </Container>
         <StyledRowTitle>Dev</StyledRowTitle>
         <Container>
           <AppLinksBox />
         </Container>
       </PageContainer>
       <VersionBox />
+      <Toaster />
     </StyledComponentsRegistry>
   );
 }
