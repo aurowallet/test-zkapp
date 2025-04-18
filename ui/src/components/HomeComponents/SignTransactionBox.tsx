@@ -15,6 +15,7 @@ import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
 import Switch from "../Switch";
+import Link from "next/link";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -34,14 +35,21 @@ const StyledLeftName = styled.div`
   font-weight: 400;
   margin-right: 10px;
 `;
+const StyledRoute = styled.div`
+  font-size: 16px;
+  color: #6b5dfb;
+  font-weight: 400;
+  padding: 2px 4px;
+  cursor: pointer;
+`;
 export const SignTransactionBox = ({
   currentAccount,
-  network
+  network,
 }: {
   currentAccount: string;
-  network: ChainInfoArgs
+  network: ChainInfoArgs;
 }) => {
-  const [gqlUrl,setGqlUrl] = useState("")
+  const [gqlUrl, setGqlUrl] = useState("");
   const [zkAddress, setZkAddress] = useState("");
 
   const [fee, setFee] = useState("");
@@ -54,13 +62,12 @@ export const SignTransactionBox = ({
   const [keys, setKeys] = useState({
     publicKey: "",
     privateKey: "",
-    status:""
+    status: "",
   });
 
   const [displayText, setDisplayText] = useState("");
   const [txHash, setTxHash] = useState("");
   const [createHash, setCreateHash] = useState("");
-  
 
   const [createText, setCreateText] = useState("");
   const [isChecked, setIsChecked] = useState<boolean>(false);
@@ -112,14 +119,24 @@ export const SignTransactionBox = ({
     const nextStep = randomIntFromInterval(1);
     if (nextStep) {
       // sign and send in local
-      console.log('onClickTest network 1: ',JSON.stringify(network));
-      
-      const signRes = await zkappWorkerClient.signAndSendTx("", "", gqlUrl,network.networkID);
+      console.log("onClickTest network 1: ", JSON.stringify(network));
+
+      const signRes = await zkappWorkerClient.signAndSendTx(
+        "",
+        "",
+        gqlUrl,
+        network.networkID
+      );
       console.log("signRes", signRes);
     } else {
-      console.log('onClickTest network 2: ',JSON.stringify(network));
+      console.log("onClickTest network 2: ", JSON.stringify(network));
       // sign in ext and send in local
-      const signRes = await zkappWorkerClient.buildTxBody("", "", gqlUrl,network.networkID);
+      const signRes = await zkappWorkerClient.buildTxBody(
+        "",
+        "",
+        gqlUrl,
+        network.networkID
+      );
       console.log("signRes", signRes);
       const sendRes = await zkappWorkerClient.onlyProving(
         signRes as string,
@@ -128,7 +145,7 @@ export const SignTransactionBox = ({
       );
       console.log("sendRes", sendRes);
     }
-  }, [gqlUrl,network]);
+  }, [gqlUrl, network]);
   const onClickInit = useCallback(
     async (forceInit?: boolean) => {
       if (!zkAddress) {
@@ -144,8 +161,11 @@ export const SignTransactionBox = ({
 
         setDisplayText("Done loading web worker");
         console.log("Done loading web worker");
-        console.log('onClickInit network : ',JSON.stringify(network));
-        await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID);
+        console.log("onClickInit network : ", JSON.stringify(network));
+        await zkappWorkerClient.setActiveInstanceToBerkeley(
+          gqlUrl,
+          network.networkID
+        );
 
         const mina = (window as any).mina;
 
@@ -200,7 +220,7 @@ export const SignTransactionBox = ({
         setInitBtnStatus(true);
       }
     },
-    [zkAddress, state, gqlUrl, isChecked,network]
+    [zkAddress, state, gqlUrl, isChecked, network]
   );
 
   const onClickUpdate = useCallback(async () => {
@@ -236,7 +256,7 @@ export const SignTransactionBox = ({
       window as any
     ).mina?.sendTransaction({
       transaction: transactionJSON,
-      nonce:nonce,
+      nonce: nonce,
       feePayer: {
         fee: fee,
         memo: memo,
@@ -251,7 +271,7 @@ export const SignTransactionBox = ({
       setDisplayText("");
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo,nonce, state, isChecked]);
+  }, [fee, memo, nonce, state, isChecked]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -279,8 +299,11 @@ export const SignTransactionBox = ({
       await timeout(5);
       console.log("Done loading web worker");
       setCreateText("Done loading web worker");
-      console.log('createContract network : ',JSON.stringify(network));
-      await zkappWorkerClient.setActiveInstanceToBerkeley(gqlUrl,network.networkID); 
+      console.log("createContract network : ", JSON.stringify(network));
+      await zkappWorkerClient.setActiveInstanceToBerkeley(
+        gqlUrl,
+        network.networkID
+      );
       const mina = (window as any).mina;
       if (mina == null) {
         return;
@@ -312,7 +335,7 @@ export const SignTransactionBox = ({
         window as any
       ).mina.sendTransaction({
         transaction: transactionJSON,
-        nonce:nonce,
+        nonce: nonce,
         feePayer: {
           memo: "",
         },
@@ -326,7 +349,7 @@ export const SignTransactionBox = ({
         setDisplayText("");
       }
     },
-    [gqlUrl,nonce, currentAccount,network]
+    [gqlUrl, nonce, currentAccount, network]
   );
 
   useEffect(() => {
@@ -342,7 +365,7 @@ export const SignTransactionBox = ({
     setKeys({
       publicKey: PublicKey.toBase58(zkAppAddress),
       privateKey: PrivateKey.toBase58(zkAppPrivateKey),
-      status:String(self.crossOriginIsolated)
+      status: String(self.crossOriginIsolated),
     });
   }, []);
   const onClickCreate = useCallback(async () => {
@@ -392,10 +415,10 @@ export const SignTransactionBox = ({
     ).mina?.sendTransaction({
       onlySign: onlySign,
       transaction: transactionJSON,
-      nonce:nonce,
+      nonce: nonce,
       feePayer: {
         fee: fee,
-        memo: memo, 
+        memo: memo,
       },
     });
 
@@ -411,7 +434,7 @@ export const SignTransactionBox = ({
       setSendTxStatus(false);
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, nonce,state, isChecked, zkAddress,onClickInit]);
+  }, [fee, memo, nonce, state, isChecked, zkAddress, onClickInit]);
 
   const onClickTxSend = useCallback(async () => {
     const sendRes = await state.zkappWorkerClient!.sendProving(
@@ -429,7 +452,12 @@ export const SignTransactionBox = ({
   }, [keys]);
   return (
     <Box>
-      <StyledBoxTitle>Mina zkApp</StyledBoxTitle>
+      <StyledBoxTitle>
+        Mina zkApp
+        <StyledRoute>
+          <Link href={"/wallet-connect"}>Android Wallect Connect</Link>
+        </StyledRoute>
+      </StyledBoxTitle>
       * need input url and generate Key first
       <Input placeholder="Input Graphql Url" onChange={onChangeGqlUrl} />
       <StyledDividedLine />
