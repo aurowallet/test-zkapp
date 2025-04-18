@@ -27,7 +27,8 @@ const disabledButtonStyle: CSSProperties = {
   backgroundColor: "#cccccc",
   cursor: "not-allowed",
 };
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+// const isMobile = 
+
 export default function WalletConnect() {
   const [account, setAccount] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +38,14 @@ export default function WalletConnect() {
   const [signedMessage, setSignedMessage] = useState<string | null>(null);
   const [selectedChain, setSelectedChain] = useState<string>("mina:mainnet");
   const [loading, setLoading] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+  }, []);
   const chainOptions = ["mina:mainnet", "mina:devnet", "zeko:testnet"];
   const chromeScheme = isMobile ? "com.android.chrome" : "";
+
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
     hasWallet: null as null | boolean,
