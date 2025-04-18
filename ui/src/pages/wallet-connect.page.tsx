@@ -192,6 +192,7 @@ export default function WalletConnect() {
         console.log("Requesting send transaction...");
         const transactionJSON = await zkappWorkerClient!.getTransactionJSON();
         console.log("getZkTxBody==", transactionJSON);
+        return transactionJSON
       }
     },
     [state]
@@ -217,7 +218,7 @@ export default function WalletConnect() {
         return;
       }
       const nextConfig = (testConfig as any)[chainId];
-      await getZkTxBody(nextConfig, currentAccount);
+      return await getZkTxBody(nextConfig, currentAccount);
     },
     []
   );
