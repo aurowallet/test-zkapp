@@ -39,6 +39,7 @@ export default function WalletConnect() {
   const [selectedChain, setSelectedChain] = useState<string>("mina:mainnet");
   const [loading, setLoading] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [buildZkLog,setBuildZkLog] = useState("")
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
@@ -130,25 +131,20 @@ export default function WalletConnect() {
         let isInited = state.hasBeenSetup;
         let zkappWorkerClient = state.zkappWorkerClient;
         if (!state.hasBeenSetup || forceInit) {
-          console.log("Loading web worker...");
+          setBuildZkLog("Loading web worker...");
           zkappWorkerClient = new ZkappWorkerClient();
           await timeout(5);
 
-          console.log("Done loading web worker");
+          setBuildZkLog("Done loading web worker");
           await zkappWorkerClient.setActiveInstanceToBerkeley(
             config.gqlUrl,
             config.networkID
           );
-          const mina = (window as any).mina;
-          if (mina == null) {
-            setState({ ...state, hasWallet: false });
-            return;
-          }
           const publicKeyBase58: string = currentAccount;
           const publicKey = PublicKey.fromBase58(publicKeyBase58);
 
-          console.log(`Using key:${publicKey.toBase58()}`);
-          console.log("Checking if fee payer account exists...");
+          setBuildZkLog(`Using key:${publicKey.toBase58()}`);
+          setBuildZkLog("Checking if fee payer account exists...");
 
           const res = await zkappWorkerClient.fetchAccount({
             publicKey: publicKey!,
@@ -157,16 +153,16 @@ export default function WalletConnect() {
 
           await zkappWorkerClient.loadContract();
 
-          console.log("Compiling zkApp...");
+          setBuildZkLog("Compiling zkApp...");
           await zkappWorkerClient.compileContract();
-          console.log("zkApp compiled");
+          setBuildZkLog("zkApp compiled");
           const zkappPublicKey = PublicKey.fromBase58(config.zkAddress);
           await zkappWorkerClient.initZkappInstance(zkappPublicKey);
 
-          console.log("Getting zkApp state...");
+          setBuildZkLog("Getting zkApp state...");
           await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
           const currentNum = await zkappWorkerClient.getNum();
-          console.log(`Current state in zkApp: ${currentNum.toString()}`);
+          setBuildZkLog(`Current state in zkApp: ${currentNum.toString()}`);
 
           setState({
             ...state,
@@ -183,21 +179,20 @@ export default function WalletConnect() {
         if (isInited || state.hasBeenSetup) {
           setState({ ...state, creatingTransaction: true });
 
-          console.log("Creating a transaction...");
+          setBuildZkLog("Creating a transaction...");
 
           await zkappWorkerClient!.createUpdateTransaction();
 
-          console.log("Creating proof...");
+          setBuildZkLog("Creating proof...");
           await zkappWorkerClient!.proveUpdateTransaction();
 
-          console.log("Requesting send transaction...");
+          setBuildZkLog("Requesting send transaction...");
           const transactionJSON = await zkappWorkerClient!.getTransactionJSON();
-          console.log("getZkTxBody==", transactionJSON);
-          toast.custom("buildres:" + transactionJSON);
+          setBuildZkLog("getZkTxBody,"+JSON.stringify(transactionJSON).slice(0,100));
           return transactionJSON;
         }
       } catch (error) {
-        toast.custom("build err:" + String(error));
+        setBuildZkLog("build err:" + String(error));
       }
     },
     [state]
@@ -223,7 +218,6 @@ export default function WalletConnect() {
         return;
       }
       const nextConfig = (testConfig as any)[chainId];
-      toast.custom("getZkBuildBody:" + JSON.stringify(nextConfig));
       return await getZkTxBody(nextConfig, currentAccount);
     },
     []
@@ -231,13 +225,12 @@ export default function WalletConnect() {
 
   // Handle sending zkApp transaction
   const handleSendZkTransaction = async () => {
+    setBuildZkLog("")
     if (!client || !session || !account) {
       setError("Please connect wallet first");
       return;
     }
     const zkTransaction = await getZkBuildBody(selectedChain, account);
-    toast.custom("handleSendZkTransaction:" + zkTransaction);
-    console.log("handleSendZkTransaction:", zkTransaction);
     
     setError(null);
     setPaymentResult(null);
@@ -260,10 +253,9 @@ export default function WalletConnect() {
       };
       const result = await client.request(zkRequest);
       setPaymentResult(JSON.stringify(result, null, 2));
-      console.log("Zk transaction result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to send zk transaction");
-      console.error("Send zk transaction error:", error);
+      setBuildZkLog("Send zk transaction error:"+ JSON.stringify(error));
     }
   };
 
@@ -712,6 +704,9 @@ export default function WalletConnect() {
                 ? "Loading..."
                 : "Send zkAppTransaction"}
             </button>
+            <pre>
+              {buildZkLog}
+            </pre>
             <button
               style={
                 loading === "disconnect" ? disabledButtonStyle : buttonStyle
