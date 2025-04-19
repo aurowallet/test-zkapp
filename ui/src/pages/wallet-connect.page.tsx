@@ -89,10 +89,6 @@ export default function WalletConnect() {
 
   // Handle wallet connection
   const handleConnect = async () => {
-    const zkTransaction = await getZkBuildBody(selectedChain, "B62qpjxUpgdjzwQfd8q2gzxi99wN7SCgmofpvw27MBkfNHfHoY2VH32");
-    toast.custom("handleSendZkTransaction:" + zkTransaction);
-    console.log("handleSendZkTransaction:", zkTransaction);
-    return;
     setError(null);
     try {
       const walletClient = await initWalletConnect();
