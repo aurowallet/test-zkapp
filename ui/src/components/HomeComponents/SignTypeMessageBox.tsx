@@ -137,13 +137,19 @@ iat: ${new Date().getTime()}`;
   return (
     <Box>
       <StyledBoxTitle>Mina Sign Type Message</StyledBoxTitle>
-      <Button onClick={onSignType}>Sign Type Message</Button>
+      <Button checkConnection={true} onClick={onSignType}>
+        Sign Type Message
+      </Button>
       <InfoRow
         title="Sign Type Message result: "
         content={signRes}
         type={InfoType.secondary}
       />
-      <Button onClick={onVerifyType} disabled={verifyBtnStatus}>
+      <Button
+        checkConnection={true}
+        onClick={onVerifyType}
+        disabled={verifyBtnStatus}
+      >
         Verify Type Message
       </Button>
       <InfoRow
@@ -154,13 +160,19 @@ iat: ${new Date().getTime()}`;
 
       <StyledDividedLine />
 
-      <Button onClick={onSignJson}>Sign Json Message</Button>
+      <Button checkConnection={true} onClick={onSignJson}>
+        Sign Json Message
+      </Button>
       <InfoRow
         title="Sign Json Message result: "
         content={signJsonRes}
         type={InfoType.secondary}
       />
-      <Button onClick={onVerifyJson} disabled={verifyJsonBtnStatus}>
+      <Button
+        checkConnection={true}
+        onClick={onVerifyJson}
+        disabled={verifyJsonBtnStatus}
+      >
         Verify Json Message
       </Button>
       <InfoRow

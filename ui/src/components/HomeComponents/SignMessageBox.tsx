@@ -68,7 +68,9 @@ export const SignMessageBox = ({
     <Box>
       <StyledBoxTitle>Mina Sign</StyledBoxTitle>
       <Input placeholder="Set sign content" onChange={onChangeSignContent} />
-      <Button onClick={onSign}>Sign</Button>
+      <Button checkConnection={true} onClick={onSign}>
+        Sign
+      </Button>
       <InfoRow
         title="Sign result: "
         content={signRes}
@@ -86,7 +88,11 @@ export const SignMessageBox = ({
         onChange={onChangeVerifySignature}
         value={verifySignature}
       />
-      <Button onClick={onVerify} disabled={verifyBtnStatus}>
+      <Button
+        checkConnection={true}
+        onClick={onVerify}
+        disabled={verifyBtnStatus}
+      >
         Verify
       </Button>
       <InfoRow

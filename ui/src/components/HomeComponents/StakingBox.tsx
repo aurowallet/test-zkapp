@@ -58,7 +58,9 @@ export const StakingBox = () => {
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
       <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       <StyledDividedLine />
-      <Button onClick={onClickStaking}>Staking</Button>
+      <Button checkConnection={true} onClick={onClickStaking}>
+        Staking
+      </Button>
       <InfoRow
         title="Staking Result: "
         content={resHash || errMsg}

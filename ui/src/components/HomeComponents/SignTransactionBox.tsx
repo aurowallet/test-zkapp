@@ -490,7 +490,11 @@ export const SignTransactionBox = ({
       {/* <Button disabled={initBtnStatus} onClick={onClickTest}>
         {"testZK"}
       </Button> */}
-      <Button disabled={initBtnStatus} onClick={onClickInit}>
+      <Button
+        disabled={initBtnStatus}
+        checkConnection={true}
+        onClick={() => onClickInit(false)}
+      >
         {"Init ZkState"}
       </Button>
       <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
@@ -498,15 +502,27 @@ export const SignTransactionBox = ({
       <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       {isChecked ? (
         <StyledButtonGroup>
-          <Button disabled={updateBtnStatus} onClick={onClickBuilTx}>
+          <Button
+            checkConnection={true}
+            disabled={updateBtnStatus}
+            onClick={onClickBuilTx}
+          >
             Build TxBody And Sign
           </Button>
-          <Button disabled={sendTxStatus} onClick={onClickTxSend}>
+          <Button
+            checkConnection={true}
+            disabled={sendTxStatus}
+            onClick={onClickTxSend}
+          >
             Send Tx
           </Button>
         </StyledButtonGroup>
       ) : (
-        <Button disabled={updateBtnStatus} onClick={onClickUpdate}>
+        <Button
+          checkConnection={true}
+          disabled={updateBtnStatus}
+          onClick={onClickUpdate}
+        >
           Update
         </Button>
       )}

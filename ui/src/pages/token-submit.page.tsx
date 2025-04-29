@@ -170,7 +170,8 @@ export default function TokenSubmit() {
   }, [connectStatus]);
 
   const onClick = useCallback(async () => {
-    const data: string[] | ProviderError = await provider?.requestAccounts()
+    const data: string[] | ProviderError = await provider
+      ?.requestAccounts()
       .catch((err: any) => err);
     if ((data as ProviderError).message) {
     } else {
@@ -192,12 +193,12 @@ export default function TokenSubmit() {
     } else {
       setSignResultData((signResult as ProviderError).message || "");
     }
-  }, [inputData,provider]);
+  }, [inputData, provider]);
 
   const onVerify = useCallback(async () => {
     let verifyMessageBody = {
       publicKey: currentAccount,
-      signature: JSON.parse( signedData),
+      signature: JSON.parse(signedData),
       data: JSON.stringify(inputSourceData),
     };
 
@@ -209,7 +210,7 @@ export default function TokenSubmit() {
     } else {
       setVerifyResultData(verifyResult + "");
     }
-  }, [inputSourceData, signedData, currentAccount,provider]);
+  }, [inputSourceData, signedData, currentAccount, provider]);
   const onCopy = useCallback(async () => {
     const res = await navigator.clipboard
       .writeText(signResultData)
@@ -258,12 +259,10 @@ export default function TokenSubmit() {
         </StyledContentWrapper>
         <StyledBottomWrapper>
           <StyledButtonWraper>
-            <Button onClick={onSign}>
+            <Button checkConnection={true} onClick={onSign}>
               Sign
             </Button>
-            <Button onClick={onCopy}>
-              Copy Result
-            </Button>
+            <Button onClick={onCopy}>Copy Result</Button>
           </StyledButtonWraper>
         </StyledBottomWrapper>
       </StyledSectionWrapper>
@@ -288,7 +287,7 @@ export default function TokenSubmit() {
         </StyledContentWrapper>
         <StyledBottomWrapper>
           <StyledButtonWraper>
-            <Button checkInstall={false} onClick={onVerify}>
+            <Button checkConnection={true} onClick={onVerify}>
               Verify
             </Button>
           </StyledButtonWraper>

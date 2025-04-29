@@ -66,7 +66,9 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
       </StyledBoxTitle>
       <Input placeholder="Input GraphQL Url" onChange={onChangeGraphQLUrl} />
       <Input placeholder="Input Network Name" onChange={onChangeNetworkName} />
-      <Button onClick={onAdd}>Add Chain</Button>
+      <Button checkConnection={true} onClick={onAdd}>
+        Add Chain
+      </Button>
       <InfoRow
         title="Add Chain result: "
         content={addRes}
@@ -80,7 +82,9 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
           return supportChain + " , ";
         })}
       </InfoRow>
-      <Button onClick={onSwitch}>Switch Chain</Button>
+      <Button checkConnection={true} onClick={onSwitch}>
+        Switch Chain
+      </Button>
       <InfoRow
         title="Switch Chain result: "
         content={switchRes}

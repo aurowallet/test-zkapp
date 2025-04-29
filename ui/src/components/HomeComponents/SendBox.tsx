@@ -66,7 +66,9 @@ export const MinaSendBox = () => {
       <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
       <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       <StyledDividedLine />
-      <Button onClick={onClickSend}>Send</Button>
+      <Button checkConnection={true} onClick={onClickSend}>
+        Send
+      </Button>
       <InfoRow
         title="Send Result: "
         content={resHash || errMsg}

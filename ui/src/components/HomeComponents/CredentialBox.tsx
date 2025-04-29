@@ -1,3 +1,4 @@
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import {
   IRequestPresentation,
@@ -9,7 +10,6 @@ import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import styled from "styled-components";
 import { Button } from "../Button";
-import { useMinaProvider } from "@/context/MinaProviderContext";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -106,12 +106,20 @@ export const CredentialBox = ({
         <Button onClick={onGenerateCredential}>
           Generate Credential & Copy
         </Button>
-        <Button disabled={isStoring} onClick={onStoreCredential}>
+        <Button
+          checkConnection={true}
+          disabled={isStoring}
+          onClick={onStoreCredential}
+        >
           {isStoring ? "Storing..." : "Store Credential"}
         </Button>
       </StyledButtonGroup>
       <StyledDividedLine />
-      <Button disabled={!!isLoading} onClick={onRequestPresentation}>
+      <Button
+        checkConnection={true}
+        disabled={!!isLoading}
+        onClick={onRequestPresentation}
+      >
         {isLoading ?? "Anonymous Login"}
       </Button>
     </Box>
