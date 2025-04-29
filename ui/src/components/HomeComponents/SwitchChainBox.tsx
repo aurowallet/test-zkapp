@@ -1,22 +1,24 @@
 import { DefaultSupportNetorkIDs } from "@/constants/config";
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 
 export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
+  const { provider } = useMinaProvider();
+
   const [switchRes, setSwitchRes] = useState("");
   const [networkID, setNetworkID] = useState("");
-  const [graphQLUrl, setGraphQLUrl] = useState("")
-  const [networkName, setNetworkName] = useState("")
+  const [graphQLUrl, setGraphQLUrl] = useState("");
+  const [networkName, setNetworkName] = useState("");
   const [addRes, setAddRes] = useState("");
 
   const onChangeNetworkID = useCallback((e: any) => {
     setNetworkID(e.target.value);
   }, []);
-
 
   const onChangeGraphQLUrl = useCallback((e: any) => {
     setGraphQLUrl(e.target.value);
@@ -25,41 +27,37 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
   const onChangeNetworkName = useCallback((e: any) => {
     setNetworkName(e.target.value);
   }, []);
-  
-  
+
   const onSwitch = useCallback(async () => {
-    const switchResult:ChainInfoArgs|ProviderError = await (window as any)?.mina
+    const switchResult: ChainInfoArgs | ProviderError = await provider
       ?.switchChain({
         networkID: networkID.trim(),
       })
       .catch((err: any) => err);
-      console.log('onSwitch==0,',switchResult);
     if ((switchResult as ProviderError).message) {
       setSwitchRes((switchResult as ProviderError).message);
     } else {
       setSwitchRes(JSON.stringify(switchResult));
     }
-  }, [networkID]);
-  const supportChainList:string[] = useMemo(() => {
+  }, [networkID, provider]);
+  const supportChainList: string[] = useMemo(() => {
     return Object.values(DefaultSupportNetorkIDs);
   }, []);
 
-
-  const onAdd =  useCallback(async () => {
+  const onAdd = useCallback(async () => {
     const addInfo = {
       url: encodeURIComponent(graphQLUrl),
       name: networkName,
-    }
-    const addResult:ChainInfoArgs|ProviderError = await (window as any)?.mina
+    };
+    const addResult: ChainInfoArgs | ProviderError = await provider
       ?.addChain(addInfo)
       .catch((err: any) => err);
-      console.log('addResult==0,',addResult);
     if ((addResult as ProviderError).message) {
       setAddRes((addResult as ProviderError).message);
     } else {
       setAddRes(JSON.stringify(addResult));
     }
-  }, [graphQLUrl,networkName]);
+  }, [graphQLUrl, networkName, provider]);
 
   return (
     <Box>
@@ -78,11 +76,9 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
 
       <Input placeholder="Input NetworkId" onChange={onChangeNetworkID} />
       <InfoRow title="Current Support NetworkID: " type={InfoType.success}>
-        {
-          supportChainList.map((supportChain)=>{
-            return supportChain + " , "
-          })
-        }
+        {supportChainList.map((supportChain) => {
+          return supportChain + " , ";
+        })}
       </InfoRow>
       <Button onClick={onSwitch}>Switch Chain</Button>
       <InfoRow

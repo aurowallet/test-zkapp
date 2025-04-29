@@ -16,6 +16,8 @@ import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
 import Switch from "../Switch";
 import Link from "next/link";
+import { useMinaProvider } from "@/context/MinaProviderContext";
+import toast from "react-hot-toast";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -49,6 +51,8 @@ export const SignTransactionBox = ({
   currentAccount: string;
   network: ChainInfoArgs;
 }) => {
+  const { provider } = useMinaProvider();
+
   const [gqlUrl, setGqlUrl] = useState("");
   const [zkAddress, setZkAddress] = useState("");
 
@@ -167,14 +171,18 @@ export const SignTransactionBox = ({
           network.networkID
         );
 
-        const mina = (window as any).mina;
+        const mina = provider;
 
         if (mina == null) {
           setState({ ...state, hasWallet: false });
           return;
         }
-
-        const publicKeyBase58: string = (await mina.requestAccounts())[0];
+        const connectAccount = await mina.requestAccounts();
+        if (!Array.isArray(connectAccount)) {
+          toast.error("Please connect wallet first");
+          return;
+        }
+        const publicKeyBase58: string = connectAccount[0];
         const publicKey = PublicKey.fromBase58(publicKeyBase58);
 
         console.log(`Using key:${publicKey.toBase58()}`);
@@ -220,7 +228,7 @@ export const SignTransactionBox = ({
         setInitBtnStatus(true);
       }
     },
-    [zkAddress, state, gqlUrl, isChecked, network]
+    [zkAddress, state, gqlUrl, isChecked, network, provider]
   );
 
   const onClickUpdate = useCallback(async () => {
@@ -252,16 +260,16 @@ export const SignTransactionBox = ({
 
     setDisplayText("Getting transaction JSON...");
     console.log("Getting transaction JSON...");
-    const res: SendTransactionResult | ProviderError = await (
-      window as any
-    ).mina?.sendTransaction({
-      transaction: transactionJSON,
-      nonce: nonce,
-      feePayer: {
-        fee: fee,
-        memo: memo,
-      },
-    });
+    const res: SendTransactionResult | ProviderError = await provider
+      ?.sendTransaction({
+        transaction: transactionJSON as object,
+        nonce: parseInt(nonce),
+        feePayer: {
+          fee: parseFloat(fee),
+          memo: memo,
+        },
+      })
+      .catch((err) => err);
     if ((res as ProviderError).code) {
       setTxHash("");
       setDisplayText((res as ProviderError).message);
@@ -271,7 +279,7 @@ export const SignTransactionBox = ({
       setDisplayText("");
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, nonce, state, isChecked]);
+  }, [fee, memo, nonce, state, isChecked, provider]);
 
   const onRefreshCurrentNum = useCallback(async () => {
     console.log("Getting zkApp state...");
@@ -304,7 +312,7 @@ export const SignTransactionBox = ({
         gqlUrl,
         network.networkID
       );
-      const mina = (window as any).mina;
+      const mina = provider;
       if (mina == null) {
         return;
       }
@@ -331,15 +339,15 @@ export const SignTransactionBox = ({
       await zkappWorkerClient.proveUpdateTransaction();
       const transactionJSON = await zkappWorkerClient.getTransactionJSON();
       setCreateText("waiting wallet confirm");
-      const sendRes: SendTransactionResult | ProviderError = await (
-        window as any
-      ).mina.sendTransaction({
-        transaction: transactionJSON,
-        nonce: nonce,
-        feePayer: {
-          memo: "",
-        },
-      });
+      const sendRes: SendTransactionResult | ProviderError = await provider
+        ?.sendTransaction({
+          transaction: transactionJSON as object,
+          nonce: parseInt(nonce),
+          feePayer: {
+            memo: "",
+          },
+        })
+        .catch((err) => err);
       setCreateText("");
       if ((sendRes as ProviderError).code) {
         setCreateHash((sendRes as ProviderError).message);
@@ -349,7 +357,7 @@ export const SignTransactionBox = ({
         setDisplayText("");
       }
     },
-    [gqlUrl, nonce, currentAccount, network]
+    [gqlUrl, nonce, currentAccount, network, provider]
   );
 
   useEffect(() => {
@@ -410,17 +418,17 @@ export const SignTransactionBox = ({
 
     setDisplayText("Getting transaction JSON...");
     console.log("Getting transaction JSON...");
-    const res: SendTransactionResult | ProviderError = await (
-      window as any
-    ).mina?.sendTransaction({
-      onlySign: onlySign,
-      transaction: transactionJSON,
-      nonce: nonce,
-      feePayer: {
-        fee: fee,
-        memo: memo,
-      },
-    });
+    const res: SendTransactionResult | ProviderError = await provider
+      ?.sendTransaction({
+        onlySign: onlySign,
+        transaction: transactionJSON as object,
+        nonce: parseInt(nonce),
+        feePayer: {
+          fee: parseFloat(fee),
+          memo: memo,
+        },
+      })
+      .catch((err) => err);
 
     if ((res as ProviderError).code) {
       setTxHash("");
@@ -434,7 +442,7 @@ export const SignTransactionBox = ({
       setSendTxStatus(false);
     }
     setState({ ...state, creatingTransaction: false });
-  }, [fee, memo, nonce, state, isChecked, zkAddress, onClickInit]);
+  }, [fee, memo, nonce, state, isChecked, zkAddress, onClickInit, provider]);
 
   const onClickTxSend = useCallback(async () => {
     const sendRes = await state.zkappWorkerClient!.sendProving(

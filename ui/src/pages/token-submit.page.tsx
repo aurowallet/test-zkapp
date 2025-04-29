@@ -1,5 +1,6 @@
 import { Button } from "@/components/Button";
 import { PageHead } from "@/components/PageHead";
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import { StyledDividedLine, StyledPageTitle } from "@/styles/HomeStyles";
 import { addressSlice } from "@/utils";
 import { ProviderError, SignedData } from "@aurowallet/mina-provider";
@@ -118,6 +119,8 @@ const COLORS_MAP = {
   },
 };
 export default function TokenSubmit() {
+  const { provider } = useMinaProvider();
+
   const [connectStatus, setConnectStatus] = useState<boolean>();
   const [currentAccount, setCurrentAccount] = useState("");
   const [inputData, setInputData] = useState("");
@@ -128,15 +131,15 @@ export default function TokenSubmit() {
   const [verifyResultData, setVerifyResultData] = useState("");
 
   const initAccount = useCallback(async () => {
-    const data: string[] | ProviderError = await (window as any)?.mina
+    const data: string[] | ProviderError = await provider
       ?.getAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {
       setCurrentAccount(data[0]);
     }
-  }, []);
+  }, [provider]);
   useEffect(() => {
-    (window as any)?.mina?.on("accountsChanged", async (accounts: string[]) => {
+    provider?.on("accountsChanged", async (accounts: string[]) => {
       console.log("accountsChanged", accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
@@ -144,7 +147,7 @@ export default function TokenSubmit() {
         console.log("disconnect");
       }
     });
-  }, []);
+  }, [provider]);
 
   useEffect(() => {
     initAccount();
@@ -167,19 +170,18 @@ export default function TokenSubmit() {
   }, [connectStatus]);
 
   const onClick = useCallback(async () => {
-    const data: string[] | ProviderError = await (window as any)?.mina
-      .requestAccounts()
+    const data: string[] | ProviderError = await provider?.requestAccounts()
       .catch((err: any) => err);
     if ((data as ProviderError).message) {
     } else {
       let account = (data as string[])[0];
       setCurrentAccount(account);
     }
-  }, []);
+  }, [provider]);
   const onSign = useCallback(async () => {
     setVerifyResultData("");
     const signContent = inputData.trim();
-    const signResult: SignedData | ProviderError = await (window as any)?.mina
+    const signResult: SignedData | ProviderError = await provider
       ?.signMessage({
         message: JSON.stringify(signContent),
       })
@@ -190,16 +192,16 @@ export default function TokenSubmit() {
     } else {
       setSignResultData((signResult as ProviderError).message || "");
     }
-  }, [inputData]);
+  }, [inputData,provider]);
 
   const onVerify = useCallback(async () => {
     let verifyMessageBody = {
       publicKey: currentAccount,
-      signature: signedData,
+      signature: JSON.parse( signedData),
       data: JSON.stringify(inputSourceData),
     };
 
-    let verifyResult: boolean | ProviderError = await (window as any)?.mina
+    let verifyResult: boolean | ProviderError = await provider
       ?.verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
     if ((verifyResult as ProviderError).message) {
@@ -207,7 +209,7 @@ export default function TokenSubmit() {
     } else {
       setVerifyResultData(verifyResult + "");
     }
-  }, [inputSourceData, signedData, currentAccount]);
+  }, [inputSourceData, signedData, currentAccount,provider]);
   const onCopy = useCallback(async () => {
     const res = await navigator.clipboard
       .writeText(signResultData)
@@ -256,10 +258,10 @@ export default function TokenSubmit() {
         </StyledContentWrapper>
         <StyledBottomWrapper>
           <StyledButtonWraper>
-            <Button checkInstall={false} onClick={onSign}>
+            <Button onClick={onSign}>
               Sign
             </Button>
-            <Button checkInstall={false} onClick={onCopy}>
+            <Button onClick={onCopy}>
               Copy Result
             </Button>
           </StyledButtonWraper>

@@ -3,6 +3,7 @@ import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { useCallback, useEffect, useState } from "react";
 import { ProviderError } from "@aurowallet/mina-provider";
+import { useMinaProvider } from "@/context/MinaProviderContext";
 
 export const BaseActionBox = ({
   currentAccount,
@@ -11,6 +12,8 @@ export const BaseActionBox = ({
   currentAccount: string;
   onSetCurrentAccount: (account: string) => void;
 }) => {
+  const { provider } = useMinaProvider();
+
   const [accounts, setAccounts] = useState(currentAccount);
   const [accountsMsg, setAccountsMsg] = useState("");
   const [btnTxt, setBtnTxt] = useState("connect");
@@ -28,8 +31,8 @@ export const BaseActionBox = ({
     setAccounts(currentAccount);
   }, [currentAccount]);
   const onClickConnect = useCallback(async () => {
-    const data: string[] | ProviderError = await (window as any)?.mina
-      .requestAccounts()
+    const data: string[] | ProviderError = await provider
+      ?.requestAccounts()
       .catch((err: any) => err);
     if ((data as ProviderError).message) {
       setAccountsMsg((data as ProviderError).message);
@@ -39,21 +42,20 @@ export const BaseActionBox = ({
       setAccounts(account);
       setAccountsMsg("");
     }
-  }, [onSetCurrentAccount]);
+  }, [onSetCurrentAccount, provider]);
 
   const onGetAccount = useCallback(async () => {
-    let data = await (window as any)?.mina?.getAccounts();
-    setNoWindowAccount(data);
+    let data = await provider?.getAccounts();
+    setNoWindowAccount(data?.toString() || "");
     if (Array.isArray(data) && data.length > 0) {
       onSetCurrentAccount(data[0]);
     }
-    setNoWindowAccount(data);
-  }, [onSetCurrentAccount]);
+  }, [onSetCurrentAccount, provider]);
 
   const onGetWalletInfo = useCallback(async () => {
-    let data = await (window as any)?.mina?.getWalletInfo();
+    let data = await provider?.getWalletInfo();
     setWalletInfo(JSON.stringify(data));
-  }, []);
+  }, [provider]);
 
   return (
     <Box>

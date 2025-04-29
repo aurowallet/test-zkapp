@@ -1,11 +1,18 @@
-'use client'
+"use client";
 
-import '@/styles/globals.css'
-import type { AppProps } from 'next/app'
+import "@/styles/globals.css";
+import type { AppProps } from "next/app";
 
-import './reactCOIServiceWorker';
-import StyledComponentsRegistry from './registry';
+import "./reactCOIServiceWorker";
+import StyledComponentsRegistry from "./registry";
+import { AuroMinaProvider } from "@/context/MinaProviderContext";
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <StyledComponentsRegistry><Component {...pageProps} /></StyledComponentsRegistry>
+  return (
+    <AuroMinaProvider>
+      <StyledComponentsRegistry>
+        <Component {...pageProps} />
+      </StyledComponentsRegistry>
+    </AuroMinaProvider>
+  );
 }

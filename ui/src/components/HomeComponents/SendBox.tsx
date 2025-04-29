@@ -1,11 +1,17 @@
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
-import { useCallback, useMemo, useState } from "react";
+import {
+  ProviderError,
+  SendTransactionResult,
+} from "@aurowallet/mina-provider";
+import { useCallback, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { SendTransactionResult, ProviderError } from "@aurowallet/mina-provider";
 
-export const MinaSendBox = () => { 
+export const MinaSendBox = () => {
+  const { provider } = useMinaProvider();
+
   const [receiveAddress, setReceiveAddress] = useState("");
   const [amount, setAmount] = useState("");
   const [fee, setFee] = useState("");
@@ -14,7 +20,7 @@ export const MinaSendBox = () => {
   const [resHash, setResHash] = useState("");
   const [errMsg, setErrMsg] = useState("");
 
-  const onChangeReceive = useCallback((e: any) => { 
+  const onChangeReceive = useCallback((e: any) => {
     setReceiveAddress(e.target.value);
   }, []);
   const onChangeAmount = useCallback((e: any) => {
@@ -32,25 +38,24 @@ export const MinaSendBox = () => {
   const onClickSend = useCallback(async () => {
     setResHash("");
     setErrMsg("");
-    let params  = {
-      amount: amount,
+    let params = {
+      amount: parseFloat(amount),
       to: receiveAddress,
-      fee: fee,
+      fee: parseFloat(fee),
       memo: memo,
-      nonce:nonce
-    }
-    console.log('params==',params);
-    
-    let data:SendTransactionResult|ProviderError = await (window as any)?.mina
+      nonce: parseInt(nonce),
+    };
+
+    let data: SendTransactionResult | ProviderError = await provider
       ?.sendPayment(params)
       .catch((err: any) => err);
 
     if ((data as SendTransactionResult).hash) {
       setResHash(JSON.stringify(data));
     } else {
-      setErrMsg((data as ProviderError).message||"");
+      setErrMsg((data as ProviderError).message || "");
     }
-  }, [receiveAddress, amount, fee, memo,nonce]); 
+  }, [receiveAddress, amount, fee, memo, nonce, provider]);
 
   return (
     <Box>
@@ -62,9 +67,9 @@ export const MinaSendBox = () => {
       <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
       <StyledDividedLine />
       <Button onClick={onClickSend}>Send</Button>
-      <InfoRow 
+      <InfoRow
         title="Send Result: "
-        content={resHash||errMsg}
+        content={resHash || errMsg}
         type={InfoType.secondary}
       />
     </Box>

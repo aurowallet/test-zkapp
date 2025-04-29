@@ -42,30 +42,20 @@ export const StyledButton = styled.button`
   }
 `;
 
-export type IButton ={
-  children?:any
-  disabled?:boolean
-  onClick:any,
-  checkInstall?:boolean 
-}
+export type IButton = {
+  children?: any;
+  disabled?: boolean;
+  onClick: any;
+};
 export const Button = ({
   children,
   disabled,
   onClick,
-  checkInstall = true,
-}: IButton) => {
+}: 
+IButton) => {
   const onClickBtn = useCallback(
     (e: any) => {
-      if (checkInstall) {
-        if (!(window as any)?.mina) {
-          alert("No provider was found Please install Auro Wallet");
-          return;
-        } else {
-          onClick(e);
-        }
-      } else {
-        onClick(e);
-      }
+      onClick(e);
     },
     [onClick]
   );

@@ -1,25 +1,32 @@
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import {
+  Nullifier,
+  ProviderError
+} from "@aurowallet/mina-provider";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { CreateNullifierArgs, Nullifier, ProviderError } from "@aurowallet/mina-provider";
 
 export const CreateNullifierBox = () => {
+  const { provider } = useMinaProvider();
+
   const [signFields, setSignFields] = useState("");
-  const [createRes, setCreateRes] = useState<Nullifier|ProviderError|string>();
+  const [createRes, setCreateRes] = useState<
+    Nullifier | ProviderError | string
+  >();
 
   const onChangeMessageContent = useCallback((e: any) => {
     setSignFields(e.target.value);
   }, []);
 
   const onCreate = useCallback(async () => {
-    let signContent:CreateNullifierArgs
     try {
-      signContent = JSON.parse(signFields);
-      const signResult: Nullifier|ProviderError = await (window as any)?.mina
-        .createNullifier({
-          message: signContent as CreateNullifierArgs,
+      let parseSignContent = JSON.parse(signFields);
+      const signResult: Nullifier | ProviderError = await provider
+        ?.createNullifier({
+          message: parseSignContent,
         })
         .catch((err: any) => err);
 
@@ -31,14 +38,14 @@ export const CreateNullifierBox = () => {
     } catch (error) {
       console.warn(error);
     }
-  }, [signFields]);
-  const nullifierContent = useMemo(()=>{
-    let content = ""
-    if(createRes){
-      content = JSON.stringify(createRes, null, 2)
+  }, [signFields, provider]);
+  const nullifierContent = useMemo(() => {
+    let content = "";
+    if (createRes) {
+      content = JSON.stringify(createRes, null, 2);
     }
-    return content
-  },[createRes])
+    return content;
+  }, [createRes]);
 
   return (
     <Box>

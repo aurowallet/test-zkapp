@@ -96,11 +96,11 @@ export const AppLinksBox = ({}: {}) => {
         content={"noWindowAccount"}
         type={InfoType.secondary}
       />
-      <Button checkInstall={false} onClick={onClickJump}>
+      <Button onClick={onClickJump}>
         App Links
       </Button>
       <StyledDividedLine />
-      <Button checkInstall={false} onClick={deepLinkJump}>
+      <Button onClick={deepLinkJump}>
         DeepLink
       </Button>
     </Box>

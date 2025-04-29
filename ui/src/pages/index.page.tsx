@@ -15,6 +15,7 @@ import { SwitchChainBox } from "@/components/HomeComponents/SwitchChainBox";
 import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
 import { PageHead } from "@/components/PageHead";
 import { VersionBox } from "@/components/VersionBox";
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import {
   Container,
   PageContainer,
@@ -29,6 +30,8 @@ import { Toaster } from "react-hot-toast";
 import StyledComponentsRegistry from "./registry";
 
 export default function Home() {
+  const { provider } = useMinaProvider();
+
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentNetwork, setCurrentNetwork] = useState<ChainInfoArgs>({
     networkID: "",
@@ -39,18 +42,18 @@ export default function Home() {
   }, []);
 
   const initNetwork = useCallback(async () => {
-    const network: ChainInfoArgs = await (window as any)?.mina
+    const network: ChainInfoArgs = await provider
       ?.requestNetwork()
       .catch((err: any) => err);
     if (!network?.networkID) {
       return;
     }
     setCurrentNetwork(network);
-  }, []);
+  }, [provider]);
 
   useEffect(() => {
     /** account change listener */
-    (window as any)?.mina?.on("accountsChanged", async (accounts: string[]) => {
+    provider?.on("accountsChanged", async (accounts: string[]) => {
       console.log("accountsChanged", accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
@@ -58,30 +61,31 @@ export default function Home() {
         console.log("disconnect"); // handled disconnect here
       }
     });
-    (window as any)?.mina?.on(
-      "chainChanged",
-      async (chainInfo: ChainInfoArgs) => {
-        console.log("chainChanged");
-        if (!chainInfo?.networkID) {
-          return;
-        }
-        setCurrentNetwork(chainInfo);
+    provider?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
+      console.log("chainChanged");
+      if (!chainInfo?.networkID) {
+        return;
       }
-    );
+      setCurrentNetwork(chainInfo);
+    });
     initNetwork();
-  }, []);
+  }, [provider]);
 
   const initAccount = useCallback(async () => {
-    const data: string[] | ProviderError = await (window as any)?.mina
+    const data: string[] | ProviderError = await provider
       ?.getAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {
       setCurrentAccount(data[0]);
     }
-  }, []);
+  }, [provider]);
   useEffect(() => {
     initAccount();
-  }, []);
+  }, [provider]);
+
+  useEffect(() => {
+    console.log("provider", provider);
+  }, [provider]);
 
   return (
     <StyledComponentsRegistry>

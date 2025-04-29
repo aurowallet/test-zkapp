@@ -9,6 +9,7 @@ import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import styled from "styled-components";
 import { Button } from "../Button";
+import { useMinaProvider } from "@/context/MinaProviderContext";
 
 const StyledButtonGroup = styled.div`
   display: flex;
@@ -31,6 +32,8 @@ export const CredentialBox = ({
 }: {
   currentAccount: string;
 }) => {
+  const { provider } = useMinaProvider();
+
   const [isStoring, setIsStoring] = useState(false);
   const [isLoading, setIsLoading] = useState<string | undefined>(undefined);
   const [credential, setCredential] = useState<{
@@ -47,8 +50,8 @@ export const CredentialBox = ({
   const onStoreCredential = useCallback(async () => {
     try {
       setIsStoring(true);
-      const storeResult: IStoreCredentialData = await (window as any)?.mina
-        .storePrivateCredential({
+      const storeResult: IStoreCredentialData = await provider
+        ?.storePrivateCredential({
           credential: JSON.parse(credential?.credential as string),
         })
         .catch((err: any) => err);
@@ -63,7 +66,7 @@ export const CredentialBox = ({
     } finally {
       setIsStoring(false);
     }
-  }, [credential]);
+  }, [credential, provider]);
 
   const onRequestPresentation = useCallback(async () => {
     setIsLoading("Loading...");
@@ -74,14 +77,14 @@ export const CredentialBox = ({
     let presentationSource: string;
     try {
       setIsLoading("Awaiting proof from wallet...");
-      const storeResult: IRequestPresentation = await (window as any)?.mina
-        .requestPresentation({
+      const verifyResult: IRequestPresentation = await provider
+        ?.requestPresentation({
           presentation: {
             presentationRequest: JSON.parse(step1_res as string),
           },
         })
         .catch((err: any) => err);
-      presentationSource = storeResult.presentation;
+      presentationSource = verifyResult.presentation;
       await verifyLogin(presentationSource);
       toast.success("Login Successfully!");
     } catch (error) {
@@ -90,7 +93,7 @@ export const CredentialBox = ({
     } finally {
       setIsLoading(undefined);
     }
-  }, []);
+  }, [provider]);
 
   return (
     <Box>

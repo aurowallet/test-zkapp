@@ -3,9 +3,15 @@ import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { SendTransactionResult, ProviderError } from "@aurowallet/mina-provider";
+import {
+  SendTransactionResult,
+  ProviderError,
+} from "@aurowallet/mina-provider";
+import { useMinaProvider } from "@/context/MinaProviderContext";
 
 export const StakingBox = () => {
+  const { provider } = useMinaProvider();
+
   const [vaildatorAddress, setVaildatorAddress] = useState("");
   const [fee, setFee] = useState("");
   const [memo, setMemo] = useState("");
@@ -28,12 +34,12 @@ export const StakingBox = () => {
   const onClickStaking = useCallback(async () => {
     setResHash("");
     setErrMsg("");
-    let data: SendTransactionResult|ProviderError = await (window as any)?.mina
+    let data: SendTransactionResult | ProviderError = await provider
       ?.sendStakeDelegation({
         to: vaildatorAddress,
-        fee: fee,
+        fee: parseFloat(fee),
         memo: memo,
-        nonce:nonce
+        nonce: parseInt(nonce),
       })
       .catch((err: any) => err);
 
@@ -42,7 +48,7 @@ export const StakingBox = () => {
     } else {
       setErrMsg((data as ProviderError).message || "");
     }
-  }, [vaildatorAddress, fee, memo,nonce]);
+  }, [vaildatorAddress, fee, memo, nonce, provider]);
 
   return (
     <Box>
@@ -55,7 +61,7 @@ export const StakingBox = () => {
       <Button onClick={onClickStaking}>Staking</Button>
       <InfoRow
         title="Staking Result: "
-        content={resHash||errMsg}
+        content={resHash || errMsg}
         type={InfoType.secondary}
       />
     </Box>

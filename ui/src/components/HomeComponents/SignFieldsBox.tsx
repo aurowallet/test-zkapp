@@ -1,15 +1,18 @@
+import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { ProviderError, SignedData } from "@aurowallet/mina-provider";
 import { useCallback, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { Input } from "../Input";
-import { ProviderError, SignedData } from "@aurowallet/mina-provider";
 
 export const SignFieldsBox = ({
   currentAccount,
 }: {
   currentAccount: string;
 }) => {
+  const { provider } = useMinaProvider();
+
   const [signContent, setSignContent] = useState("");
   const [verifyBtnStatus, setVerifyBtnStatus] = useState(true);
 
@@ -30,7 +33,7 @@ export const SignFieldsBox = ({
 
   const onSign = useCallback(async () => {
     try {
-      const signResult: SignedData|ProviderError = await (window as any)?.mina
+      const signResult: SignedData | ProviderError = await provider
         ?.signFields({
           message: JSON.parse(signContent),
         })
@@ -48,12 +51,12 @@ export const SignFieldsBox = ({
     } catch (error) {
       console.warn(error);
     }
-  }, [signContent]);
+  }, [signContent, provider]);
   const onVerify = useCallback(async () => {
     let verifyMessageBody = {
       publicKey: currentAccount,
       signature: verifySignature,
-      data: verifyContent,
+      data: JSON.parse(verifyContent),
     };
     try {
       verifyMessageBody.data = JSON.parse(verifyContent);
@@ -61,7 +64,7 @@ export const SignFieldsBox = ({
       setVerifyRes("Please check verify message");
       return;
     }
-    let verifyResult:boolean|ProviderError = await (window as any)?.mina
+    let verifyResult: boolean | ProviderError = await provider
       ?.verifyFields(verifyMessageBody)
       .catch((err: any) => err);
     if ((verifyResult as ProviderError).message) {
