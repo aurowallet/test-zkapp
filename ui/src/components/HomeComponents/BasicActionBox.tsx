@@ -1,4 +1,4 @@
-import { Box, StyledBoxTitle } from "@/styles/HomeStyles";
+import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { useCallback, useEffect, useState } from "react";
@@ -57,6 +57,22 @@ export const BaseActionBox = ({
     setWalletInfo(JSON.stringify(data));
   }, [provider]);
 
+  const onRevokePermissions = useCallback(async () => {
+    const supportMethod = Object.getOwnPropertyNames(
+      Object.getPrototypeOf(provider)
+    ).includes("revokePermissions");
+    if (!supportMethod) {
+      setAccountsMsg("Revoke permissions not support");
+      return;
+    }
+    await provider?.revokePermissions();
+    setAccounts("");
+    setNoWindowAccount("");
+    setAccountsMsg("Revoke permissions success");
+    setBtnTxt("connect");
+    setBtnStatus(false);
+  }, [provider]);
+
   return (
     <Box>
       <StyledBoxTitle>Basic Actions</StyledBoxTitle>
@@ -68,12 +84,14 @@ export const BaseActionBox = ({
         content={accountsMsg || accounts}
         type={InfoType.secondary}
       />
-      <Button onClick={onGetAccount}>Get Account without pop-winow</Button>
+      <Button onClick={onGetAccount}>Get account without pop-winow</Button>
       <InfoRow
         title="without pop-winow Account: "
         content={noWindowAccount}
         type={InfoType.secondary}
       />
+      <Button onClick={onRevokePermissions}>Revoke account permission</Button>
+      <StyledDividedLine />
 
       <Button onClick={onGetWalletInfo}>Get wallet base info</Button>
       <InfoRow
