@@ -61,9 +61,12 @@ export const AuroMinaProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Handle account changes
   useEffect(() => {
+    console.log('Provider changed:', provider);
+    
     if (provider) {
+      console.log('Provider changed=1:',);
       const handleAccountsChanged = (accounts: string[]) => {
-        console.log('Accounts changed:', accounts);
+        console.log('outer Accounts changed:', accounts);
         // Optionally update state or re-initialize provider
       };
 

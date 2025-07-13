@@ -11,4 +11,4 @@ export const GITHUB_URL = 'https://github.com/aurowallet/test-zkapp'
 /**
  * app links base url 
  */
-export const BASE_APPLINK_URL = "https://aurowallet.com/applinks";
+export const BASE_APPLINK_URL = "https://applinks.aurowallet.com/applinks";

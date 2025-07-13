@@ -42,19 +42,23 @@ export default function Home() {
   }, []);
 
   const initNetwork = useCallback(async () => {
+    console.log('initNetwork==0');
     const network: ChainInfoArgs = await provider
       ?.requestNetwork()
       .catch((err: any) => err);
+      console.log('initNetwork==1',network);
     if (!network?.networkID) {
       return;
     }
+    console.log('initNetwork==2');
     setCurrentNetwork(network);
   }, [provider]);
 
   useEffect(() => {
     /** account change listener */
     provider?.on("accountsChanged", async (accounts: string[]) => {
-      console.log("accountsChanged", accounts);
+      // console.log("accountsChanged", accounts);
+      console.log('page Accounts changed:', accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
       } else {
@@ -62,7 +66,7 @@ export default function Home() {
       }
     });
     provider?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
-      console.log("chainChanged");
+      console.log("chainChanged",chainInfo);
       if (!chainInfo?.networkID) {
         return;
       }
