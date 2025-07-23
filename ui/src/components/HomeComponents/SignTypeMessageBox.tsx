@@ -60,7 +60,7 @@ iat: ${new Date().getTime()}`;
   const onVerifyType = useCallback(async () => {
     let verifyMessageBody = {
       publicKey: currentAccount,
-      signature: JSON.parse(verifySignature),
+      signature: verifySignature as any,
       data: verifyContent,
     };
 
@@ -121,7 +121,7 @@ iat: ${new Date().getTime()}`;
   const onVerifyJson = useCallback(async () => {
     let verifyMessageBody = {
       publicKey: currentAccount,
-      signature: JSON.parse(verifyJsonSignature),
+      signature: verifyJsonSignature as any,
       data: verifyJsonContent,
     };
 
