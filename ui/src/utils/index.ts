@@ -21,3 +21,13 @@ export function addressSlice(
   }
   return address;
 }
+
+export function getRealGqlUrl(url: string) {
+  // Check if url ends with '/graphql' or 'graphql'
+  if (url.endsWith('/graphql') || url.endsWith('graphql')) {
+    return url;
+  }
+  // Ensure url doesn't end with slash before appending
+  const trimmedUrl = url.endsWith('/') ? url.slice(0, -1) : url;
+  return `${trimmedUrl}/graphql`;
+}

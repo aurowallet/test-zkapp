@@ -12,6 +12,7 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 // ---------------------------------------------------------------------------------------
 
 import type { Add } from "../contracts/source/Add.ts";
+import { getRealGqlUrl } from "./index.ts";
 import {
   deserializeTransaction,
   serializeTransaction,
@@ -35,12 +36,15 @@ const state = {
 // ---- -----------------------------------------------------------------------------------
 
 const functions = {
-  setActiveInstanceToBerkeley: async (args: { gqlUrl: string,networkID:any }) => {
+  setActiveInstanceToBerkeley: async (args: {
+    gqlUrl: string;
+    networkID: any;
+  }) => {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
       networkId: getInitNetworkID(args.networkID),
-      mina: args.gqlUrl + "/graphql",
+      mina: getRealGqlUrl(args.gqlUrl),
     });
     Mina.setActiveInstance(network);
   },
@@ -65,7 +69,7 @@ const functions = {
     return JSON.stringify(currentNum.toJSON());
   },
   createUpdateTransaction: async (args: {}) => {
-    console.log('createUpdateTransaction networkID',Mina.getNetworkId());
+    console.log("createUpdateTransaction networkID", Mina.getNetworkId());
     const transaction = await Mina.transaction(async () => {
       await state.zkapp!.update();
     });
@@ -75,12 +79,18 @@ const functions = {
     value: number;
     zkAddress: string;
   }) => {
-    console.log('createManulUpdateTransaction networkID = 0, ',Mina.getNetworkId());
+    console.log(
+      "createManulUpdateTransaction networkID = 0, ",
+      Mina.getNetworkId()
+    );
     const nextValue = Field(args.value);
     const transaction = await Mina.transaction(async () => {
       await state.zkapp!.setValue(nextValue);
     });
-    console.log('createManulUpdateTransaction networkID = 1,',Mina.getNetworkId());
+    console.log(
+      "createManulUpdateTransaction networkID = 1,",
+      Mina.getNetworkId()
+    );
     state.transaction = transaction;
     const data: string = JSON.stringify(
       {
@@ -124,16 +134,16 @@ const functions = {
     publicKey: string;
     sendPrivateKey: string;
     gqlUrl: string;
-    networkID:any;
+    networkID: any;
   }) => {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
       networkId: getInitNetworkID(args.networkID),
-      mina: args.gqlUrl + "/graphql",
+      mina: getRealGqlUrl(args.gqlUrl),
     });
     Mina.setActiveInstance(network);
-    console.log('signAndSendTx networkID',Mina.getNetworkId());
+    console.log("signAndSendTx networkID", Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
     const zkPublicKey = PublicKey.fromBase58(args.publicKey);
     const zkApp = new Add(zkPublicKey);
@@ -156,16 +166,16 @@ const functions = {
     zkPublicKey: string;
     sendPrivateKey: string;
     gqlUrl: string;
-    networkID:any
+    networkID: any;
   }) => {
     const network = Mina.Network({
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
       networkId: getInitNetworkID(args.networkID),
-      mina: args.gqlUrl + "/graphql",
+      mina: getRealGqlUrl(args.gqlUrl),
     });
     Mina.setActiveInstance(network);
-    console.log('buildTxBody networkID',Mina.getNetworkId());
+    console.log("buildTxBody networkID", Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
     const zkPublicKey = PublicKey.fromBase58(args.zkPublicKey);
     const zkApp = new Add(zkPublicKey);
@@ -190,7 +200,11 @@ const functions = {
     );
     return data;
   },
-  onlyProving: async (args: { signedData: string; gqlUrl: string,networkID:any }) => {
+  onlyProving: async (args: {
+    signedData: string;
+    gqlUrl: string;
+    networkID: any;
+  }) => {
     const {
       tx: serializedTransaction,
       value,
@@ -202,10 +216,10 @@ const functions = {
       // the networkID is returned in daemon node
       // extension now not support return networkID , so add cache to there
       networkId: getInitNetworkID(args.networkID),
-      mina: args.gqlUrl + "/graphql",
+      mina: getRealGqlUrl(args.gqlUrl),
     });
     Mina.setActiveInstance(network);
-    console.log('onlyProving networkID',Mina.getNetworkId());
+    console.log("onlyProving networkID", Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
     const zkApp = new Add(zkAppPublicKey);
     await fetchAccount({ publicKey: sender });
@@ -216,7 +230,7 @@ const functions = {
     const tx = deserializeTransaction(serializedTransaction, txNew);
     await Add.compile();
     await tx.prove();
-    const txSent = await tx.send();// have cors issue
+    const txSent = await tx.send(); // have cors issue
     return txSent.hash;
   },
 
@@ -233,7 +247,7 @@ const functions = {
 
     const { Add } = await import("../contracts/Add");
     const zkApp = new Add(zkAppPublicKey);
-    console.log('sendProving networkID',Mina.getNetworkId());
+    console.log("sendProving networkID", Mina.getNetworkId());
     const txNew = await Mina.transaction({ sender, fee, nonce }, async () => {
       await zkApp!.setValue(Field.fromJSON(value));
     });
@@ -282,9 +296,9 @@ if (typeof window !== "undefined") {
 
 console.log("Web Worker Successfully Initialized.");
 
-function getInitNetworkID(networkID:string){
-  console.log('getInitNetworkID params: ',networkID);
-  const nextID = networkID === 'mina:mainnet' ? "mainnet":"testnet"
-  console.log('getInitNetworkID nextID: ',nextID);
-  return nextID
+function getInitNetworkID(networkID: string) {
+  console.log("getInitNetworkID params: ", networkID);
+  const nextID = networkID === "mina:mainnet" ? "mainnet" : "testnet";
+  console.log("getInitNetworkID nextID: ", nextID);
+  return nextID;
 }
