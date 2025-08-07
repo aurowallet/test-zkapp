@@ -39,7 +39,7 @@ export default function WalletConnect() {
   const [selectedChain, setSelectedChain] = useState<string>("mina:mainnet");
   const [loading, setLoading] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [buildZkLog,setBuildZkLog] = useState("")
+  const [buildZkLog, setBuildZkLog] = useState("");
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
@@ -188,7 +188,9 @@ export default function WalletConnect() {
 
           setBuildZkLog("Requesting send transaction...");
           const transactionJSON = await zkappWorkerClient!.getTransactionJSON();
-          setBuildZkLog("getZkTxBody,"+JSON.stringify(transactionJSON).slice(0,100));
+          setBuildZkLog(
+            "getZkTxBody," + JSON.stringify(transactionJSON).slice(0, 100)
+          );
           return transactionJSON;
         }
       } catch (error) {
@@ -201,7 +203,7 @@ export default function WalletConnect() {
   const getZkBuildBody = useCallback(
     async (chainId: string, currentAccount: string) => {
       const testConfig = {
-        ["mina:devnet"]: {
+        "mina:devnet": {
           gqlUrl: process.env.NEXT_PUBLIC_DEVNET_GQL,
           networkID: "mina:devnet",
           zkAddress: "B62qqFbciM2QqnwWeXQ8xFLZUYvhhdko1aBWhrneoEzgaVD9xFwNPpJ",
@@ -210,6 +212,11 @@ export default function WalletConnect() {
           gqlUrl: process.env.NEXT_PUBLIC_MAINNET_GQL,
           networkID: "mina:mainnet",
           zkAddress: "B62qqFbciM2QqnwWeXQ8xFLZUYvhhdko1aBWhrneoEzgaVD9xFwNPpJ",
+        },
+         "zeko:testnet": {
+          gqlUrl: process.env.NEXT_PUBLIC_ZEKOTESTNET_GQL,
+          networkID: "zeko:testnet",
+          zkAddress: "B62qkHdJ9R8oJSVMr8JLVQzvi9Mc8cWcFREAa3ewYaBkrPaGMCfu1A5",
         },
       };
       const networkIDs = Object.keys(testConfig);
@@ -225,13 +232,13 @@ export default function WalletConnect() {
 
   // Handle sending zkApp transaction
   const handleSendZkTransaction = async () => {
-    setBuildZkLog("")
+    setBuildZkLog("");
     if (!client || !session || !account) {
       setError("Please connect wallet first");
       return;
     }
     const zkTransaction = await getZkBuildBody(selectedChain, account);
-    
+
     setError(null);
     setPaymentResult(null);
     try {
@@ -255,7 +262,7 @@ export default function WalletConnect() {
       setPaymentResult(JSON.stringify(result, null, 2));
     } catch (error: any) {
       setError(error.message || "Failed to send zk transaction");
-      setBuildZkLog("Send zk transaction error:"+ JSON.stringify(error));
+      setBuildZkLog("Send zk transaction error:" + JSON.stringify(error));
     }
   };
 
@@ -704,9 +711,7 @@ export default function WalletConnect() {
                 ? "Loading..."
                 : "Send zkAppTransaction"}
             </button>
-            <pre>
-              {buildZkLog}
-            </pre>
+            <pre>{buildZkLog}</pre>
             <button
               style={
                 loading === "disconnect" ? disabledButtonStyle : buttonStyle
