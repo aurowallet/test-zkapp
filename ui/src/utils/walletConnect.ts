@@ -39,7 +39,7 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
         name: "Auro Wallet Demo",
         description: "A Mina Protocol dApp with WalletConnect" ,
         url: window.location.origin,
-        icons: ["https://www.aurowallet.com/imgs/auro.png"],
+        icons: ["https://www.aurowallet.com/imgs/auro_icon.png"],// must be PNG
       },
       logger: "warn",
     });
