@@ -37,29 +37,29 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
       projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECY_ID,
       metadata: {
         name: "Auro Wallet Demo",
-        description: "A Mina Protocol dApp with WalletConnect" ,
+        description: "A Mina Protocol dApp with WalletConnect",
         url: window.location.origin,
-        icons: ["https://www.aurowallet.com/imgs/auro_icon.png"],// must be PNG
+        icons: ["https://www.aurowallet.com/imgs/auro_icon.png"], // must be PNG
       },
       logger: "warn",
     });
 
     // const disableCache = getUrlParameter("useCache") === "false";
     // if (!disableCache) {
-      const existingSessions = client.session.getAll();
-      if (existingSessions.length > 0) {
-        console.log("Using cached session:", existingSessions[0]);
-        setupEventListeners(client);
-        return client;
-      }
+    const existingSessions = client.session.getAll();
+    if (existingSessions.length > 0) {
+      console.log("Using cached session:", existingSessions[0]);
+      setupEventListeners(client);
+      return client;
+    }
     // } else {
-      // const sessions = client.session.getAll();
-      // for (const session of sessions) {
-      //   await client.disconnect({
-      //     topic: session.topic,
-      //     reason: { code: 6000, message: "Clearing cache" },
-      //   });
-      // }
+    // const sessions = client.session.getAll();
+    // for (const session of sessions) {
+    //   await client.disconnect({
+    //     topic: session.topic,
+    //     reason: { code: 6000, message: "Clearing cache" },
+    //   });
+    // }
     // }
 
     const connectParams = {
@@ -94,8 +94,18 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
       console.log("Auro Wallet Deep Link:", deepLink);
 
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
-        openDeepLink(deepLink);
+        if (isIOS) {
+          const iosScheme = "com.ios.chrome";
+          const endURL = `https://applinks.aurowallet.com/applinks?action=wc&uri=${encodeURIComponent(
+            uri
+          )}&scheme=${encodeURIComponent(iosScheme)}`;
+          console.log("Auro Wallet Deep Link:", endURL);
+          openAppLink(endURL);
+        } else {
+          openDeepLink(deepLink);
+        }
       } else {
         web3Modal.openModal({ uri });
       }
@@ -115,6 +125,14 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
 
 // Open deep link for mobile
 const openDeepLink = (deepLink: string) => {
+  const link = document.createElement("a");
+  link.href = deepLink;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+const openAppLink = (deepLink: string) => {
   const link = document.createElement("a");
   link.href = deepLink;
   link.style.display = "none";
