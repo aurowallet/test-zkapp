@@ -125,6 +125,7 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
 
 // Open deep link for mobile
 const openDeepLink = (deepLink: string) => {
+  console.log('openDeepLink, ',deepLink);
   const link = document.createElement("a");
   link.href = deepLink;
   link.style.display = "none";
@@ -133,6 +134,8 @@ const openDeepLink = (deepLink: string) => {
   document.body.removeChild(link);
 };
 const openAppLink = (deepLink: string) => {
+  console.log('openAppLink, ',deepLink);
+  
   const link = document.createElement("a");
   link.href = deepLink;
   link.style.display = "none";
@@ -189,8 +192,15 @@ const setupEventListeners = (client: WalletConnectClient) => {
       const deepLink = `aurowallet://`;
       console.log("Auro Wallet Deep Link for request:", deepLink);
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
-        openDeepLink(deepLink);
+        if (isIOS) {
+          const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
+          console.log("Auro Wallet Deep Link:", endURL);
+          openAppLink(endURL);
+        } else {
+          openDeepLink(deepLink);
+        }
       }
     }
   });
