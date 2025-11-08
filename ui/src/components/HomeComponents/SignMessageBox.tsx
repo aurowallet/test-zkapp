@@ -64,6 +64,24 @@ export const SignMessageBox = ({
       setVerifyRes(verifyResult + "");
     }
   }, [currentAccount, verifyContent, verifySignature]);
+
+  const openAppLink = (deepLink: string) => {
+    const link = document.createElement("a");
+    link.href = deepLink;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const onTestAppLink = useCallback(async () => {
+    const uri = "https://google.com";
+    const iosScheme = "com.chrome";
+    const endURL = `https://applinks.aurowallet.com/applinks?action=wc&uri=${encodeURIComponent(
+      uri
+    )}&scheme=${encodeURIComponent(iosScheme)}`;
+    console.log("Auro Wallet Deep Link:", endURL);
+    openAppLink(endURL);
+  }, []);
   return (
     <Box>
       <StyledBoxTitle>Mina Sign</StyledBoxTitle>
@@ -94,6 +112,9 @@ export const SignMessageBox = ({
         disabled={verifyBtnStatus}
       >
         Verify
+      </Button>
+      <Button checkConnection={false} onClick={onTestAppLink} disabled={false}>
+        ConnectApplink
       </Button>
       <InfoRow
         title="Verify result: "
