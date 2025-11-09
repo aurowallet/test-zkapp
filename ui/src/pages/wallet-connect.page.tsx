@@ -213,7 +213,7 @@ export default function WalletConnect() {
           networkID: "mina:mainnet",
           zkAddress: "B62qqFbciM2QqnwWeXQ8xFLZUYvhhdko1aBWhrneoEzgaVD9xFwNPpJ",
         },
-         "zeko:testnet": {
+        "zeko:testnet": {
           gqlUrl: process.env.NEXT_PUBLIC_ZEKOTESTNET_GQL,
           networkID: "zeko:testnet",
           zkAddress: "B62qkHdJ9R8oJSVMr8JLVQzvi9Mc8cWcFREAa3ewYaBkrPaGMCfu1A5",
@@ -259,7 +259,7 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(zkRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
     } catch (error: any) {
       setError(error.message || "Failed to send zk transaction");
       setBuildZkLog("Send zk transaction error:" + JSON.stringify(error));
@@ -290,7 +290,7 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Delegation result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to send delegation");
@@ -322,7 +322,7 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Payment result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to send payment");
@@ -348,11 +348,23 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      console.log("getWalletInfo result:", result);
+      onSetResponse(result);
       console.log("Wallet info result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to get wallet info");
       console.error("Wallet info error:", error);
+    }
+  };
+  const onSetResponse = (result: any) => {
+    try {
+      if (typeof result === "string") {
+        setPaymentResult(JSON.stringify(JSON.parse(result), null, 2));
+      } else {
+        setPaymentResult(JSON.stringify(result, null, 2));
+      }
+    } catch (error) {
+      setPaymentResult(JSON.stringify(error, null, 2));
     }
   };
 
@@ -378,7 +390,7 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Sign message result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to sign message");
@@ -394,6 +406,8 @@ export default function WalletConnect() {
     }
     setError(null);
     try {
+      const verifyData = JSON.parse(paymentResult ?? "{}");
+      console.log("verifySignMessage, ", verifyData);
       const paymentRequest = {
         topic: session.topic,
         chainId: selectedChain,
@@ -401,12 +415,12 @@ export default function WalletConnect() {
           method: "mina_verifyMessage",
           params: {
             from: account,
-            ...JSON.parse(paymentResult ?? "{}"),
+            ...verifyData,
           },
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Verify message result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to verify message");
@@ -436,7 +450,7 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Sign fields result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to sign fields");
@@ -452,6 +466,8 @@ export default function WalletConnect() {
     }
     setError(null);
     try {
+      const verifyData = JSON.parse(paymentResult ?? "{}");
+      console.log("verifySignFields, ", verifyData);
       const paymentRequest = {
         topic: session.topic,
         chainId: selectedChain,
@@ -459,12 +475,12 @@ export default function WalletConnect() {
           method: "mina_verifyFields",
           params: {
             from: account,
-            ...JSON.parse(paymentResult ?? "{}"),
+            ...verifyData,
           },
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Verify fields result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to verify fields");
@@ -494,7 +510,7 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      setPaymentResult(JSON.stringify(result, null, 2));
+      onSetResponse(result);
       console.log("Create nullifier result:", result);
     } catch (error: any) {
       setError(error.message || "Failed to create nullifier");
