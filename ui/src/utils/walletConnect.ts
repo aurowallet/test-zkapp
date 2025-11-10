@@ -134,14 +134,15 @@ const openDeepLink = (deepLink: string) => {
   document.body.removeChild(link);
 };
 const openAppLink = (deepLink: string) => {
-  console.log('openAppLink, ',deepLink);
+  console.log('openAppLink, ', deepLink);
+  window.location.href = deepLink;
   
-  const link = document.createElement("a");
-  link.href = deepLink;
-  link.style.display = "none";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  setTimeout(() => {
+    if (document.visibilityState === 'visible') {
+      console.log('Fallback: App not install, please install Auro Wallet.');
+      alert('please install Auro Wallet'); 
+    }
+  }, 2000); 
 };
 
 // Set up WalletConnect event listeners
