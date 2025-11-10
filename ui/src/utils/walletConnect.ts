@@ -136,13 +136,6 @@ const openDeepLink = (deepLink: string) => {
 const openAppLink = (deepLink: string) => {
   console.log('openAppLink, ', deepLink);
   window.location.href = deepLink;
-  
-  setTimeout(() => {
-    if (document.visibilityState === 'visible') {
-      console.log('Fallback: App not install, please install Auro Wallet.');
-      alert('please install Auro Wallet'); 
-    }
-  }, 2000); 
 };
 
 // Set up WalletConnect event listeners
