@@ -40,10 +40,8 @@ export default function WalletConnect() {
   const [loading, setLoading] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [buildZkLog, setBuildZkLog] = useState("");
+  const [isiOSPage, setIsiOSPage] = useState(false);
 
-  useEffect(() => {
-    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-  }, []);
   const chainOptions = ["mina:mainnet", "mina:devnet", "zeko:testnet"];
   const chromeScheme = isMobile ? "com.android.chrome" : "";
 
@@ -60,11 +58,14 @@ export default function WalletConnect() {
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    console.log('is mobile init');
     if (
       isMobile &&
       /Safari/i.test(navigator.userAgent) &&
       !/Chrome/i.test(navigator.userAgent)
     ) {
+      console.log('is mobile init 2');
+      setIsiOSPage(true)
       const link = document.createElement("a");
       link.href = "https://applinks.aurowallet.com/applinks";
       link.style.display = "none";
@@ -801,6 +802,7 @@ export default function WalletConnect() {
         </div>
       )}
       {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
+      {isiOSPage && <div>iOS page</div>}
       <Toaster />
     </div>
   );
