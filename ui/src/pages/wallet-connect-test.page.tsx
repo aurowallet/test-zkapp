@@ -71,7 +71,7 @@ export default function WalletConnect() {
       link.style.display = "none";
       document.body.appendChild(link);
       link.dispatchEvent(new MouseEvent("mouseover"));
-      document.body.removeChild(link);
+      // document.body.removeChild(link);
     }
   }, [isMobile]);
 
