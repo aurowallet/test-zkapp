@@ -60,7 +60,7 @@ export default function WalletConnect() {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     console.log('is mobile init');
     if (
-      isMobile &&
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) &&
       /Safari/i.test(navigator.userAgent) &&
       !/Chrome/i.test(navigator.userAgent)
     ) {
