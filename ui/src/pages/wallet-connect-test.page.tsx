@@ -1,3 +1,4 @@
+import { VersionBox } from "@/components/VersionBox";
 import { timeout } from "@/utils";
 import {
   getCurrentSession,
@@ -803,6 +804,7 @@ export default function WalletConnect() {
       )}
       {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
       {isiOSPage && <div>iOS page</div>}
+      <VersionBox />
       <Toaster />
     </div>
   );
