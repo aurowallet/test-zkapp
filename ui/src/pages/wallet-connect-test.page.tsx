@@ -59,14 +59,14 @@ export default function WalletConnect() {
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
-    console.log('is mobile init');
+    console.log("is mobile init");
     if (
       /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) &&
       /Safari/i.test(navigator.userAgent) &&
       !/Chrome/i.test(navigator.userAgent)
     ) {
-      console.log('is mobile init 2');
-      setIsiOSPage(true)
+      console.log("is mobile init 2");
+      setIsiOSPage(true);
       const link = document.createElement("a");
       link.href = "https://applinks.aurowallet.com/applinks";
       link.style.display = "none";
@@ -805,6 +805,25 @@ export default function WalletConnect() {
       {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
       {isiOSPage && <div>iOS page</div>}
       <VersionBox />
+      <meta
+        name="apple-itunes-app"
+        content="app-id=1574034920, app-argument=https://applinks.aurowallet.com/applinks"
+      />
+
+      <a
+          href="https://applinks.aurowallet.com/applinks"
+          style={{
+            display: "inline-block",
+            padding: "12px 24px",
+            backgroundColor: "#007bff",
+            color: "white",
+            textDecoration: "none",
+            borderRadius: "8px",
+            fontSize: "16px",
+          }}
+        >
+          Open Auro Wallet
+        </a>
       <Toaster />
     </div>
   );
