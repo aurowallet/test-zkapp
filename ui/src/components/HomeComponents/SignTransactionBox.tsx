@@ -463,7 +463,7 @@ export const SignTransactionBox = ({
       <StyledBoxTitle>
         Mina zkApp
         <StyledRoute>
-          <Link href={"/wallet-connect"}>Android Wallect Connect</Link>
+          <Link href={"/wallet-connect"}>Android/iOS Wallect Connect</Link>
         </StyledRoute>
       </StyledBoxTitle>
       * need input url and generate Key first
