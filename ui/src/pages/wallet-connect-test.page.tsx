@@ -143,210 +143,6 @@ export default function WalletConnect() {
       console.error("Disconnect error:", error);
     }
   };
-  const getZkTxBody = useCallback(
-    async (config: any, currentAccount: string, forceInit?: boolean) => {
-      try {
-        let isInited = state.hasBeenSetup;
-        let zkappWorkerClient = state.zkappWorkerClient;
-        if (!state.hasBeenSetup || forceInit) {
-          setBuildZkLog("Loading web worker...");
-          zkappWorkerClient = new ZkappWorkerClient();
-          await timeout(5);
-
-          setBuildZkLog("Done loading web worker");
-          await zkappWorkerClient.setActiveInstanceToBerkeley(
-            config.gqlUrl,
-            config.networkID
-          );
-          const publicKeyBase58: string = currentAccount;
-          const publicKey = PublicKey.fromBase58(publicKeyBase58);
-
-          setBuildZkLog(`Using key:${publicKey.toBase58()}`);
-          setBuildZkLog("Checking if fee payer account exists...");
-
-          const res = await zkappWorkerClient.fetchAccount({
-            publicKey: publicKey!,
-          });
-          const accountExists = res.error == null;
-
-          await zkappWorkerClient.loadContract();
-
-          setBuildZkLog("Compiling zkApp...");
-          await zkappWorkerClient.compileContract();
-          setBuildZkLog("zkApp compiled");
-          const zkappPublicKey = PublicKey.fromBase58(config.zkAddress);
-          await zkappWorkerClient.initZkappInstance(zkappPublicKey);
-
-          setBuildZkLog("Getting zkApp state...");
-          await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
-          const currentNum = await zkappWorkerClient.getNum();
-          setBuildZkLog(`Current state in zkApp: ${currentNum.toString()}`);
-
-          setState({
-            ...state,
-            zkappWorkerClient,
-            hasWallet: true,
-            hasBeenSetup: true,
-            publicKey,
-            zkappPublicKey,
-            accountExists,
-            currentNum,
-          });
-          isInited = true;
-        }
-        if (isInited || state.hasBeenSetup) {
-          setState({ ...state, creatingTransaction: true });
-
-          setBuildZkLog("Creating a transaction...");
-
-          await zkappWorkerClient!.createUpdateTransaction();
-
-          setBuildZkLog("Creating proof...");
-          await zkappWorkerClient!.proveUpdateTransaction();
-
-          setBuildZkLog("Requesting send transaction...");
-          const transactionJSON = await zkappWorkerClient!.getTransactionJSON();
-          setBuildZkLog(
-            "getZkTxBody," + JSON.stringify(transactionJSON).slice(0, 100)
-          );
-          return transactionJSON;
-        }
-      } catch (error) {
-        setBuildZkLog("build err:" + String(error));
-      }
-    },
-    [state]
-  );
-
-  const getZkBuildBody = useCallback(
-    async (chainId: string, currentAccount: string) => {
-      const testConfig = {
-        "mina:devnet": {
-          gqlUrl: process.env.NEXT_PUBLIC_DEVNET_GQL,
-          networkID: "mina:devnet",
-          zkAddress: "B62qqFbciM2QqnwWeXQ8xFLZUYvhhdko1aBWhrneoEzgaVD9xFwNPpJ",
-        },
-        "mina:mainnet": {
-          gqlUrl: process.env.NEXT_PUBLIC_MAINNET_GQL,
-          networkID: "mina:mainnet",
-          zkAddress: "B62qqFbciM2QqnwWeXQ8xFLZUYvhhdko1aBWhrneoEzgaVD9xFwNPpJ",
-        },
-        "zeko:testnet": {
-          gqlUrl: process.env.NEXT_PUBLIC_ZEKOTESTNET_GQL,
-          networkID: "zeko:testnet",
-          zkAddress: "B62qkHdJ9R8oJSVMr8JLVQzvi9Mc8cWcFREAa3ewYaBkrPaGMCfu1A5",
-        },
-      };
-      const networkIDs = Object.keys(testConfig);
-      if (networkIDs.indexOf(chainId) == -1) {
-        toast.custom("not support build zk");
-        return;
-      }
-      const nextConfig = (testConfig as any)[chainId];
-      return await getZkTxBody(nextConfig, currentAccount);
-    },
-    []
-  );
-
-  // Handle sending zkApp transaction
-  const handleSendZkTransaction = async () => {
-    setBuildZkLog("");
-    if (!client || !session || !account) {
-      setError("Please connect wallet first");
-      return;
-    }
-    const zkTransaction = await getZkBuildBody(selectedChain, account);
-
-    setError(null);
-    setPaymentResult(null);
-    try {
-      const zkRequest = {
-        topic: session.topic,
-        chainId: selectedChain,
-        request: {
-          method: "mina_sendTransaction",
-          params: {
-            scheme: chromeScheme,
-            from: account,
-            transaction: zkTransaction,
-            feePayer: {
-              fee: "0.01",
-              memo: "test zkApp",
-            },
-          },
-        },
-      };
-      const result = await client.request(zkRequest);
-      onSetResponse(result);
-    } catch (error: any) {
-      setError(error.message || "Failed to send zk transaction");
-      setBuildZkLog("Send zk transaction error:" + JSON.stringify(error));
-    }
-  };
-
-  // Handle sending stake delegation
-  const handleSendDelegation = async () => {
-    if (!client || !session || !account) {
-      setError("Please connect wallet first");
-      return;
-    }
-    setError(null);
-    setPaymentResult(null);
-    try {
-      const paymentRequest = {
-        topic: session.topic,
-        chainId: selectedChain,
-        request: {
-          method: "mina_sendStakeDelegation",
-          params: {
-            scheme: chromeScheme,
-            from: account,
-            to: account,
-            fee: "0.0013",
-            memo: "test delegation v1",
-          },
-        },
-      };
-      const result = await client.request(paymentRequest);
-      onSetResponse(result);
-      console.log("Delegation result:", result);
-    } catch (error: any) {
-      setError(error.message || "Failed to send delegation");
-      console.error("Send delegation error:", error);
-    }
-  };
-  // Handle sending payment
-  const handleSendPayment = async () => {
-    if (!client || !session || !account) {
-      setError("Please connect wallet first");
-      return;
-    }
-    setError(null);
-    setPaymentResult(null);
-    try {
-      const paymentRequest = {
-        topic: session.topic,
-        chainId: selectedChain,
-        request: {
-          method: "mina_sendPayment",
-          params: {
-            scheme: chromeScheme,
-            from: account,
-            amount: "0.0012",
-            to: account,
-            fee: "0.002",
-            memo: "v1",
-          },
-        },
-      };
-      const result = await client.request(paymentRequest);
-      onSetResponse(result);
-      console.log("Payment result:", result);
-    } catch (error: any) {
-      setError(error.message || "Failed to send payment");
-      console.error("Send payment error:", error);
-    }
-  };
 
   // Handle getting wallet info
   const handleWalletInfo = async () => {
@@ -386,67 +182,29 @@ export default function WalletConnect() {
     }
   };
 
-  // Handle signing a message
-  const handleSignMessage = async () => {
-    if (!client || !session || !account) {
-      setError("Please connect wallet first");
-      return;
-    }
-    setError(null);
-    setPaymentResult(null);
-    try {
-      const paymentRequest = {
-        topic: session.topic,
-        chainId: selectedChain,
-        request: {
-          method: "mina_signMessage",
-          params: {
-            scheme: chromeScheme,
-            from: account,
-            message: "Hello, Mina Protocol! maintnet",
-          },
-        },
-      };
-      const result = await client.request(paymentRequest);
-      onSetResponse(result);
-      console.log("Sign message result:", result);
-    } catch (error: any) {
-      setError(error.message || "Failed to sign message");
-      console.error("Sign message error:", error);
-    }
-  };
+  // Utility function to listen for session_request_sent once
+  const listenForRequestSentOnce = useCallback((expectedMethod: string): Promise<void> => {
+    if (!client) throw new Error("Client not available");
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        client.off("session_request_sent", handler);
+        reject(new Error("Request sent timeout (2s)"));
+      }, 2000);
 
-  // Handle verifying a signed message
-  const verifySignMessage = async () => {
-    if (!client || !session || !account) {
-      setError("Please connect wallet first");
-      return;
-    }
-    setError(null);
-    try {
-      const verifyData = JSON.parse(paymentResult ?? "{}");
-      console.log("verifySignMessage, ", verifyData);
-      const paymentRequest = {
-        topic: session.topic,
-        chainId: selectedChain,
-        request: {
-          method: "mina_verifyMessage",
-          params: {
-            from: account,
-            ...verifyData,
-          },
-        },
+      const handler = (event: any) => {
+        if (event?.request?.method === expectedMethod) {
+          clearTimeout(timeoutId);
+          client.off("session_request_sent", handler);
+          console.log("session_request_sent confirmed for", expectedMethod, event);
+          resolve();
+        }
       };
-      const result = await client.request(paymentRequest);
-      onSetResponse(result);
-      console.log("Verify message result:", result);
-    } catch (error: any) {
-      setError(error.message || "Failed to verify message");
-      console.error("Verify message error:", error);
-    }
-  };
 
-  // Handle signing fields
+      client.on("session_request_sent", handler);
+    });
+  }, [client]);
+
+  // Handle signing fields (with session_request_sent confirmation)
   const handleSignFields = async () => {
     if (!client || !session || !account) {
       setError("Please connect wallet first");
@@ -467,7 +225,19 @@ export default function WalletConnect() {
           },
         },
       };
-      const result = await client.request(paymentRequest);
+
+      // Send request
+      const requestPromise = client.request(paymentRequest);
+      
+      // Listen for session_request_sent to confirm send completion
+      await listenForRequestSentOnce("mina_signFields");
+      
+      // After confirmation, trigger App open
+      console.log("Request sent confirmed - opening App");
+      openAuroWallet();
+
+      // Continue to wait for response
+      const result = await requestPromise;
       onSetResponse(result);
       console.log("Sign fields result:", result);
     } catch (error: any) {
@@ -503,36 +273,6 @@ export default function WalletConnect() {
     } catch (error: any) {
       setError(error.message || "Failed to verify fields");
       console.error("Verify fields error:", error);
-    }
-  };
-
-  // Handle creating a nullifier
-  const handleCreateNullifier = async () => {
-    if (!client || !session || !account) {
-      setError("Please connect wallet first");
-      return;
-    }
-    setError(null);
-    setPaymentResult(null);
-    try {
-      const paymentRequest = {
-        topic: session.topic,
-        chainId: selectedChain,
-        request: {
-          method: "mina_createNullifier",
-          params: {
-            scheme: chromeScheme,
-            from: account,
-            message: [2, 3, 4],
-          },
-        },
-      };
-      const result = await client.request(paymentRequest);
-      onSetResponse(result);
-      console.log("Create nullifier result:", result);
-    } catch (error: any) {
-      setError(error.message || "Failed to create nullifier");
-      console.error("Create nullifier error:", error);
     }
   };
 
@@ -665,24 +405,7 @@ export default function WalletConnect() {
             >
               {loading === "walletInfo" ? "Loading..." : "Get Wallet Info"}
             </button>
-            <button
-              style={
-                loading === "signMessage" ? disabledButtonStyle : buttonStyle
-              }
-              onClick={() => withLoading("signMessage", handleSignMessage)}
-              disabled={loading === "signMessage"}
-            >
-              {loading === "signMessage" ? "Loading..." : "Sign Message"}
-            </button>
-            <button
-              style={
-                loading === "verifyMessage" ? disabledButtonStyle : buttonStyle
-              }
-              onClick={() => withLoading("verifyMessage", verifySignMessage)}
-              disabled={loading === "verifyMessage"}
-            >
-              {loading === "verifyMessage" ? "Loading..." : "Verify Message"}
-            </button>
+
             <button
               style={
                 loading === "signFields" ? disabledButtonStyle : buttonStyle
@@ -700,56 +423,6 @@ export default function WalletConnect() {
               disabled={loading === "verifyFields"}
             >
               {loading === "verifyFields" ? "Loading..." : "Verify Fields"}
-            </button>
-            <button
-              style={
-                loading === "createNullifier"
-                  ? disabledButtonStyle
-                  : buttonStyle
-              }
-              onClick={() =>
-                withLoading("createNullifier", handleCreateNullifier)
-              }
-              disabled={loading === "createNullifier"}
-            >
-              {loading === "createNullifier"
-                ? "Loading..."
-                : "Create Nullifier"}
-            </button>
-            <button
-              style={
-                loading === "sendPayment" ? disabledButtonStyle : buttonStyle
-              }
-              onClick={() => withLoading("sendPayment", handleSendPayment)}
-              disabled={loading === "sendPayment"}
-            >
-              {loading === "sendPayment" ? "Loading..." : "Send Payment"}
-            </button>
-            <button
-              style={
-                loading === "sendDelegation" ? disabledButtonStyle : buttonStyle
-              }
-              onClick={() =>
-                withLoading("sendDelegation", handleSendDelegation)
-              }
-              disabled={loading === "sendDelegation"}
-            >
-              {loading === "sendDelegation" ? "Loading..." : "Send Delegation"}
-            </button>
-            <button
-              style={
-                loading === "sendZkTransaction"
-                  ? disabledButtonStyle
-                  : buttonStyle
-              }
-              onClick={() =>
-                withLoading("sendZkTransaction", handleSendZkTransaction)
-              }
-              disabled={loading === "sendZkTransaction"}
-            >
-              {loading === "sendZkTransaction"
-                ? "Loading..."
-                : "Send zkAppTransaction"}
             </button>
             <pre>{buildZkLog}</pre>
             <button

@@ -179,7 +179,7 @@ const setupEventListeners = (client: WalletConnectClient) => {
         "mina_sendTransaction",
         "mina_signMessage",
         "mina_sign_JsonMessage",
-        "mina_signFields",
+        // "mina_signFields",
         "mina_createNullifier",
       ].includes(event?.request?.method)
     ) {
