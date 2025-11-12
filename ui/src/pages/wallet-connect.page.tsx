@@ -1,4 +1,5 @@
 // wallet-connect.page.tsx
+import { VersionBox } from "@/components/VersionBox";
 import { timeout } from "@/utils";
 import {
   getCurrentSession,
@@ -893,6 +894,7 @@ export default function WalletConnect() {
         </div>
       )}
       {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}
+      <VersionBox />
       <Toaster />
     </div>
   );
