@@ -1,3 +1,4 @@
+// ui/src/utils/walletConnect.ts
 import { SignClient } from "@walletconnect/sign-client";
 import { Web3Modal } from "@web3modal/standalone";
 
@@ -101,8 +102,9 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
           const endURL = `https://applinks.aurowallet.com/applinks?action=wc&uri=${encodeURIComponent(
             uri
           )}&scheme=${encodeURIComponent(iosScheme)}`;
-          console.log("Auro Wallet Deep Link:", endURL);
-          openAppLink(endURL);
+          console.log("Auro Wallet Deep Link (iOS connect):", endURL);
+          // For iOS, dispatch prompt instead of direct open
+          window.dispatchEvent(new CustomEvent("showOpenWalletPrompt", { detail: { action: "connect" } }));
         } else {
           openDeepLink(deepLink);
         }
@@ -114,6 +116,12 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
     const session = await approval();
     console.log("New session established:", JSON.stringify(session, null, 2));
     web3Modal.closeModal();
+
+    // Additional prompt for iOS after approval
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) {
+      window.dispatchEvent(new CustomEvent("showOpenWalletPrompt", { detail: { action: "connect" } }));
+    }
 
     setupEventListeners(client);
     return client;
@@ -183,16 +191,17 @@ const setupEventListeners = (client: WalletConnectClient) => {
         "mina_createNullifier",
       ].includes(event?.request?.method)
     ) {
-      const deepLink = `aurowallet://`;
-      console.log("Auro Wallet Deep Link for request:", deepLink);
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
         if (isIOS) {
-          const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
-          console.log("Auro Wallet Deep Link:", endURL);
-          openAppLink(endURL);
+          // For iOS, dispatch prompt instead of direct open
+          console.log("iOS: Dispatching wallet prompt for", event.request.method);
+          window.dispatchEvent(new CustomEvent("showOpenWalletPrompt", { detail: { action: "request", method: event.request.method } }));
         } else {
+          // Android: Keep original direct open
+          const deepLink = `aurowallet://`;
+          console.log("Auro Wallet Deep Link for request (Android):", deepLink);
           openDeepLink(deepLink);
         }
       }

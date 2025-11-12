@@ -1,3 +1,4 @@
+// wallet-connect.page.tsx
 import { timeout } from "@/utils";
 import {
   getCurrentSession,
@@ -40,6 +41,11 @@ export default function WalletConnect() {
   const [loading, setLoading] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [buildZkLog, setBuildZkLog] = useState("");
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [promptDetail, setPromptDetail] = useState({
+    action: "",
+    method: "" as string,
+  });
 
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
@@ -57,6 +63,47 @@ export default function WalletConnect() {
     zkappPublicKey: null as null | PublicKey,
     creatingTransaction: false,
   });
+
+  // Open Auro Wallet function
+  const openAuroWallet = () => {
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) {
+      const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
+      console.log("Auro Wallet Deep Link (iOS):", endURL);
+      window.location.href = endURL;
+    } else {
+      const deepLink = `aurowallet://wc`;
+      console.log("Auro Wallet Deep Link (Android):", deepLink);
+      const link = document.createElement("a");
+      link.href = deepLink;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  // Listen for wallet prompt events
+  useEffect(() => {
+    const handleShowPrompt = (event: CustomEvent) => {
+      const detail = event.detail;
+      setPromptDetail(detail);
+      setShowPrompt(true);
+      toast("Please open Auro Wallet to continue.", { duration: 5000 });
+    };
+
+    window.addEventListener(
+      "showOpenWalletPrompt",
+      handleShowPrompt as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "showOpenWalletPrompt",
+        handleShowPrompt as EventListener
+      );
+    };
+  }, []);
 
   // Utility to handle loading state
   const withLoading = async (key: string, fn: () => Promise<void>) => {
@@ -119,6 +166,8 @@ export default function WalletConnect() {
       setError(null);
       setPaymentResult(null);
       setSignedMessage(null);
+      setShowPrompt(false);
+      setPromptDetail({ action: "", method: "" });
       console.log("Disconnected from Auro Wallet");
     } catch (error: any) {
       setError(error.message || "Failed to disconnect");
@@ -344,7 +393,7 @@ export default function WalletConnect() {
         chainId: selectedChain,
         request: {
           method: "wallet_info",
-          params: {}, // Add an empty params object
+          params: {},
         },
       };
       const result = await client.request(paymentRequest);
@@ -356,6 +405,7 @@ export default function WalletConnect() {
       console.error("Wallet info error:", error);
     }
   };
+
   const onSetResponse = (result: any) => {
     try {
       if (typeof result === "string") {
@@ -562,6 +612,8 @@ export default function WalletConnect() {
       setError("Session disconnected by wallet");
       setPaymentResult(null);
       setSignedMessage(null);
+      setShowPrompt(false);
+      setPromptDetail({ action: "", method: "" });
       console.log("Session deleted");
     };
 
@@ -596,6 +648,36 @@ export default function WalletConnect() {
     };
   }, [client]);
 
+  // Prompt message based on detail
+  const getPromptMessage = () => {
+    const { action, method } = promptDetail;
+    if (action === "connect") {
+      return "Wallet connected! Open Auro Wallet to view session.";
+    }
+    if (method === "mina_sendPayment") {
+      return "Payment request sent! Open Auro Wallet to confirm.";
+    }
+    if (method === "mina_sendStakeDelegation") {
+      return "Stake delegation request sent! Open Auro Wallet to confirm.";
+    }
+    if (method === "mina_sendTransaction") {
+      return "Transaction request sent! Open Auro Wallet to confirm.";
+    }
+    if (method === "mina_signMessage") {
+      return "Message signing request sent! Open Auro Wallet to sign.";
+    }
+    if (method === "mina_sign_JsonMessage") {
+      return "JSON message signing request sent! Open Auro Wallet to sign.";
+    }
+    if (method === "mina_signFields") {
+      return "Fields signing request sent! Open Auro Wallet to sign.";
+    }
+    if (method === "mina_createNullifier") {
+      return "Nullifier creation request sent! Open Auro Wallet to confirm.";
+    }
+    return "Open Auro Wallet to continue.";
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <div>
@@ -624,6 +706,32 @@ export default function WalletConnect() {
           <p>
             Connected: {account.slice(0, 6)}...{account.slice(-4)}
           </p>
+          {showPrompt && (
+            <div
+              style={{
+                margin: "10px 0",
+                padding: "15px",
+                backgroundColor: "#d4edda",
+                border: "1px solid #c3e6cb",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <p style={{ margin: 0, flex: 1 }}>{getPromptMessage()}</p>
+              <button
+                style={buttonStyle}
+                onClick={() => {
+                  openAuroWallet();
+                  setShowPrompt(false);
+                  setPromptDetail({ action: "", method: "" });
+                }}
+              >
+                Open Auro Wallet
+              </button>
+            </div>
+          )}
           <div
             style={{
               marginTop: "15px",
