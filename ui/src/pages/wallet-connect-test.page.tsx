@@ -189,8 +189,8 @@ export default function WalletConnect() {
       const timeoutId = setTimeout(() => {
         client.off("session_request_sent", handler);
         console.log('listenForRequestSentOnce timeout for', expectedMethod);
-        reject(new Error("Request sent timeout (2s)"));
-      }, 2000);
+        reject(new Error("Request sent timeout (30s)"));
+      }, 30000);
 
       const handler = (event: any) => {
         console.log('listenForRequestSentOnce event for', expectedMethod, event);
@@ -232,9 +232,9 @@ export default function WalletConnect() {
       console.log('handleSignFields - sending request:', paymentRequest);
       // Send request
       const requestPromise = client.request(paymentRequest);
-      console.log('handleSignFields - request sent, waiting for confirmation');
+      console.log('handleSignFields - request sent, waiting for confirmation');// done
       // Listen for session_request_sent to confirm send completion
-      await listenForRequestSentOnce("mina_signFields");
+      await listenForRequestSentOnce("mina_signFields");//
       console.log('handleSignFields - request send confirmed');
       // After confirmation, trigger App open
       console.log("Request sent confirmed - opening App");
