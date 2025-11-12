@@ -183,19 +183,20 @@ const setupEventListeners = (client: WalletConnectClient) => {
         "mina_createNullifier",
       ].includes(event?.request?.method)
     ) {
-      const deepLink = `aurowallet://`;
-      console.log("Auro Wallet Deep Link for request:", deepLink);
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile) {
-        if (isIOS) {
-          const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
-          console.log("Auro Wallet Deep Link:", endURL);
-          openAppLink(endURL);
-        } else {
-          openDeepLink(deepLink);
-        }
-      }
+      console.log("Session request sent 1 :", event);
+      // const deepLink = `aurowallet://`;
+      // console.log("Auro Wallet Deep Link for request:", deepLink);
+      // const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      // const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      // if (isMobile) {
+      //   if (isIOS) {
+      //     const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
+      //     console.log("Auro Wallet Deep Link:", endURL);
+      //     openAppLink(endURL);
+      //   } else {
+      //     openDeepLink(deepLink);
+      //   }
+      // }
     }
   });
 };

@@ -4,7 +4,7 @@ import {
   getCurrentSession,
   initWalletConnect,
   WalletConnectClient,
-} from "@/utils/walletConnect";
+} from "@/utils/walletConnectFields";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
 import { Field, PublicKey } from "o1js";
 import { CSSProperties, useCallback, useEffect, useState } from "react";
@@ -28,7 +28,6 @@ const disabledButtonStyle: CSSProperties = {
   backgroundColor: "#cccccc",
   cursor: "not-allowed",
 };
-// const isMobile =
 
 export default function WalletConnect() {
   const [account, setAccount] = useState<string | null>(null);
@@ -184,18 +183,22 @@ export default function WalletConnect() {
 
   // Utility function to listen for session_request_sent once
   const listenForRequestSentOnce = useCallback((expectedMethod: string): Promise<void> => {
+    console.log('listenForRequestSentOnce called for', expectedMethod);
     if (!client) throw new Error("Client not available");
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         client.off("session_request_sent", handler);
+        console.log('listenForRequestSentOnce timeout for', expectedMethod);
         reject(new Error("Request sent timeout (2s)"));
       }, 2000);
 
       const handler = (event: any) => {
+        console.log('listenForRequestSentOnce event for', expectedMethod, event);
         if (event?.request?.method === expectedMethod) {
+          console.log('listenForRequestSentOnce method match for', expectedMethod);
           clearTimeout(timeoutId);
           client.off("session_request_sent", handler);
-          console.log("session_request_sent confirmed for", expectedMethod, event);
+          console.log("session_request_sent confirmed for", expectedMethod, event);  // Commented to reduce noise
           resolve();
         }
       };
@@ -226,12 +229,13 @@ export default function WalletConnect() {
         },
       };
 
+      console.log('handleSignFields - sending request:', paymentRequest);
       // Send request
       const requestPromise = client.request(paymentRequest);
-      
+      console.log('handleSignFields - request sent, waiting for confirmation');
       // Listen for session_request_sent to confirm send completion
       await listenForRequestSentOnce("mina_signFields");
-      
+      console.log('handleSignFields - request send confirmed');
       // After confirmation, trigger App open
       console.log("Request sent confirmed - opening App");
       openAuroWallet();
@@ -354,10 +358,10 @@ export default function WalletConnect() {
     };
   }, [client]);
   
-    const openAuroWallet = () => {
-      const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
-      console.log("Auro Wallet Deep Link:", endURL);
-      window.location.href = endURL;
+  const openAuroWallet = () => {
+    const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
+    console.log("Auro Wallet Deep Link:", endURL);
+    window.location.href = endURL;
   };
 
   return (
@@ -490,21 +494,21 @@ export default function WalletConnect() {
       />
 
       <a
-          href="https://applinks.aurowallet.com/applinks"
-          style={{
-            display: "inline-block",
-            padding: "12px 24px",
-            backgroundColor: "#007bff",
-            color: "white",
-            textDecoration: "none",
-            borderRadius: "8px",
-            fontSize: "16px",
-          }}
-        >
-          Open Auro Wallet
-        </a>
+        href="https://applinks.aurowallet.com/applinks"
+        style={{
+          display: "inline-block",
+          padding: "12px 24px",
+          backgroundColor: "#007bff",
+          color: "white",
+          textDecoration: "none",
+          borderRadius: "8px",
+          fontSize: "16px",
+        }}
+      >
+        Open Auro Wallet
+      </a>
 
-         <div style={{ margin: "20px 0" }}>
+      <div style={{ margin: "20px 0" }}>
         <button
           style={{
             padding: "12px 24px",
