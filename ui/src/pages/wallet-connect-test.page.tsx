@@ -613,6 +613,12 @@ export default function WalletConnect() {
       window.removeEventListener("sessionDeleted", handleSessionDeleted);
     };
   }, [client]);
+  
+    const openAuroWallet = () => {
+      const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
+      console.log("Auro Wallet Deep Link:", endURL);
+      window.location.href = endURL;
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -824,6 +830,23 @@ export default function WalletConnect() {
         >
           Open Auro Wallet
         </a>
+
+         <div style={{ margin: "20px 0" }}>
+        <button
+          style={{
+            padding: "12px 24px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "16px",
+          }}
+          onClick={openAuroWallet}
+        >
+          Open by click
+        </button>
+      </div>
       <Toaster />
     </div>
   );
