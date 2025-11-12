@@ -98,12 +98,6 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
         if (isIOS) {
-          const iosScheme = "com.ios.chrome";
-          const endURL = `https://applinks.aurowallet.com/applinks?action=wc&uri=${encodeURIComponent(
-            uri
-          )}&scheme=${encodeURIComponent(iosScheme)}`;
-          console.log("Auro Wallet Deep Link (iOS connect):", endURL);
-          // For iOS, dispatch prompt instead of direct open
           window.dispatchEvent(new CustomEvent("showOpenWalletPrompt", { detail: { action: "connect" } }));
         } else {
           openDeepLink(deepLink);
@@ -195,11 +189,9 @@ const setupEventListeners = (client: WalletConnectClient) => {
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
         if (isIOS) {
-          // For iOS, dispatch prompt instead of direct open
           console.log("iOS: Dispatching wallet prompt for", event.request.method);
           window.dispatchEvent(new CustomEvent("showOpenWalletPrompt", { detail: { action: "request", method: event.request.method } }));
         } else {
-          // Android: Keep original direct open
           const deepLink = `aurowallet://`;
           console.log("Auro Wallet Deep Link for request (Android):", deepLink);
           openDeepLink(deepLink);
