@@ -1,4 +1,5 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { ProviderError, SignedData } from "@aurowallet/mina-provider";
 import { useCallback, useState } from "react";
@@ -12,6 +13,7 @@ export const SignMessageBox = ({
   currentAccount: string;
 }) => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [signContent, setSignContent] = useState("");
   const [verifyBtnStatus, setVerifyBtnStatus] = useState(true);
@@ -85,24 +87,24 @@ export const SignMessageBox = ({
   return (
     <Box>
       <StyledBoxTitle>Mina Sign</StyledBoxTitle>
-      <Input placeholder="Set sign content" onChange={onChangeSignContent} />
+      <Input placeholder={t.signMessage.setSignContent} onChange={onChangeSignContent} />
       <Button checkConnection={true} onClick={onSign}>
-        Sign
+        {t.common.sign}
       </Button>
       <InfoRow
-        title="Sign result: "
+        title={`${t.signMessage.signResult}: `}
         content={signRes}
         type={InfoType.secondary}
       />
       <StyledDividedLine />
 
       <Input
-        placeholder={"Set Verify Message"}
+        placeholder={t.signMessage.setVerifyMessage}
         onChange={onChangeVerifyContent}
         value={verifyContent}
       />
       <Input
-        placeholder={"Set Verify Signature"}
+        placeholder={t.signMessage.setVerifySignature}
         onChange={onChangeVerifySignature}
         value={verifySignature}
       />
@@ -111,13 +113,13 @@ export const SignMessageBox = ({
         onClick={onVerify}
         disabled={verifyBtnStatus}
       >
-        Verify
+        {t.common.verify}
       </Button>
       <Button checkConnection={false} onClick={onTestAppLink} disabled={false}>
-        ConnectApplink
+        {t.signMessage.connectApplink}
       </Button>
       <InfoRow
-        title="Verify result: "
+        title={`${t.signMessage.verifyResult}: `}
         content={verifyRes}
         type={InfoType.secondary}
       />

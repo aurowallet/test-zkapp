@@ -17,6 +17,7 @@ import { Input } from "../Input";
 import Switch from "../Switch";
 import Link from "next/link";
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import toast from "react-hot-toast";
 
 const StyledButtonGroup = styled.div`
@@ -52,6 +53,7 @@ export const SignTransactionBox = ({
   network: ChainInfoArgs;
 }) => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [gqlUrl, setGqlUrl] = useState("");
   const [zkAddress, setZkAddress] = useState("");
@@ -466,25 +468,25 @@ export const SignTransactionBox = ({
           <Link href={"/wallet-connect"}>Android/iOS Wallect Connect</Link>
         </StyledRoute>
       </StyledBoxTitle>
-      * need input url and generate Key first
-      <Input placeholder="Input Graphql Url" onChange={onChangeGqlUrl} />
+      {t.zkApp.needInputFirst}
+      <Input placeholder={t.zkApp.inputGraphqlUrl} onChange={onChangeGqlUrl} />
       <StyledDividedLine />
-      <Button onClick={onClickCreateKey}>Generate Zk-Contract-Key</Button>
-      <InfoRow title={"zkApp keys"} type={InfoType.secondary}>
+      <Button onClick={onClickCreateKey}>{t.zkApp.generateKey}</Button>
+      <InfoRow title={t.zkApp.zkAppKeys} type={InfoType.secondary}>
         {keysContent && <div>{keysContent}</div>}
       </InfoRow>
       <Button disabled={createBtnStatus} onClick={onClickCreate}>
-        Create Zk-Contract
+        {t.zkApp.createContract}
       </Button>
       <InfoRow
-        title={"zkApp Create Result: "}
+        title={`${t.zkApp.createResult}: `}
         content={createHash || createText}
         type={InfoType.secondary}
       />
       <StyledDividedLine />
-      <Input placeholder="Set ZkApp Address" onChange={onChangeZkAddress} />
+      <Input placeholder={t.zkApp.setZkAppAddress} onChange={onChangeZkAddress} />
       <StyledSwitchRow>
-        <StyledLeftName>{"sign in wallet, broadcast in zkApp"}</StyledLeftName>
+        <StyledLeftName>{t.zkApp.signInWallet}</StyledLeftName>
         <Switch isChecked={isChecked} toggleSwitch={toggleSwitch} />
       </StyledSwitchRow>
       {/* <Button disabled={initBtnStatus} onClick={onClickTest}>
@@ -495,11 +497,11 @@ export const SignTransactionBox = ({
         checkConnection={true}
         onClick={() => onClickInit(false)}
       >
-        {"Init ZkState"}
+        {t.zkApp.initZkState}
       </Button>
-      <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
-      <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
-      <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
+      <Input placeholder={t.zkApp.setFee} onChange={onChangeFee} />
+      <Input placeholder={t.zkApp.setMemo} onChange={onChangeMemo} />
+      <Input placeholder={t.zkApp.setNonce} onChange={onChangeNonce} />
       {isChecked ? (
         <StyledButtonGroup>
           <Button
@@ -507,14 +509,14 @@ export const SignTransactionBox = ({
             disabled={updateBtnStatus}
             onClick={onClickBuilTx}
           >
-            Build TxBody And Sign
+            {t.zkApp.buildTxAndSign}
           </Button>
           <Button
             checkConnection={true}
             disabled={sendTxStatus}
             onClick={onClickTxSend}
           >
-            Send Tx
+            {t.zkApp.sendTx}
           </Button>
         </StyledButtonGroup>
       ) : (
@@ -523,21 +525,21 @@ export const SignTransactionBox = ({
           disabled={updateBtnStatus}
           onClick={onClickUpdate}
         >
-          Update
+          {t.zkApp.update}
         </Button>
       )}
       <InfoRow
-        title={"Update Result: "}
+        title={`${t.zkApp.updateResult}: `}
         content={txHash || displayText}
         type={InfoType.secondary}
       />
       <StyledDividedLine />
       <StyledButtonGroup>
         <Button disabled={updateBtnStatus} onClick={onRefreshCurrentNum}>
-          {"Get zkApp State "}
+          {t.zkApp.getZkAppState}
         </Button>
         <InfoRow
-          title={"zkApp State: "}
+          title={`${t.zkApp.zkAppState}: `}
           content={zkAppStatus || state.currentNum + ""}
           type={InfoType.secondary}
         />

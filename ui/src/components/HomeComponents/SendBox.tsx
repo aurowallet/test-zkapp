@@ -1,4 +1,5 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import {
   ProviderError,
@@ -11,6 +12,7 @@ import { Input } from "../Input";
 
 export const MinaSendBox = () => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [receiveAddress, setReceiveAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -60,17 +62,17 @@ export const MinaSendBox = () => {
   return (
     <Box>
       <StyledBoxTitle>Mina Send</StyledBoxTitle>
-      <Input placeholder="Set receive address" onChange={onChangeReceive} />
-      <Input placeholder="Set send amount" onChange={onChangeAmount} />
-      <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
-      <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
-      <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
+      <Input placeholder={t.minaSend.receiveAddress} onChange={onChangeReceive} />
+      <Input placeholder={t.minaSend.sendAmount} onChange={onChangeAmount} />
+      <Input placeholder={t.minaSend.fee} onChange={onChangeFee} />
+      <Input placeholder={t.minaSend.memo} onChange={onChangeMemo} />
+      <Input placeholder={t.minaSend.nonce} onChange={onChangeNonce} />
       <StyledDividedLine />
       <Button checkConnection={true} onClick={onClickSend}>
-        Send
+        {t.common.send}
       </Button>
       <InfoRow
-        title="Send Result: "
+        title={`${t.minaSend.sendResult}: `}
         content={resHash || errMsg}
         type={InfoType.secondary}
       />

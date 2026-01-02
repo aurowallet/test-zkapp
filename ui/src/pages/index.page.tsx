@@ -12,6 +12,22 @@ import { SignTransactionBox } from "@/components/HomeComponents/SignTransactionB
 import { SignTypeMessageBox } from "@/components/HomeComponents/SignTypeMessageBox";
 import { StakingBox } from "@/components/HomeComponents/StakingBox.tsx";
 import { SwitchChainBox } from "@/components/HomeComponents/SwitchChainBox";
+import { useTranslation } from "@/context/LanguageContext";
+import dynamic from "next/dynamic";
+
+// Dynamic imports with SSR disabled for o1js components
+const BatchTransferBox = dynamic(
+  () => import("@/components/HomeComponents/BatchTransferBox").then(mod => mod.BatchTransferBox),
+  { ssr: false, loading: () => <div>Loading BatchTransfer...</div> }
+);
+const AccountConverterBox = dynamic(
+  () => import("@/components/HomeComponents/AccountConverterBox").then(mod => mod.AccountConverterBox),
+  { ssr: false, loading: () => <div>Loading AccountConverter...</div> }
+);
+const RiskTestBox = dynamic(
+  () => import("@/components/HomeComponents/RiskTestBox").then(mod => mod.RiskTestBox),
+  { ssr: false, loading: () => <div>Loading RiskTest...</div> }
+);
 import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
 import { PageHead } from "@/components/PageHead";
 import { VersionBox } from "@/components/VersionBox";
@@ -31,6 +47,7 @@ import StyledComponentsRegistry from "./registry";
 
 export default function Home() {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [currentAccount, setCurrentAccount] = useState("");
   const [currentNetwork, setCurrentNetwork] = useState<ChainInfoArgs>({
@@ -129,6 +146,24 @@ export default function Home() {
         </Container>
         <Container>
           <SignTransactionBox
+            currentAccount={currentAccount}
+            network={currentNetwork}
+          />
+        </Container>
+        <StyledRowTitle>zkApp Contracts</StyledRowTitle>
+        <Container>
+          <BatchTransferBox
+            currentAccount={currentAccount}
+            network={currentNetwork}
+          />
+          <AccountConverterBox
+            currentAccount={currentAccount}
+            network={currentNetwork}
+          />
+        </Container>
+        <StyledRowTitle>Wallet Risk Detection Test</StyledRowTitle>
+        <Container>
+          <RiskTestBox
             currentAccount={currentAccount}
             network={currentNetwork}
           />

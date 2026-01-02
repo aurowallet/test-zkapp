@@ -8,9 +8,11 @@ import {
   ProviderError,
 } from "@aurowallet/mina-provider";
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 
 export const StakingBox = () => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [vaildatorAddress, setVaildatorAddress] = useState("");
   const [fee, setFee] = useState("");
@@ -53,16 +55,16 @@ export const StakingBox = () => {
   return (
     <Box>
       <StyledBoxTitle>Mina Staking</StyledBoxTitle>
-      <Input placeholder="Set vaildator address" onChange={onChangeVaildator} />
-      <Input placeholder="Set Fee (Option)" onChange={onChangeFee} />
-      <Input placeholder="Set memo (Option)" onChange={onChangeMemo} />
-      <Input placeholder="Set Nonce (Option)" onChange={onChangeNonce} />
+      <Input placeholder={t.staking.validatorAddress} onChange={onChangeVaildator} />
+      <Input placeholder={t.staking.fee} onChange={onChangeFee} />
+      <Input placeholder={t.staking.memo} onChange={onChangeMemo} />
+      <Input placeholder={t.staking.nonce} onChange={onChangeNonce} />
       <StyledDividedLine />
       <Button checkConnection={true} onClick={onClickStaking}>
-        Staking
+        {t.staking.staking}
       </Button>
       <InfoRow
-        title="Staking Result: "
+        title={`${t.staking.stakingResult}: `}
         content={resHash || errMsg}
         type={InfoType.secondary}
       />

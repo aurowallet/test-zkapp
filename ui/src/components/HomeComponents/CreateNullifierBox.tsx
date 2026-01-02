@@ -1,4 +1,5 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { Nullifier, ProviderError } from "@aurowallet/mina-provider";
 import { useCallback, useMemo, useState } from "react";
@@ -8,6 +9,7 @@ import { Input } from "../Input";
 
 export const CreateNullifierBox = () => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [signFields, setSignFields] = useState("");
   const [createRes, setCreateRes] = useState<
@@ -48,13 +50,13 @@ export const CreateNullifierBox = () => {
     <Box>
       <StyledBoxTitle>Mina Create Nullifier</StyledBoxTitle>
       <Input
-        placeholder="Set message (eg: ['1','2','3',...])"
+        placeholder={t.createNullifier.setMessage}
         onChange={onChangeMessageContent}
       />
       <Button checkConnection={true} onClick={onCreate}>
-        Create
+        {t.common.create}
       </Button>
-      <InfoRow title="Create result: " type={InfoType.secondary}>
+      <InfoRow title={`${t.createNullifier.createResult}: `} type={InfoType.secondary}>
         {nullifierContent && <div>{nullifierContent}</div>}
       </InfoRow>
 

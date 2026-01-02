@@ -1,5 +1,6 @@
 import { DefaultSupportNetorkIDs } from "@/constants/config";
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import { useCallback, useMemo, useState } from "react";
@@ -9,6 +10,7 @@ import { Input } from "../Input";
 
 export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [switchRes, setSwitchRes] = useState("");
   const [networkID, setNetworkID] = useState("");
@@ -64,29 +66,29 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
       <StyledBoxTitle>
         Mina Chain Interactions{"(" + network.networkID + ")"}
       </StyledBoxTitle>
-      <Input placeholder="Input GraphQL Url" onChange={onChangeGraphQLUrl} />
-      <Input placeholder="Input Network Name" onChange={onChangeNetworkName} />
+      <Input placeholder={t.switchChain.inputGraphQLUrl} onChange={onChangeGraphQLUrl} />
+      <Input placeholder={t.switchChain.inputNetworkName} onChange={onChangeNetworkName} />
       <Button checkConnection={true} onClick={onAdd}>
-        Add Chain
+        {t.switchChain.addChain}
       </Button>
       <InfoRow
-        title="Add Chain result: "
+        title={`${t.switchChain.addChainResult}: `}
         content={addRes}
         type={InfoType.secondary}
       />
       <StyledDividedLine />
 
-      <Input placeholder="Input NetworkId" onChange={onChangeNetworkID} />
-      <InfoRow title="Current Support NetworkID: " type={InfoType.success}>
+      <Input placeholder={t.switchChain.inputNetworkId} onChange={onChangeNetworkID} />
+      <InfoRow title={`${t.switchChain.currentSupportNetworkId}: `} type={InfoType.success}>
         {supportChainList.map((supportChain) => {
           return supportChain + " , ";
         })}
       </InfoRow>
       <Button checkConnection={true} onClick={onSwitch}>
-        Switch Chain
+        {t.switchChain.switchChain}
       </Button>
       <InfoRow
-        title="Switch Chain result: "
+        title={`${t.switchChain.switchChainResult}: `}
         content={switchRes}
         type={InfoType.secondary}
       />

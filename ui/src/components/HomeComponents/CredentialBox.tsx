@@ -1,4 +1,5 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import {
   IRequestPresentation,
@@ -33,6 +34,7 @@ export const CredentialBox = ({
   currentAccount: string;
 }) => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [isStoring, setIsStoring] = useState(false);
   const [isLoading, setIsLoading] = useState<string | undefined>(undefined);
@@ -104,14 +106,14 @@ export const CredentialBox = ({
       />
       <StyledButtonGroup>
         <Button onClick={onGenerateCredential}>
-          Generate Credential & Copy
+          {t.credential.generateCredential}
         </Button>
         <Button
           checkConnection={true}
           disabled={isStoring}
           onClick={onStoreCredential}
         >
-          {isStoring ? "Storing..." : "Store Credential"}
+          {isStoring ? t.common.loading : t.credential.storeCredential}
         </Button>
       </StyledButtonGroup>
       <StyledDividedLine />
@@ -120,7 +122,7 @@ export const CredentialBox = ({
         disabled={!!isLoading}
         onClick={onRequestPresentation}
       >
-        {isLoading ?? "Anonymous Login"}
+        {isLoading ?? t.credential.requestCredential}
       </Button>
     </Box>
   );

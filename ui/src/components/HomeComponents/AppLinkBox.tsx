@@ -1,4 +1,5 @@
 import { BASE_APPLINK_URL, DefaultSupportNetorkIDs } from "@/constants/config";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { useCallback, useState } from "react";
 import styled from "styled-components";
@@ -36,6 +37,7 @@ const StyledOption = styled.option`
 `;
 
 export const AppLinksBox = ({}: {}) => {
+  const { t } = useTranslation();
   const [network, setNetwork] = useState("");
   const [targetUrl, setTargetUrl] = useState("");
 
@@ -76,32 +78,27 @@ export const AppLinksBox = ({}: {}) => {
     <Box>
       <StyledBoxTitle>AppLinks Actions (Mobile App)</StyledBoxTitle>
 
-      <Input placeholder="Input taget url" onChange={onUpdateUrl} />
+      <Input placeholder={t.appLinks.inputTargetUrl} onChange={onUpdateUrl} />
       <SelectWrapper>
-        <p>Select Network (Options):</p>
+        <p>{t.appLinks.selectNetwork}</p>
         <StyledSelect
           id="network-select"
           value={network}
           onChange={handleChange}
         >
-          <StyledOption value="">-- Select a network --</StyledOption>
+          <StyledOption value="">{t.appLinks.selectNetworkPlaceholder}</StyledOption>
           {Object.values(DefaultSupportNetorkIDs).map((value) => {
             return <StyledOption value={value} key={value}>{value}</StyledOption>;
           })}
         </StyledSelect>
       </SelectWrapper>
       <StyledDividedLine />
-      <InfoRow
-        title="without pop-winow Account: "
-        content={"noWindowAccount"}
-        type={InfoType.secondary}
-      />
       <Button onClick={onClickJump}>
-        App Links
+        {t.appLinks.appLinks}
       </Button>
       <StyledDividedLine />
       <Button onClick={deepLinkJump}>
-        DeepLink
+        {t.appLinks.deepLink}
       </Button>
     </Box>
   );

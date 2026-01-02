@@ -4,6 +4,7 @@ import { InfoRow, InfoType } from "../InfoRow";
 import { useCallback, useEffect, useState } from "react";
 import { ProviderError } from "@aurowallet/mina-provider";
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 
 export const BaseActionBox = ({
   currentAccount,
@@ -13,23 +14,24 @@ export const BaseActionBox = ({
   onSetCurrentAccount: (account: string) => void;
 }) => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [accounts, setAccounts] = useState(currentAccount);
   const [accountsMsg, setAccountsMsg] = useState("");
-  const [btnTxt, setBtnTxt] = useState("connect");
+  const [btnTxt, setBtnTxt] = useState(t.common.connect);
   const [btnStatus, setBtnStatus] = useState(!currentAccount);
   const [noWindowAccount, setNoWindowAccount] = useState("");
   const [walletInfo, setWalletInfo] = useState("");
   useEffect(() => {
     if (currentAccount) {
-      setBtnTxt("Connected");
+      setBtnTxt(t.common.connected);
       setBtnStatus(true);
     } else {
-      setBtnTxt("connect");
+      setBtnTxt(t.common.connect);
       setBtnStatus(false);
     }
     setAccounts(currentAccount);
-  }, [currentAccount]);
+  }, [currentAccount, t]);
   const onClickConnect = useCallback(async () => {
     const data: string[] | ProviderError = await provider
       ?.requestAccounts()
@@ -62,16 +64,16 @@ export const BaseActionBox = ({
       Object.getPrototypeOf(provider)
     ).includes("revokePermissions");
     if (!supportMethod) {
-      setAccountsMsg("Revoke permissions not support");
+      setAccountsMsg(t.basicActions.revokeNotSupport);
       return;
     }
     await provider?.revokePermissions();
     setAccounts("");
     setNoWindowAccount("");
-    setAccountsMsg("Revoke permissions success");
-    setBtnTxt("connect");
+    setAccountsMsg(t.basicActions.revokeSuccess);
+    setBtnTxt(t.common.connect);
     setBtnStatus(false);
-  }, [provider]);
+  }, [provider, t]);
 
   return (
     <Box>
@@ -80,22 +82,22 @@ export const BaseActionBox = ({
         {btnTxt}
       </Button>
       <InfoRow
-        title="Get Account result: "
+        title={`${t.basicActions.getAccountResult}: `}
         content={accountsMsg || accounts}
         type={InfoType.secondary}
       />
-      <Button onClick={onGetAccount}>Get account without pop-winow</Button>
+      <Button onClick={onGetAccount}>{t.basicActions.getAccountWithoutPopup}</Button>
       <InfoRow
-        title="without pop-winow Account: "
+        title={`${t.basicActions.withoutPopupAccount}: `}
         content={noWindowAccount}
         type={InfoType.secondary}
       />
-      <Button onClick={onRevokePermissions}>Revoke account permission</Button>
+      <Button onClick={onRevokePermissions}>{t.basicActions.revokePermission}</Button>
       <StyledDividedLine />
 
-      <Button onClick={onGetWalletInfo}>Get wallet base info</Button>
+      <Button onClick={onGetWalletInfo}>{t.basicActions.getWalletInfo}</Button>
       <InfoRow
-        title="wallet base info: "
+        title={`${t.basicActions.walletBaseInfo}: `}
         content={walletInfo}
         type={InfoType.secondary}
       />

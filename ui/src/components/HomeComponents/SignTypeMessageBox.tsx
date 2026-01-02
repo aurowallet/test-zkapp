@@ -1,4 +1,5 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { useTranslation } from "@/context/LanguageContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import {
   ChainInfoArgs,
@@ -17,6 +18,7 @@ export const SignTypeMessageBox = ({
   network: ChainInfoArgs;
 }) => {
   const { provider } = useMinaProvider();
+  const { t } = useTranslation();
 
   const [verifyBtnStatus, setVerifyBtnStatus] = useState(true);
   const [verifyContent, setVerifyContent] = useState("");
@@ -138,10 +140,10 @@ iat: ${new Date().getTime()}`;
     <Box>
       <StyledBoxTitle>Mina Sign Type Message</StyledBoxTitle>
       <Button checkConnection={true} onClick={onSignType}>
-        Sign Type Message
+        {t.signTypeMessage.signTypeMessage}
       </Button>
       <InfoRow
-        title="Sign Type Message result: "
+        title={`${t.signTypeMessage.signTypeMessageResult}: `}
         content={signRes}
         type={InfoType.secondary}
       />
@@ -150,10 +152,10 @@ iat: ${new Date().getTime()}`;
         onClick={onVerifyType}
         disabled={verifyBtnStatus}
       >
-        Verify Type Message
+        {t.signTypeMessage.verifyTypeMessage}
       </Button>
       <InfoRow
-        title="Verify Type Message result: "
+        title={`${t.signTypeMessage.verifyTypeMessageResult}: `}
         content={verifyRes}
         type={InfoType.secondary}
       />
@@ -161,10 +163,10 @@ iat: ${new Date().getTime()}`;
       <StyledDividedLine />
 
       <Button checkConnection={true} onClick={onSignJson}>
-        Sign Json Message
+        {t.signTypeMessage.signJsonMessage}
       </Button>
       <InfoRow
-        title="Sign Json Message result: "
+        title={`${t.signTypeMessage.signJsonMessageResult}: `}
         content={signJsonRes}
         type={InfoType.secondary}
       />
@@ -173,10 +175,10 @@ iat: ${new Date().getTime()}`;
         onClick={onVerifyJson}
         disabled={verifyJsonBtnStatus}
       >
-        Verify Json Message
+        {t.signTypeMessage.verifyJsonMessage}
       </Button>
       <InfoRow
-        title="Verify Json Message result: "
+        title={`${t.signTypeMessage.verifyJsonMessageResult}: `}
         content={verifyJsonRes}
         type={InfoType.secondary}
       />
