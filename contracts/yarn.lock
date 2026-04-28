@@ -1316,6 +1316,22 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@o1js/native-darwin-arm64@3.0.0-mesa.698ca":
+  version "3.0.0-mesa.698ca"
+  resolved "https://registry.npmjs.org/@o1js/native-darwin-arm64/-/native-darwin-arm64-3.0.0-mesa.698ca.tgz"
+  integrity sha512-8ghBXup8niIZEVpJa0AiudDSakeo1vPlMBgtdkSb2VSGOeNhUgPQ5foW3Buap7mrJ8xrt2lCPwX5juZqwJp9jw==
+
+"@o1js/native@3.0.0-mesa.698ca":
+  version "3.0.0-mesa.698ca"
+  resolved "https://registry.npmjs.org/@o1js/native/-/native-3.0.0-mesa.698ca.tgz"
+  integrity sha512-lKq7p8X1/LdHuPXTNDi4LwGfHfyXo5nFA3sElwVn3K0LoSGS6f81YUnqOoL5xfpOkqRKhBalD+Z1IfcQZAd2fA==
+  optionalDependencies:
+    "@o1js/native-darwin-arm64" "3.0.0-mesa.698ca"
+    "@o1js/native-darwin-x64" "3.0.0-mesa.698ca"
+    "@o1js/native-linux-arm64" "3.0.0-mesa.698ca"
+    "@o1js/native-linux-x64" "3.0.0-mesa.698ca"
+    "@o1js/native-win32-x64" "3.0.0-mesa.698ca"
+
 "@sinclair/typebox@^0.24.1":
   version "0.24.51"
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.24.51.tgz"
@@ -3082,10 +3098,10 @@ npm-run-path@^4.0.1:
   dependencies:
     path-key "^3.0.0"
 
-o1js@2.14.0:
-  version "2.14.0"
-  resolved "https://registry.npmjs.org/o1js/-/o1js-2.14.0.tgz"
-  integrity sha512-bVDImXmTzMzWI6vJPEmiQ8tHtBaD90aqjX50akcEFkQ1G5F7O4FmO/bFrqui0z6FT7Z9e324lR8qK5vWRG9r+g==
+o1js@3.0.0-mesa.698ca:
+  version "3.0.0-mesa.698ca"
+  resolved "https://registry.npmjs.org/o1js/-/o1js-3.0.0-mesa.698ca.tgz"
+  integrity sha512-7SfaMybQCD+dlS4dS28L5bnMsWYV76AG5DhX+dFnwxmkvkguS5S24UHnV/aXsUscz2A8Wa0GfsJZh7IVSEuwjg==
   dependencies:
     "@noble/hashes" "^1.7.1"
     blakejs "1.2.1"
@@ -3094,6 +3110,8 @@ o1js@2.14.0:
     reflect-metadata "^0.1.13"
     stacktrace-js "^2.0.2"
     tslib "^2.3.0"
+  optionalDependencies:
+    "@o1js/native" "3.0.0-mesa.698ca"
 
 once@^1.3.0:
   version "1.4.0"

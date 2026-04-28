@@ -1366,6 +1366,22 @@
   resolved "https://registry.npmjs.org/@nolyfill/is-core-module/-/is-core-module-1.0.39.tgz"
   integrity sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==
 
+"@o1js/native-darwin-arm64@3.0.0-mesa.698ca":
+  version "3.0.0-mesa.698ca"
+  resolved "https://registry.npmjs.org/@o1js/native-darwin-arm64/-/native-darwin-arm64-3.0.0-mesa.698ca.tgz"
+  integrity sha512-8ghBXup8niIZEVpJa0AiudDSakeo1vPlMBgtdkSb2VSGOeNhUgPQ5foW3Buap7mrJ8xrt2lCPwX5juZqwJp9jw==
+
+"@o1js/native@3.0.0-mesa.698ca":
+  version "3.0.0-mesa.698ca"
+  resolved "https://registry.npmjs.org/@o1js/native/-/native-3.0.0-mesa.698ca.tgz"
+  integrity sha512-lKq7p8X1/LdHuPXTNDi4LwGfHfyXo5nFA3sElwVn3K0LoSGS6f81YUnqOoL5xfpOkqRKhBalD+Z1IfcQZAd2fA==
+  optionalDependencies:
+    "@o1js/native-darwin-arm64" "3.0.0-mesa.698ca"
+    "@o1js/native-darwin-x64" "3.0.0-mesa.698ca"
+    "@o1js/native-linux-arm64" "3.0.0-mesa.698ca"
+    "@o1js/native-linux-x64" "3.0.0-mesa.698ca"
+    "@o1js/native-win32-x64" "3.0.0-mesa.698ca"
+
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
@@ -3737,10 +3753,10 @@ normalize-path@^3.0.0, normalize-path@~3.0.0:
   resolved "https://registry.npmjs.org/normalize-path/-/normalize-path-3.0.0.tgz"
   integrity sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==
 
-o1js@^2.3.0, o1js@2.14.0:
-  version "2.14.0"
-  resolved "https://registry.npmjs.org/o1js/-/o1js-2.14.0.tgz"
-  integrity sha512-bVDImXmTzMzWI6vJPEmiQ8tHtBaD90aqjX50akcEFkQ1G5F7O4FmO/bFrqui0z6FT7Z9e324lR8qK5vWRG9r+g==
+o1js@^2.3.0, o1js@3.0.0-mesa.698ca:
+  version "3.0.0-mesa.698ca"
+  resolved "https://registry.npmjs.org/o1js/-/o1js-3.0.0-mesa.698ca.tgz"
+  integrity sha512-7SfaMybQCD+dlS4dS28L5bnMsWYV76AG5DhX+dFnwxmkvkguS5S24UHnV/aXsUscz2A8Wa0GfsJZh7IVSEuwjg==
   dependencies:
     "@noble/hashes" "^1.7.1"
     blakejs "1.2.1"
@@ -3749,6 +3765,8 @@ o1js@^2.3.0, o1js@2.14.0:
     reflect-metadata "^0.1.13"
     stacktrace-js "^2.0.2"
     tslib "^2.3.0"
+  optionalDependencies:
+    "@o1js/native" "3.0.0-mesa.698ca"
 
 object-assign@^4.1.1:
   version "4.1.1"

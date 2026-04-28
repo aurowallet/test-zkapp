@@ -21,7 +21,7 @@
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.3",
     "next": "14.2.3",
-    "o1js": "2.14.0",
+    "o1js": "3.0.0-mesa.698ca",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "styled-components": "^6.0.8",
