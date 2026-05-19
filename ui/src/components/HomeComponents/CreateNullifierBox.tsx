@@ -1,5 +1,6 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage } from "@/utils";
 import { Nullifier, ProviderError } from "@aurowallet/mina-provider";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
@@ -27,10 +28,10 @@ export const CreateNullifierBox = () => {
         })
         .catch((err: any) => err);
 
-      if ((signResult as Nullifier).private) {
+      if ((signResult as Nullifier)?.private) {
         setCreateRes(signResult);
       } else {
-        setCreateRes((signResult as ProviderError).message || "");
+        setCreateRes(getErrorMessage(signResult, "Failed to create nullifier"));
       }
     } catch (error) {
       console.warn(error);

@@ -1,5 +1,6 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage, hasErrorMessage } from "@/utils";
 import {
   ChainInfoArgs,
   ProviderError,
@@ -40,8 +41,14 @@ I accept the Auro Test zkApp Terms of Service: ${window.location.href}
 address: ${currentAccount}
 iat: ${new Date().getTime()}`;
 
+    if (!provider) {
+      setSignRes("Auro Wallet not detected");
+      setVerifyBtnStatus(true);
+      setVerifyRes("");
+      return;
+    }
     const signResult: SignedData | ProviderError = await provider
-      ?.signMessage({
+      .signMessage({
         message: content,
       })
       .catch((err: any) => err);
@@ -52,12 +59,16 @@ iat: ${new Date().getTime()}`;
       setVerifyContent((signResult as SignedData).data + "");
       setVerifySignature(JSON.stringify((signResult as SignedData).signature));
     } else {
-      setSignRes((signResult as ProviderError).message || "");
+      setSignRes(getErrorMessage(signResult, "Failed to sign message"));
       setVerifyBtnStatus(true);
       setVerifyRes("");
     }
   }, [currentAccount, provider]);
   const onVerifyType = useCallback(async () => {
+    if (!provider) {
+      setVerifyRes("Auro Wallet not detected");
+      return;
+    }
     let verifyMessageBody = {
       publicKey: currentAccount,
       signature: verifySignature as any,
@@ -65,10 +76,10 @@ iat: ${new Date().getTime()}`;
     };
 
     let verifyResult: boolean | ProviderError = await provider
-      ?.verifyMessage(verifyMessageBody)
+      .verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
-    if ((verifyResult as ProviderError).message) {
-      setVerifyRes((verifyResult as ProviderError).message);
+    if (hasErrorMessage(verifyResult)) {
+      setVerifyRes(getErrorMessage(verifyResult));
     } else {
       setVerifyRes(verifyResult + "");
     }
@@ -98,13 +109,19 @@ iat: ${new Date().getTime()}`;
         value: "https://docs.aurowallet.com/",
       },
     ];
+    if (!provider) {
+      setJsonSignRes("Auro Wallet not detected");
+      setVerifyJsonBtnStatus(true);
+      setVerifyJsonRes("");
+      return;
+    }
     const signResult: SignedData | ProviderError = await provider
-      ?.signJsonMessage({
+      .signJsonMessage({
         message: msgParams,
       })
       .catch((err: any) => err);
 
-    if ((signResult as SignedData).signature) {
+    if ((signResult as SignedData)?.signature) {
       setJsonSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyJsonBtnStatus(false);
 
@@ -113,12 +130,16 @@ iat: ${new Date().getTime()}`;
         JSON.stringify((signResult as SignedData).signature)
       );
     } else {
-      setJsonSignRes((signResult as ProviderError).message || "");
+      setJsonSignRes(getErrorMessage(signResult, "Failed to sign JSON message"));
       setVerifyJsonBtnStatus(true);
       setVerifyJsonRes("");
     }
   }, [network, provider]);
   const onVerifyJson = useCallback(async () => {
+    if (!provider) {
+      setVerifyJsonRes("Auro Wallet not detected");
+      return;
+    }
     let verifyMessageBody = {
       publicKey: currentAccount,
       signature: verifyJsonSignature as any,
@@ -126,10 +147,10 @@ iat: ${new Date().getTime()}`;
     };
 
     let verifyResult: boolean | ProviderError = await provider
-      ?.verifyMessage(verifyMessageBody)
+      .verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
-    if ((verifyResult as ProviderError).message) {
-      setVerifyJsonRes((verifyResult as ProviderError)?.message);
+    if (hasErrorMessage(verifyResult)) {
+      setVerifyJsonRes(getErrorMessage(verifyResult));
     } else {
       setVerifyJsonRes(verifyResult + "");
     }

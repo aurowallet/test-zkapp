@@ -1,4 +1,5 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage } from "@/utils";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
@@ -43,10 +44,10 @@ export const StakingBox = () => {
       })
       .catch((err: any) => err);
 
-    if ((data as SendTransactionResult).hash) {
+    if ((data as SendTransactionResult)?.hash) {
       setResHash(JSON.stringify(data));
     } else {
-      setErrMsg((data as ProviderError).message || "");
+      setErrMsg(getErrorMessage(data, "Failed to send delegation"));
     }
   }, [vaildatorAddress, fee, memo, nonce, provider]);
 

@@ -1,4 +1,5 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage, hasErrorMessage } from "@/utils";
 import { Button } from "../Button";
 import { InfoRow, InfoType } from "../InfoRow";
 import { useCallback, useEffect, useState } from "react";
@@ -31,21 +32,31 @@ export const BaseActionBox = ({
     setAccounts(currentAccount);
   }, [currentAccount]);
   const onClickConnect = useCallback(async () => {
+    if (!provider) {
+      setAccountsMsg("Auro Wallet not detected");
+      return;
+    }
     const data: string[] | ProviderError = await provider
-      ?.requestAccounts()
+      .requestAccounts()
       .catch((err: any) => err);
-    if ((data as ProviderError).message) {
-      setAccountsMsg((data as ProviderError).message);
-    } else {
+    if (hasErrorMessage(data)) {
+      setAccountsMsg(getErrorMessage(data));
+    } else if (Array.isArray(data) && data.length > 0) {
       let account = (data as string[])[0];
       onSetCurrentAccount(account);
       setAccounts(account);
       setAccountsMsg("");
+    } else {
+      setAccountsMsg("Failed to connect wallet");
     }
   }, [onSetCurrentAccount, provider]);
 
   const onGetAccount = useCallback(async () => {
-    let data = await provider?.getAccounts();
+    if (!provider) {
+      setNoWindowAccount("");
+      return;
+    }
+    let data = await provider.getAccounts();
     setNoWindowAccount(data?.toString() || "");
     if (Array.isArray(data) && data.length > 0) {
       onSetCurrentAccount(data[0]);
@@ -53,11 +64,19 @@ export const BaseActionBox = ({
   }, [onSetCurrentAccount, provider]);
 
   const onGetWalletInfo = useCallback(async () => {
-    let data = await provider?.getWalletInfo();
+    if (!provider) {
+      setWalletInfo("");
+      return;
+    }
+    let data = await provider.getWalletInfo();
     setWalletInfo(JSON.stringify(data));
   }, [provider]);
 
   const onRevokePermissions = useCallback(async () => {
+    if (!provider) {
+      setAccountsMsg("Auro Wallet not detected");
+      return;
+    }
     const supportMethod = Object.getOwnPropertyNames(
       Object.getPrototypeOf(provider)
     ).includes("revokePermissions");
@@ -65,7 +84,7 @@ export const BaseActionBox = ({
       setAccountsMsg("Revoke permissions not support");
       return;
     }
-    await provider?.revokePermissions();
+    await provider.revokePermissions();
     setAccounts("");
     setNoWindowAccount("");
     setAccountsMsg("Revoke permissions success");

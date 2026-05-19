@@ -43,8 +43,11 @@ export default function Home() {
 
   const initNetwork = useCallback(async () => {
     console.log('initNetwork==0');
+    if (!provider) {
+      return;
+    }
     const network: ChainInfoArgs = await provider
-      ?.requestNetwork()
+      .requestNetwork()
       .catch((err: any) => err);
       console.log('initNetwork==1',network);
     if (!network?.networkID) {
@@ -76,8 +79,11 @@ export default function Home() {
   }, [provider]);
 
   const initAccount = useCallback(async () => {
+    if (!provider) {
+      return;
+    }
     const data: string[] | ProviderError = await provider
-      ?.getAccounts()
+      .getAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {
       setCurrentAccount(data[0]);

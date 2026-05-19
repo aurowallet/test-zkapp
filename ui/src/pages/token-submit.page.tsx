@@ -131,8 +131,11 @@ export default function TokenSubmit() {
   const [verifyResultData, setVerifyResultData] = useState("");
 
   const initAccount = useCallback(async () => {
+    if (!provider) {
+      return;
+    }
     const data: string[] | ProviderError = await provider
-      ?.getAccounts()
+      .getAccounts()
       .catch((err: any) => err);
     if (Array.isArray(data) && data.length > 0) {
       setCurrentAccount(data[0]);
@@ -151,14 +154,14 @@ export default function TokenSubmit() {
 
   useEffect(() => {
     initAccount();
-  }, []);
+  }, [initAccount]);
   useEffect(() => {
-    if (currentAccount) {
+    if (provider && currentAccount) {
       setConnectStatus(true);
     } else {
       setConnectStatus(false);
     }
-  }, [currentAccount]);
+  }, [provider, currentAccount]);
 
   const { nextColorMap } = useMemo(() => {
     const nextColorMap = connectStatus
@@ -170,8 +173,11 @@ export default function TokenSubmit() {
   }, [connectStatus]);
 
   const onClick = useCallback(async () => {
+    if (!provider) {
+      return;
+    }
     const data: string[] | ProviderError = await provider
-      ?.requestAccounts()
+      .requestAccounts()
       .catch((err: any) => err);
     if ((data as ProviderError).message) {
     } else {
@@ -180,10 +186,14 @@ export default function TokenSubmit() {
     }
   }, [provider]);
   const onSign = useCallback(async () => {
+    if (!provider) {
+      setSignResultData("Auro Wallet not detected");
+      return;
+    }
     setVerifyResultData("");
     const signContent = inputData.trim();
     const signResult: SignedData | ProviderError = await provider
-      ?.signMessage({
+      .signMessage({
         message: JSON.stringify(signContent),
       })
       .catch((err: any) => err);
@@ -196,6 +206,10 @@ export default function TokenSubmit() {
   }, [inputData, provider]);
 
   const onVerify = useCallback(async () => {
+    if (!provider) {
+      setVerifyResultData("Auro Wallet not detected");
+      return;
+    }
     let verifyMessageBody = {
       publicKey: currentAccount,
       signature: JSON.parse(signedData),
@@ -203,7 +217,7 @@ export default function TokenSubmit() {
     };
 
     let verifyResult: boolean | ProviderError = await provider
-      ?.verifyMessage(verifyMessageBody)
+      .verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
     if ((verifyResult as ProviderError).message) {
       setVerifyResultData((verifyResult as ProviderError).message);

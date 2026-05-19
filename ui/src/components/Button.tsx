@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import styled from "styled-components";
 import { useMinaProvider } from "@/context/MinaProviderContext";
+import { getErrorMessage } from "@/utils";
 
 export const StyledButton = styled.button`
   background-color: #6b5dfb;
@@ -41,7 +42,7 @@ export const StyledButton = styled.button`
 export interface IButton {
   children?: React.ReactNode;
   disabled?: boolean;
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
   checkConnection?: boolean;
 }
 
@@ -75,15 +76,23 @@ export const Button = ({
             }
           }
           // Proceed with original onClick if connected
-          onClick(e);
+          await onClick(e);
         } catch (error) {
           console.error("Error checking wallet connection:", error);
-          alert("Error connecting to Auro Wallet: " + String(error));
+          alert(
+            "Error connecting to Auro Wallet: " +
+              getErrorMessage(error, "Unknown error")
+          );
           return;
         }
       } else {
         // No connection check, proceed directly
-        onClick(e);
+        try {
+          await onClick(e);
+        } catch (error) {
+          console.error("Button click error:", error);
+          alert(getErrorMessage(error, "Operation failed"));
+        }
       }
     },
     [onClick, checkConnection, provider]

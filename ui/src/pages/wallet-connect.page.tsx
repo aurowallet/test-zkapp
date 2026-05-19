@@ -1,6 +1,6 @@
 // wallet-connect.page.tsx
 import { VersionBox } from "@/components/VersionBox";
-import { timeout } from "@/utils";
+import { getErrorMessage, timeout } from "@/utils";
 import {
   getCurrentSession,
   initWalletConnect,
@@ -29,7 +29,6 @@ const disabledButtonStyle: CSSProperties = {
   backgroundColor: "#cccccc",
   cursor: "not-allowed",
 };
-// const isMobile =
 
 export default function WalletConnect() {
   const [account, setAccount] = useState<string | null>(null);
@@ -51,6 +50,7 @@ export default function WalletConnect() {
   useEffect(() => {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
   }, []);
+
   const chainOptions = ["mina:mainnet", "mina:devnet", "zeko:testnet"];
   const chromeScheme = isMobile ? "com.android.chrome" : "";
 
@@ -70,11 +70,9 @@ export default function WalletConnect() {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isIOS) {
       const endURL = `https://applinks.aurowallet.com/applinks?action=wc`;
-      console.log("Auro Wallet Deep Link (iOS):", endURL);
       window.location.href = endURL;
     } else {
       const deepLink = `aurowallet://wc`;
-      console.log("Auro Wallet Deep Link (Android):", deepLink);
       const link = document.createElement("a");
       link.href = deepLink;
       link.style.display = "none";
@@ -113,7 +111,7 @@ export default function WalletConnect() {
       await fn();
     } catch (e) {
       console.error(e);
-      setError((e as Error).message || "An error occurred");
+      setError(getErrorMessage(e, "An error occurred"));
     } finally {
       setLoading(null);
     }
@@ -127,7 +125,6 @@ export default function WalletConnect() {
       if (minaAccounts.length > 0) {
         const minaAddress = minaAccounts[0].split(":")[2];
         setAccount(minaAddress);
-        console.log("Connected with account:", minaAddress);
       } else {
         setError("No accounts found in session");
       }
@@ -145,7 +142,7 @@ export default function WalletConnect() {
       const currentSession = getCurrentSession(walletClient);
       updateSessionState(currentSession);
     } catch (error: any) {
-      setError(error.message || "Failed to connect to Auro Wallet");
+      setError(getErrorMessage(error, "Failed to connect to Auro Wallet"));
       console.error("Connection error:", error);
     }
   };
@@ -169,12 +166,12 @@ export default function WalletConnect() {
       setSignedMessage(null);
       setShowPrompt(false);
       setPromptDetail({ action: "", method: "" });
-      console.log("Disconnected from Auro Wallet");
     } catch (error: any) {
-      setError(error.message || "Failed to disconnect");
+      setError(getErrorMessage(error, "Failed to disconnect"));
       console.error("Disconnect error:", error);
     }
   };
+
   const getZkTxBody = useCallback(
     async (config: any, currentAccount: string, forceInit?: boolean) => {
       try {
@@ -244,7 +241,7 @@ export default function WalletConnect() {
           return transactionJSON;
         }
       } catch (error) {
-        setBuildZkLog("build err:" + String(error));
+        setBuildZkLog("build err:" + getErrorMessage(error));
       }
     },
     [state]
@@ -311,7 +308,7 @@ export default function WalletConnect() {
       const result = await client.request(zkRequest);
       onSetResponse(result);
     } catch (error: any) {
-      setError(error.message || "Failed to send zk transaction");
+      setError(getErrorMessage(error, "Failed to send zk transaction"));
       setBuildZkLog("Send zk transaction error:" + JSON.stringify(error));
     }
   };
@@ -341,12 +338,12 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Delegation result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to send delegation");
+      setError(getErrorMessage(error, "Failed to send delegation"));
       console.error("Send delegation error:", error);
     }
   };
+
   // Handle sending payment
   const handleSendPayment = async () => {
     if (!client || !session || !account) {
@@ -373,9 +370,8 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Payment result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to send payment");
+      setError(getErrorMessage(error, "Failed to send payment"));
       console.error("Send payment error:", error);
     }
   };
@@ -398,11 +394,9 @@ export default function WalletConnect() {
         },
       };
       const result = await client.request(paymentRequest);
-      console.log("getWalletInfo result:", result);
       onSetResponse(result);
-      console.log("Wallet info result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to get wallet info");
+      setError(getErrorMessage(error, "Failed to get wallet info"));
       console.error("Wallet info error:", error);
     }
   };
@@ -442,9 +436,8 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Sign message result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to sign message");
+      setError(getErrorMessage(error, "Failed to sign message"));
       console.error("Sign message error:", error);
     }
   };
@@ -458,7 +451,6 @@ export default function WalletConnect() {
     setError(null);
     try {
       const verifyData = JSON.parse(paymentResult ?? "{}");
-      console.log("verifySignMessage, ", verifyData);
       const paymentRequest = {
         topic: session.topic,
         chainId: selectedChain,
@@ -472,9 +464,8 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Verify message result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to verify message");
+      setError(getErrorMessage(error, "Failed to verify message"));
       console.error("Verify message error:", error);
     }
   };
@@ -502,9 +493,8 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Sign fields result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to sign fields");
+      setError(getErrorMessage(error, "Failed to sign fields"));
       console.error("Sign fields error:", error);
     }
   };
@@ -518,7 +508,6 @@ export default function WalletConnect() {
     setError(null);
     try {
       const verifyData = JSON.parse(paymentResult ?? "{}");
-      console.log("verifySignFields, ", verifyData);
       const paymentRequest = {
         topic: session.topic,
         chainId: selectedChain,
@@ -532,9 +521,8 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Verify fields result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to verify fields");
+      setError(getErrorMessage(error, "Failed to verify fields"));
       console.error("Verify fields error:", error);
     }
   };
@@ -562,9 +550,8 @@ export default function WalletConnect() {
       };
       const result = await client.request(paymentRequest);
       onSetResponse(result);
-      console.log("Create nullifier result:", result);
     } catch (error: any) {
-      setError(error.message || "Failed to create nullifier");
+      setError(getErrorMessage(error, "Failed to create nullifier"));
       console.error("Create nullifier error:", error);
     }
   };
@@ -588,7 +575,6 @@ export default function WalletConnect() {
       if (newAccounts.length > 0) {
         const newAddress = newAccounts[0].split(":")[2];
         setAccount(newAddress);
-        console.log("Account changed to:", newAddress);
       } else {
         setAccount(null);
         setError("No accounts available after change");
@@ -599,10 +585,8 @@ export default function WalletConnect() {
       const newChain = event.detail;
       if (chainOptions.includes(newChain)) {
         setSelectedChain(newChain);
-        console.log("Chain changed to:", newChain);
       } else {
         setError(`Unsupported chain: ${newChain}`);
-        console.warn("Unsupported chain detected:", newChain);
       }
     };
 
@@ -615,7 +599,6 @@ export default function WalletConnect() {
       setSignedMessage(null);
       setShowPrompt(false);
       setPromptDetail({ action: "", method: "" });
-      console.log("Session deleted");
     };
 
     window.addEventListener(

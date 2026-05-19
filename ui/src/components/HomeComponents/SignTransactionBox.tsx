@@ -1,5 +1,5 @@
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
-import { timeout } from "@/utils";
+import { getErrorMessage, hasErrorCode, timeout } from "@/utils";
 import ZkappWorkerClient from "@/utils/zkappWorkerClient";
 import {
   ChainInfoArgs,
@@ -123,17 +123,13 @@ export const SignTransactionBox = ({
     const nextStep = randomIntFromInterval(1);
     if (nextStep) {
       // sign and send in local
-      console.log("onClickTest network 1: ", JSON.stringify(network));
-
       const signRes = await zkappWorkerClient.signAndSendTx(
         "",
         "",
         gqlUrl,
         network.networkID
       );
-      console.log("signRes", signRes);
     } else {
-      console.log("onClickTest network 2: ", JSON.stringify(network));
       // sign in ext and send in local
       const signRes = await zkappWorkerClient.buildTxBody(
         "",
@@ -141,13 +137,11 @@ export const SignTransactionBox = ({
         gqlUrl,
         network.networkID
       );
-      console.log("signRes", signRes);
       const sendRes = await zkappWorkerClient.onlyProving(
         signRes as string,
         gqlUrl,
         network.networkID
       );
-      console.log("sendRes", sendRes);
     }
   }, [gqlUrl, network]);
   const onClickInit = useCallback(
@@ -159,13 +153,10 @@ export const SignTransactionBox = ({
 
       if (!state.hasBeenSetup || forceInit) {
         setDisplayText("Loading web worker...");
-        console.log("Loading web worker...");
         const zkappWorkerClient = new ZkappWorkerClient();
         await timeout(5);
 
         setDisplayText("Done loading web worker");
-        console.log("Done loading web worker");
-        console.log("onClickInit network : ", JSON.stringify(network));
         await zkappWorkerClient.setActiveInstanceToBerkeley(
           gqlUrl,
           network.networkID
@@ -179,17 +170,15 @@ export const SignTransactionBox = ({
         }
         const connectAccount = await mina.requestAccounts();
         if (!Array.isArray(connectAccount)) {
-          toast.error("Please connect wallet first");
+          toast.error(getErrorMessage(connectAccount, "Please connect wallet first"));
           return;
         }
         const publicKeyBase58: string = connectAccount[0];
         const publicKey = PublicKey.fromBase58(publicKeyBase58);
 
-        console.log(`Using key:${publicKey.toBase58()}`);
         setDisplayText(`Using key:${publicKey.toBase58()}`);
 
         setDisplayText("Checking if fee payer account exists...");
-        console.log("Checking if fee payer account exists...");
 
         const res = await zkappWorkerClient.fetchAccount({
           publicKey: publicKey!,
@@ -198,19 +187,15 @@ export const SignTransactionBox = ({
 
         await zkappWorkerClient.loadContract();
 
-        console.log("Compiling zkApp...");
         setDisplayText("Compiling zkApp...");
         await zkappWorkerClient.compileContract();
-        console.log("zkApp compiled");
         setDisplayText("zkApp compiled...");
         const zkappPublicKey = PublicKey.fromBase58(zkAddress);
         await zkappWorkerClient.initZkappInstance(zkappPublicKey);
 
-        console.log("Getting zkApp state...");
         setDisplayText("Getting zkApp state...");
         await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
         const currentNum = await zkappWorkerClient.getNum();
-        console.log(`Current state in zkApp: ${currentNum.toString()}`);
         setDisplayText("");
 
         setState({
@@ -242,7 +227,6 @@ export const SignTransactionBox = ({
     setState({ ...state, creatingTransaction: true });
 
     setDisplayText("Creating a transaction...");
-    console.log("Creating a transaction...");
 
     await state.zkappWorkerClient!.fetchAccount({
       publicKey: state.publicKey!,
@@ -251,17 +235,20 @@ export const SignTransactionBox = ({
     await state.zkappWorkerClient!.createUpdateTransaction();
 
     setDisplayText("Creating proof...");
-    console.log("Creating proof...");
     await state.zkappWorkerClient!.proveUpdateTransaction();
 
-    console.log("Requesting send transaction...");
     setDisplayText("Requesting send transaction...");
     const transactionJSON = await state.zkappWorkerClient!.getTransactionJSON();
 
     setDisplayText("Getting transaction JSON...");
-    console.log("Getting transaction JSON...");
+    if (!provider) {
+      setTxHash("");
+      setDisplayText("Auro Wallet not detected");
+      setState({ ...state, creatingTransaction: false });
+      return;
+    }
     const res: SendTransactionResult | ProviderError = await provider
-      ?.sendTransaction({
+      .sendTransaction({
         transaction: transactionJSON as object,
         nonce: parseInt(nonce),
         feePayer: {
@@ -270,9 +257,9 @@ export const SignTransactionBox = ({
         },
       })
       .catch((err) => err);
-    if ((res as ProviderError).code) {
+    if (hasErrorCode(res)) {
       setTxHash("");
-      setDisplayText((res as ProviderError).message);
+      setDisplayText(getErrorMessage(res, "Failed to send transaction"));
     } else {
       const sendTxResult = res as SendZkTransactionResult;
       setTxHash(JSON.stringify(sendTxResult));
@@ -282,7 +269,6 @@ export const SignTransactionBox = ({
   }, [fee, memo, nonce, state, isChecked, provider]);
 
   const onRefreshCurrentNum = useCallback(async () => {
-    console.log("Getting zkApp state...");
     setZkAppStatus(": Getting zkApp state...");
 
     await state.zkappWorkerClient!.fetchAccount({
@@ -290,7 +276,6 @@ export const SignTransactionBox = ({
     });
     const currentNum = await state.zkappWorkerClient!.getNum();
     setState({ ...state, currentNum });
-    console.log(`Current state in zkApp: ${currentNum.toString()}`);
     setZkAppStatus("");
   }, [state]);
 
@@ -305,9 +290,7 @@ export const SignTransactionBox = ({
       setCreateText("start init");
       const zkappWorkerClient = new ZkappWorkerClient();
       await timeout(5);
-      console.log("Done loading web worker");
       setCreateText("Done loading web worker");
-      console.log("createContract network : ", JSON.stringify(network));
       await zkappWorkerClient.setActiveInstanceToBerkeley(
         gqlUrl,
         network.networkID
@@ -318,18 +301,14 @@ export const SignTransactionBox = ({
       }
       const publicKeyBase58: string = currentAccount;
       const publicKey = PublicKey.fromBase58(publicKeyBase58);
-      console.log(`Using key:${publicKey.toBase58()}`);
       setCreateText(`Using key:${publicKey.toBase58()}`);
-      console.log("Checking if fee payer account exists...");
       setCreateText("Checking if fee payer account exists...");
       const res = await zkappWorkerClient.fetchAccount({
         publicKey: publicKey!,
       });
       await zkappWorkerClient.loadContract();
-      console.log("Compiling zkApp...");
       setCreateText("Compiling zkApp...");
       await zkappWorkerClient.compileContract();
-      console.log("zkApp compiled");
       setCreateText("zkApp compiled");
       await zkappWorkerClient.initZkappInstance(zkAddress);
       await zkappWorkerClient.createDeployTransaction(
@@ -339,8 +318,13 @@ export const SignTransactionBox = ({
       await zkappWorkerClient.proveUpdateTransaction();
       const transactionJSON = await zkappWorkerClient.getTransactionJSON();
       setCreateText("waiting wallet confirm");
+      if (!provider) {
+        setCreateText("");
+        setCreateHash("Auro Wallet not detected");
+        return;
+      }
       const sendRes: SendTransactionResult | ProviderError = await provider
-        ?.sendTransaction({
+        .sendTransaction({
           transaction: transactionJSON as object,
           nonce: parseInt(nonce),
           feePayer: {
@@ -349,8 +333,8 @@ export const SignTransactionBox = ({
         })
         .catch((err) => err);
       setCreateText("");
-      if ((sendRes as ProviderError).code) {
-        setCreateHash((sendRes as ProviderError).message);
+      if (hasErrorCode(sendRes)) {
+        setCreateHash(getErrorMessage(sendRes, "Failed to create contract"));
       } else {
         const sendTxResult = sendRes as SendZkTransactionResult;
         setCreateHash(JSON.stringify(sendTxResult));
@@ -400,7 +384,6 @@ export const SignTransactionBox = ({
     setState({ ...state, creatingTransaction: true });
 
     setDisplayText("Creating a transaction...");
-    console.log("Creating a transaction...");
 
     await state.zkappWorkerClient!.fetchAccount({
       publicKey: state.publicKey!,
@@ -410,14 +393,11 @@ export const SignTransactionBox = ({
     await state.zkappWorkerClient!.createManulUpdateTransaction(num, zkAddress);
 
     setDisplayText("Creating proof...");
-    console.log("Creating proof...");
 
-    console.log("Requesting send transaction...");
     setDisplayText("Requesting send transaction...");
     const transactionJSON = await state.zkappWorkerClient!.getTransactionJSON();
 
     setDisplayText("Getting transaction JSON...");
-    console.log("Getting transaction JSON...");
     const res: SendTransactionResult | ProviderError = await provider
       ?.sendTransaction({
         onlySign: onlySign,
@@ -430,9 +410,9 @@ export const SignTransactionBox = ({
       })
       .catch((err) => err);
 
-    if ((res as ProviderError).code) {
+    if (hasErrorCode(res)) {
       setTxHash("");
-      setDisplayText((res as ProviderError).message);
+      setDisplayText(getErrorMessage(res, "Failed to build and sign transaction"));
     } else {
       const sendTxResult = res as SendZkTransactionResult;
       const signedData = (sendTxResult as SignedZkappCommand).signedData;

@@ -1,6 +1,7 @@
 import { DefaultSupportNetorkIDs } from "@/constants/config";
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage, hasErrorMessage } from "@/utils";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "../Button";
@@ -34,8 +35,8 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
         networkID: networkID.trim(),
       })
       .catch((err: any) => err);
-    if ((switchResult as ProviderError).message) {
-      setSwitchRes((switchResult as ProviderError).message);
+    if (hasErrorMessage(switchResult)) {
+      setSwitchRes(getErrorMessage(switchResult));
     } else {
       setSwitchRes(JSON.stringify(switchResult));
     }
@@ -52,8 +53,8 @@ export const SwitchChainBox = ({ network }: { network: ChainInfoArgs }) => {
     const addResult: ChainInfoArgs | ProviderError = await provider
       ?.addChain(addInfo)
       .catch((err: any) => err);
-    if ((addResult as ProviderError).message) {
-      setAddRes((addResult as ProviderError).message);
+    if (hasErrorMessage(addResult)) {
+      setAddRes(getErrorMessage(addResult));
     } else {
       setAddRes(JSON.stringify(addResult));
     }

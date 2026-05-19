@@ -33,11 +33,10 @@ export const AuroMinaProvider: React.FC<{ children: ReactNode }> = ({ children }
         ) {
           const newProvider = event?.detail?.provider;
           if (newProvider) {
+            setProvider(newProvider);
             try {
               // Request accounts to ensure the wallet is connected
               const accounts = await newProvider.requestAccounts();
-              setProvider(newProvider);
-              console.log('Mina provider initialized:', accounts);
             } catch (error) {
               console.error('Failed to initialize Mina provider:', error);
             }
@@ -61,12 +60,8 @@ export const AuroMinaProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Handle account changes
   useEffect(() => {
-    console.log('Provider changed:', provider);
-    
     if (provider) {
-      console.log('Provider changed=1:',);
       const handleAccountsChanged = (accounts: string[]) => {
-        console.log('outer Accounts changed:', accounts);
         // Optionally update state or re-initialize provider
       };
 
@@ -81,7 +76,6 @@ export const AuroMinaProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Disconnect provider
   const disconnectProvider = () => {
     setProvider(null);
-    console.log('Provider disconnected');
   };
 
   return (

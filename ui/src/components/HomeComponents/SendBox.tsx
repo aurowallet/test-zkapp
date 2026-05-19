@@ -1,5 +1,6 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage } from "@/utils";
 import {
   ProviderError,
   SendTransactionResult,
@@ -50,10 +51,10 @@ export const MinaSendBox = () => {
       ?.sendPayment(params)
       .catch((err: any) => err);
 
-    if ((data as SendTransactionResult).hash) {
+    if ((data as SendTransactionResult)?.hash) {
       setResHash(JSON.stringify(data));
     } else {
-      setErrMsg((data as ProviderError).message || "");
+      setErrMsg(getErrorMessage(data, "Failed to send payment"));
     }
   }, [receiveAddress, amount, fee, memo, nonce, provider]);
 

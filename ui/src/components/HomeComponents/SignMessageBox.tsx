@@ -1,5 +1,6 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
+import { getErrorMessage, hasErrorMessage } from "@/utils";
 import { ProviderError, SignedData } from "@aurowallet/mina-provider";
 import { useCallback, useState } from "react";
 import { Button } from "../Button";
@@ -32,23 +33,31 @@ export const SignMessageBox = ({
   }, []);
 
   const onSign = useCallback(async () => {
+    if (!provider) {
+      setSignRes("Auro Wallet not detected");
+      return;
+    }
     const signResult: SignedData | ProviderError = await provider
-      ?.signMessage({
+      .signMessage({
         message: signContent,
       })
       .catch((err: any) => err);
 
-    if ((signResult as SignedData).signature) {
+    if ((signResult as SignedData)?.signature) {
       setSignRes(JSON.stringify((signResult as SignedData).signature));
       setVerifyBtnStatus(false);
 
       setVerifyContent((signResult as SignedData).data + "");
       setVerifySignature(JSON.stringify((signResult as SignedData).signature));
     } else {
-      setSignRes((signResult as ProviderError).message || "");
+      setSignRes(getErrorMessage(signResult, "Failed to sign message"));
     }
-  }, [signContent]);
+  }, [provider, signContent]);
   const onVerify = useCallback(async () => {
+    if (!provider) {
+      setVerifyRes("Auro Wallet not detected");
+      return;
+    }
     let verifyMessageBody = {
       publicKey: currentAccount,
       signature: verifySignature as any,
@@ -56,14 +65,14 @@ export const SignMessageBox = ({
     };
 
     let verifyResult: boolean | ProviderError = await provider
-      ?.verifyMessage(verifyMessageBody)
+      .verifyMessage(verifyMessageBody)
       .catch((err: any) => err);
-    if ((verifyResult as ProviderError).message) {
-      setVerifyRes((verifyResult as ProviderError).message);
+    if (hasErrorMessage(verifyResult)) {
+      setVerifyRes(getErrorMessage(verifyResult));
     } else {
       setVerifyRes(verifyResult + "");
     }
-  }, [currentAccount, verifyContent, verifySignature]);
+  }, [currentAccount, provider, verifyContent, verifySignature]);
 
   const openAppLink = (deepLink: string) => {
     const link = document.createElement("a");
