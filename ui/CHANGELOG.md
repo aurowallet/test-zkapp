@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.4]
+### Enhancements
+- Upgrade o1js to 2.15.0
 
 ## [2.0.3]
 ### Enhancements
