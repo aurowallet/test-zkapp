@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 
+## [2.0.5]
+### Enhancements
+- Upgrade `o1js` from `2.14.0` to `2.15.0`
+
 ## [2.0.3]
 ### Enhancements
 - Add shared `getErrorMessage`, `hasErrorMessage`, and `hasErrorCode` helpers for wallet/provider response handling
