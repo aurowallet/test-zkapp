@@ -13,7 +13,7 @@
  * Run with node:     `$ node build/src/interact.js <deployAlias>`.
  */
 import fs from 'fs/promises';
-import { Mina, NetworkId, PrivateKey } from 'o1js';
+import { Mina, PrivateKey } from 'o1js';
 import { Add } from './Add.js';
 
 // check command line arg
@@ -26,6 +26,8 @@ node build/src/interact.js <deployAlias>
 `);
 Error.stackTraceLimit = 1000;
 const DEFAULT_NETWORK_ID = 'testnet';
+
+type O1jsNetworkID = 'mainnet' | 'testnet' | { custom: string };
 
 // parse config and private key from file
 type Config = {
@@ -56,10 +58,9 @@ let zkAppKey = PrivateKey.fromBase58(zkAppKeysBase58.privateKey);
 
 // set up Mina instance and contract we interact with
 const Network = Mina.Network({
-  // We need to default to the testnet networkId if none is specified for this deploy alias in config.json
-  // This is to ensure the backward compatibility.
-  networkId: (config.networkId ?? DEFAULT_NETWORK_ID) as NetworkId,
+  networkId: resolveO1jsNetworkId(config.networkId ?? DEFAULT_NETWORK_ID),
   mina: config.url,
+  archive: config.url,
 });
 // const Network = Mina.Network(config.url);
 const fee = Number(config.fee) * 1e9; // in nanomina (1 billion = 1.0 mina)
@@ -109,4 +110,22 @@ function getTxnUrl(graphQlUrl: string, txnHash: string | undefined) {
     return `https://minascan.io/${networkName}/tx/${txnHash}?type=zk-tx`;
   }
   return `Transaction hash: ${txnHash}`;
+}
+
+function resolveO1jsNetworkId(networkID: string): O1jsNetworkID {
+  if (typeof networkID !== 'string' || !networkID.trim()) {
+    return 'testnet';
+  }
+
+  const [namespace, suffix] = networkID.split(':');
+
+  if (namespace === 'mina') {
+    return suffix === 'mainnet' ? 'mainnet' : 'testnet';
+  }
+
+  if (namespace === 'zeko' && suffix === 'mainnet') {
+    return { custom: 'zeko-mainnet' };
+  }
+
+  return 'testnet';
 }

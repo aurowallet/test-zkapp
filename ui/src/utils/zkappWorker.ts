@@ -25,6 +25,8 @@ interface VerificationKeyData {
   hash: Field;
 }
 
+type O1jsNetworkID = "mainnet" | "testnet" | { custom: string };
+
 const state = {
   Add: null as null | typeof Add,
   zkapp: null as null | Add,
@@ -38,14 +40,9 @@ const state = {
 const functions = {
   setActiveInstanceToBerkeley: async (args: {
     gqlUrl: string;
-    networkID: any;
+    networkID: string;
   }) => {
-    const network = Mina.Network({
-      // the networkID is returned in daemon node
-      // extension now not support return networkID , so add cache to there
-      networkId: getInitNetworkID(args.networkID),
-      mina: getRealGqlUrl(args.gqlUrl),
-    });
+    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
     Mina.setActiveInstance(network);
   },
   loadContract: async (args: {}) => {
@@ -134,14 +131,9 @@ const functions = {
     publicKey: string;
     sendPrivateKey: string;
     gqlUrl: string;
-    networkID: any;
+    networkID: string;
   }) => {
-    const network = Mina.Network({
-      // the networkID is returned in daemon node
-      // extension now not support return networkID , so add cache to there
-      networkId: getInitNetworkID(args.networkID),
-      mina: getRealGqlUrl(args.gqlUrl),
-    });
+    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
     Mina.setActiveInstance(network);
     console.log("signAndSendTx networkID", Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
@@ -166,14 +158,9 @@ const functions = {
     zkPublicKey: string;
     sendPrivateKey: string;
     gqlUrl: string;
-    networkID: any;
+    networkID: string;
   }) => {
-    const network = Mina.Network({
-      // the networkID is returned in daemon node
-      // extension now not support return networkID , so add cache to there
-      networkId: getInitNetworkID(args.networkID),
-      mina: getRealGqlUrl(args.gqlUrl),
-    });
+    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
     Mina.setActiveInstance(network);
     console.log("buildTxBody networkID", Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
@@ -203,7 +190,7 @@ const functions = {
   onlyProving: async (args: {
     signedData: string;
     gqlUrl: string;
-    networkID: any;
+    networkID: string;
   }) => {
     const {
       tx: serializedTransaction,
@@ -212,12 +199,7 @@ const functions = {
     } = JSON.parse(args.signedData);
     const zkAppPublicKey = PublicKey.fromBase58(address);
     const { fee, sender, nonce } = transactionParams(serializedTransaction);
-    const network = Mina.Network({
-      // the networkID is returned in daemon node
-      // extension now not support return networkID , so add cache to there
-      networkId: getInitNetworkID(args.networkID),
-      mina: getRealGqlUrl(args.gqlUrl),
-    });
+    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
     Mina.setActiveInstance(network);
     console.log("onlyProving networkID", Mina.getNetworkId());
     const { Add } = await import("../contracts/Add");
@@ -296,9 +278,29 @@ if (typeof window !== "undefined") {
 
 console.log("Web Worker Successfully Initialized.");
 
-function getInitNetworkID(networkID: string) {
-  console.log("getInitNetworkID params: ", networkID);
-  const nextID = networkID === "mina:mainnet" ? "mainnet" : "testnet";
-  console.log("getInitNetworkID nextID: ", nextID);
-  return nextID;
+function buildNetworkInstance(gqlUrl: string, networkID: string) {
+  const realGqlUrl = getRealGqlUrl(gqlUrl);
+  return Mina.Network({
+    networkId: resolveO1jsNetworkID(networkID),
+    mina: realGqlUrl,
+    archive: realGqlUrl,
+  });
+}
+
+function resolveO1jsNetworkID(networkID: string): O1jsNetworkID {
+  if (typeof networkID !== "string" || !networkID.trim()) {
+    return "testnet";
+  }
+
+  const [namespace, suffix] = networkID.split(":");
+
+  if (namespace === "mina") {
+    return suffix === "mainnet" ? "mainnet" : "testnet";
+  }
+
+  if (namespace === "zeko" && suffix === "mainnet") {
+    return { custom: "zeko-mainnet" };
+  }
+
+  return "testnet";
 }

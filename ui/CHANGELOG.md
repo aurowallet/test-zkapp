@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 
+## [2.1.0]
+### Enhancements
+- Support `zeko:mainnet` as o1js custom network ID (`{ custom: "zeko-mainnet" }`) in zkApp transaction flows
+- Unify network instance creation in zkApp worker and include `archive` endpoint for consistent RPC behavior
+- Align `contracts/src/interact.ts` network ID resolution with the same `zeko:mainnet` mapping
+
 ## [2.0.5]
 ### Enhancements
 - Upgrade `o1js` from `2.14.0` to `2.15.0`
