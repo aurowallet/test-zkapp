@@ -6,7 +6,7 @@ import { Web3Modal } from "@web3modal/standalone";
 const web3Modal = new Web3Modal({
   walletConnectVersion: 2,
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECY_ID as string,
-  standaloneChains: ["mina:mainnet", "mina:devnet", "zeko:testnet"],
+  standaloneChains: ["mina:mainnet", "mina:devnet", "zeko:testnet","zeko:mainnet"],
 });
 
 export interface WalletConnectClient extends InstanceType<typeof SignClient> {
@@ -66,7 +66,7 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
     const connectParams = {
       requiredNamespaces: {
         mina: {
-          chains: ["mina:mainnet", "mina:devnet", "zeko:testnet"],
+          chains: ["mina:mainnet", "mina:devnet", "zeko:testnet","zeko:mainnet"],
           methods: [
             "mina_sendPayment",
             "mina_sendStakeDelegation",

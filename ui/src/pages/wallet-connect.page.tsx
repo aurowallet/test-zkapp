@@ -51,7 +51,7 @@ export default function WalletConnect() {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
   }, []);
 
-  const chainOptions = ["mina:mainnet", "mina:devnet", "zeko:testnet"];
+  const chainOptions = ["mina:mainnet", "mina:devnet", "zeko:testnet","zeko:mainnet"];
   const chromeScheme = isMobile ? "com.android.chrome" : "";
 
   const [state, setState] = useState({
@@ -264,6 +264,11 @@ export default function WalletConnect() {
           gqlUrl: process.env.NEXT_PUBLIC_ZEKOTESTNET_GQL,
           networkID: "zeko:testnet",
           zkAddress: "B62qkHdJ9R8oJSVMr8JLVQzvi9Mc8cWcFREAa3ewYaBkrPaGMCfu1A5",
+        },
+        "zeko:mainnet": {
+          gqlUrl: process.env.NEXT_PUBLIC_ZEKOMAINNET_GQL,
+          networkID: "zeko:mainnet",
+          zkAddress: "B62qjBfhtY61cvTUX8FAu3scnNVyEek5x17pFuwxaMmrKTRqQanwjCr",
         },
       };
       const networkIDs = Object.keys(testConfig);
