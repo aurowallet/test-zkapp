@@ -1,4 +1,4 @@
-import { Field, Mina, PublicKey, UInt64 } from "o1js";
+import { Field, Mina, PublicKey, UInt64 } from "o1js-berkeley";
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 export function serializeTransaction(tx: Transaction) {
   const length = tx.transaction.accountUpdates.length;
@@ -28,19 +28,6 @@ export function serializeTransaction(tx: Transaction) {
     2
   );
   return serializedTransaction;
-}
-
-export function transactionParams(serializedTransaction: string): {
-  fee: UInt64;
-  sender: PublicKey;
-  nonce: number;
-} {
-  const { fee, sender, nonce } = JSON.parse(serializedTransaction);
-  return {
-    fee: UInt64.fromJSON(fee),
-    sender: PublicKey.fromBase58(sender),
-    nonce: Number(nonce),
-  };
 }
 
 export function deserializeTransaction(

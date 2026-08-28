@@ -5,18 +5,15 @@ import {
   PrivateKey,
   PublicKey,
   fetchAccount,
-} from "o1js";
+} from "o1js-berkeley";
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
-// ---------------------------------------------------------------------------------------
-
-import type { Add } from "../contracts/source/Add.ts";
+import type { AddBerkeley } from "../contracts/AddBerkeley";
 import { getRealGqlUrl } from "./index.ts";
 import {
   deserializeTransaction,
   serializeTransaction,
-  transactionParams,
   transactionParamsV2,
 } from "./zkUtils.ts";
 
@@ -28,10 +25,10 @@ interface VerificationKeyData {
 type O1jsNetworkID = "mainnet" | "testnet" | { custom: string };
 
 const state = {
-  Add: null as null | typeof Add,
-  zkapp: null as null | Add,
+  Add: null as null | typeof AddBerkeley,
+  zkapp: null as null | AddBerkeley,
   transaction: null as null | Transaction,
-  verificationKey: null as null | VerificationKeyData, //| VerificationKeyData;
+  verificationKey: null as null | VerificationKeyData,
   serializeTx: "",
 };
 
@@ -45,49 +42,41 @@ const functions = {
     const network = buildNetworkInstance(args.gqlUrl, args.networkID);
     Mina.setActiveInstance(network);
   },
-  loadContract: async (args: {}) => {
-    const { Add } = await import("../contracts/Add");
-    state.Add = Add;
+  loadContract: async () => {
+    const { AddBerkeley } = await import("../contracts/AddBerkeley");
+    state.Add = AddBerkeley;
   },
-  compileContract: async (args: {}) => {
+  compileContract: async () => {
     const { verificationKey } = await state.Add!.compile();
     state.verificationKey = verificationKey;
   },
   fetchAccount: async (args: { publicKey58: string }) => {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
-    return await fetchAccount({ publicKey });
+    const account = await fetchAccount({ publicKey });
+    return { error: account.error ?? null };
   },
   initZkappInstance: async (args: { publicKey58: string }) => {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
     state.zkapp = new state.Add!(publicKey);
   },
-  getNum: async (args: {}) => {
+  getNum: async () => {
     const currentNum = await state.zkapp!.num.get();
     return JSON.stringify(currentNum.toJSON());
   },
-  createUpdateTransaction: async (args: {}) => {
-    console.log("createUpdateTransaction networkID", Mina.getNetworkId());
+  createUpdateTransaction: async () => {
     const transaction = await Mina.transaction(async () => {
       await state.zkapp!.update();
     });
     state.transaction = transaction;
   },
-  createManulUpdateTransaction: async (args: {
+  createManualUpdateTransaction: async (args: {
     value: number;
     zkAddress: string;
   }) => {
-    console.log(
-      "createManulUpdateTransaction networkID = 0, ",
-      Mina.getNetworkId()
-    );
     const nextValue = Field(args.value);
     const transaction = await Mina.transaction(async () => {
       await state.zkapp!.setValue(nextValue);
     });
-    console.log(
-      "createManulUpdateTransaction networkID = 1,",
-      Mina.getNetworkId()
-    );
     state.transaction = transaction;
     const data: string = JSON.stringify(
       {
@@ -100,26 +89,22 @@ const functions = {
     );
     state.serializeTx = data;
   },
-  proveUpdateTransaction: async (args: {}) => {
+  proveUpdateTransaction: async () => {
     await state.transaction!.prove();
   },
-  getTransactionJSON: async (args: {}) => {
+  getTransactionJSON: async () => {
     return state.transaction!.toJSON();
   },
   createDeployTransaction: async (args: {
     feePayer: string;
     privateKey58: string;
   }) => {
-    if (state === null) {
-      throw Error("state is null");
-    }
     const zkAppPrivateKey: PrivateKey = PrivateKey.fromBase58(
       args.privateKey58
     );
-    const feePayerPublickKey = PublicKey.fromBase58(args.feePayer);
-    console.log('createDeployTransaction networkID',Mina.getNetworkId());
-    const transaction = await Mina.transaction(feePayerPublickKey, async () => {
-      AccountUpdate.fundNewAccount(feePayerPublickKey);
+    const feePayerPublicKey = PublicKey.fromBase58(args.feePayer);
+    const transaction = await Mina.transaction(feePayerPublicKey, async () => {
+      AccountUpdate.fundNewAccount(feePayerPublicKey);
       await state.zkapp!.deploy({
         verificationKey: state.verificationKey as VerificationKeyData,
       });
@@ -127,95 +112,6 @@ const functions = {
     transaction.sign([zkAppPrivateKey]);
     state.transaction = transaction;
   },
-  signAndSendTx: async (args: {
-    publicKey: string;
-    sendPrivateKey: string;
-    gqlUrl: string;
-    networkID: string;
-  }) => {
-    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
-    Mina.setActiveInstance(network);
-    console.log("signAndSendTx networkID", Mina.getNetworkId());
-    const { Add } = await import("../contracts/Add");
-    const zkPublicKey = PublicKey.fromBase58(args.publicKey);
-    const zkApp = new Add(zkPublicKey);
-    await Add.compile();
-    const deployer = PrivateKey.fromBase58(args.sendPrivateKey);
-    const sender = deployer.toPublicKey();
-    const value = Field(10);
-    const fee = 1e8;
-    await fetchAccount({ publicKey: sender });
-    await fetchAccount({ publicKey: zkPublicKey });
-    const tx = await Mina.transaction({ sender, fee }, async () => {
-      await zkApp.setValue(value);
-    });
-    tx.sign([deployer]);
-    await tx.prove();
-    const sendRes = await tx.send();
-    return sendRes.hash;
-  },
-  buildTxBody: async (args: {
-    zkPublicKey: string;
-    sendPrivateKey: string;
-    gqlUrl: string;
-    networkID: string;
-  }) => {
-    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
-    Mina.setActiveInstance(network);
-    console.log("buildTxBody networkID", Mina.getNetworkId());
-    const { Add } = await import("../contracts/Add");
-    const zkPublicKey = PublicKey.fromBase58(args.zkPublicKey);
-    const zkApp = new Add(zkPublicKey);
-    const deployer = PrivateKey.fromBase58(args.sendPrivateKey);
-    const sender = deployer.toPublicKey();
-    const value = Field(1);
-    const fee = 1e8;
-    await fetchAccount({ publicKey: sender });
-    await fetchAccount({ publicKey: zkPublicKey });
-    const tx = await Mina.transaction({ sender, fee }, async () => {
-      await zkApp.setValue(value);
-    });
-    tx.sign([deployer]);
-    const data: string = JSON.stringify(
-      {
-        tx: serializeTransaction(tx),
-        value: value.toJSON(),
-        address: args.zkPublicKey,
-      },
-      null,
-      2
-    );
-    return data;
-  },
-  onlyProving: async (args: {
-    signedData: string;
-    gqlUrl: string;
-    networkID: string;
-  }) => {
-    const {
-      tx: serializedTransaction,
-      value,
-      address,
-    } = JSON.parse(args.signedData);
-    const zkAppPublicKey = PublicKey.fromBase58(address);
-    const { fee, sender, nonce } = transactionParams(serializedTransaction);
-    const network = buildNetworkInstance(args.gqlUrl, args.networkID);
-    Mina.setActiveInstance(network);
-    console.log("onlyProving networkID", Mina.getNetworkId());
-    const { Add } = await import("../contracts/Add");
-    const zkApp = new Add(zkAppPublicKey);
-    await fetchAccount({ publicKey: sender });
-    await fetchAccount({ publicKey: zkAppPublicKey });
-    const txNew = await Mina.transaction({ sender, fee, nonce }, async () => {
-      await zkApp.setValue(Field.fromJSON(value));
-    });
-    const tx = deserializeTransaction(serializedTransaction, txNew);
-    await Add.compile();
-    await tx.prove();
-    const txSent = await tx.send(); // have cors issue
-    return txSent.hash;
-  },
-
   sendProving: async (args: { signedData: string }) => {
     const {
       tx: serializedTransaction,
@@ -227,9 +123,8 @@ const functions = {
     await fetchAccount({ publicKey: sender });
     await fetchAccount({ publicKey: zkAppPublicKey });
 
-    const { Add } = await import("../contracts/Add");
-    const zkApp = new Add(zkAppPublicKey);
-    console.log("sendProving networkID", Mina.getNetworkId());
+    const { AddBerkeley } = await import("../contracts/AddBerkeley");
+    const zkApp = new AddBerkeley(zkAppPublicKey);
     const txNew = await Mina.transaction({ sender, fee, nonce }, async () => {
       await zkApp!.setValue(Field.fromJSON(value));
     });
@@ -239,7 +134,7 @@ const functions = {
       true,
       args.signedData
     );
-    await Add.compile();
+    await AddBerkeley.compile();
     await tx.prove();
     const txSent = await tx.send();
     return txSent.hash;
@@ -258,25 +153,27 @@ export type ZkappWorkerRequest = {
 
 export type ZkappWorkerReponse = {
   id: number;
-  data: any;
+  data?: any;
+  error?: string;
 };
 
 if (typeof window !== "undefined") {
   addEventListener(
     "message",
     async (event: MessageEvent<ZkappWorkerRequest>) => {
-      const returnData = await functions[event.data.fn](event.data.args);
-
-      const message: ZkappWorkerReponse = {
-        id: event.data.id,
-        data: returnData,
-      };
-      postMessage(message);
+      try {
+        const data = await functions[event.data.fn](event.data.args);
+        structuredClone(data);
+        postMessage({ id: event.data.id, data } satisfies ZkappWorkerReponse);
+      } catch (error) {
+        postMessage({
+          id: event.data.id,
+          error: String(error instanceof Error ? error.message : error),
+        } satisfies ZkappWorkerReponse);
+      }
     }
   );
 }
-
-console.log("Web Worker Successfully Initialized.");
 
 function buildNetworkInstance(gqlUrl: string, networkID: string) {
   const realGqlUrl = getRealGqlUrl(gqlUrl);

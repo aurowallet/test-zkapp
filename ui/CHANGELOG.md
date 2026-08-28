@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0]
+### Enhancements
+- Upgrade the Mesa runtime to o1js 3.0.0 while preserving Berkeley compatibility with o1js 2.15.0
+- Add dedicated Mesa and Berkeley zkApp signing modules, routes, contracts, and isolated web workers
+- Support Mesa 32-state and Berkeley 8-state transaction validation and wallet signing flows
+- Add zkApp key generation, contract deployment, update, and sign-only transaction actions
+- Separate static export builds from local server previews and remove the redundant legacy export step
+
+### Fixes
+- Prevent o1js internal values from crossing worker boundaries by serializing transaction data and worker errors
+- Preserve lazy authorization and blinding values when proving a wallet-signed transaction
+- Remove obsolete zkApp test transaction APIs and temporary diagnostic state
+- Configure npm peer-dependency resolution for the required Berkeley/Mesa o1js versions
+
 
 ## [2.1.0]
 ### Enhancements

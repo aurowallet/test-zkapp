@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const isStaticExport = process.env.STATIC_EXPORT === "true";
+
 const nextConfig = {
   reactStrictMode: false,
   pageExtensions: ['page.tsx', 'page.ts', 'page.jsx', 'page.js'],
@@ -15,23 +17,23 @@ const nextConfig = {
   },
   // To enable o1js for the web, we must set the COOP and COEP headers.
   // See here for more information: https://docs.minaprotocol.com/zkapps/how-to-write-a-zkapp-ui#enabling-coop-and-coep-headers
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
-          },
-        ],
-      },
-    ];
-  },
+  // Static hosts cannot apply Next.js response headers; enable these only for
+  // the local/server build where next start can serve them.
+  ...(!isStaticExport
+    ? {
+        async headers() {
+          return [
+            {
+              source: '/(.*)',
+              headers: [
+                { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+                { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+              ],
+            },
+          ];
+        },
+      }
+    : {}),
   images: {
     unoptimized: true,
   },
@@ -50,7 +52,12 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
-  output:'export',
+  // `next start` needs a normal Next build so that the COOP/COEP headers above
+  // are applied locally. GitHub Pages builds opt into the static `out/` export.
+  ...(isStaticExport ? { output: "export" } : {}),
+  // This app is served by `next start` or exported as static files. Neither
+  // deployment mode consumes server trace manifests, and tracing o1js takes minutes.
+  outputFileTracing: false,
   // swcMinify: true,
 };
 

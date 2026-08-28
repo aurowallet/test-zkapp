@@ -1,4 +1,4 @@
-import { fetchAccount, PublicKey, Field, PrivateKey } from "o1js";
+import { PublicKey, Field, PrivateKey } from "o1js-berkeley";
 
 import type {
   ZkappWorkerRequest,
@@ -7,10 +7,8 @@ import type {
 } from "./zkappWorker";
 
 export default class ZkappWorkerClient {
-  // ---------------------------------------------------------------------------------------
-
-  setActiveInstanceToBerkeley(gqlUrl: string , networkID:string) {
-    return this._call("setActiveInstanceToBerkeley", { gqlUrl,networkID });
+  setActiveInstanceToBerkeley(gqlUrl: string, networkID: string) {
+    return this._call("setActiveInstanceToBerkeley", { gqlUrl, networkID });
   }
 
   loadContract() {
@@ -25,11 +23,11 @@ export default class ZkappWorkerClient {
     publicKey,
   }: {
     publicKey: PublicKey;
-  }): ReturnType<typeof fetchAccount> {
+  }): Promise<{ error: unknown | null }> {
     const result = this._call("fetchAccount", {
       publicKey58: publicKey.toBase58(),
     });
-    return result as ReturnType<typeof fetchAccount>;
+    return result as Promise<{ error: unknown | null }>;
   }
 
   initZkappInstance(publicKey: PublicKey) {
@@ -46,13 +44,10 @@ export default class ZkappWorkerClient {
   createUpdateTransaction() {
     return this._call("createUpdateTransaction", {});
   }
-  createManulUpdateTransaction(value: number,zkAddress:string) {
-    return this._call("createManulUpdateTransaction", {
-      value,
-      zkAddress
-    });
+  createManualUpdateTransaction(value: number, zkAddress: string) {
+    return this._call("createManualUpdateTransaction", { value, zkAddress });
   }
-  
+
   proveUpdateTransaction() {
     return this._call("proveUpdateTransaction", {});
   }
@@ -69,36 +64,9 @@ export default class ZkappWorkerClient {
     });
   }
 
-  async signAndSendTx(sendPrivateKey: string,publicKey:string,gqlUrl:string,networkID:string) {
-    return await this._call('signAndSendTx', {
-      sendPrivateKey,
-      publicKey,
-      gqlUrl,
-      networkID
-    });
-  };
-  async buildTxBody(sendPrivateKey: string,zkPublicKey:string,gqlUrl:string,networkID:string) {
-    return await this._call('buildTxBody', {
-      sendPrivateKey,
-      zkPublicKey,
-      gqlUrl,
-      networkID
-    });
-  };
-  async onlyProving(signedData: string,gqlUrl:string,networkID:string) {
-    return await this._call('onlyProving', {
-      signedData,
-      gqlUrl,
-      networkID
-    });
-  };
   async sendProving(signedData: string) {
-    return await this._call('sendProving', {
-      signedData,
-    });
-  };
-  
-  // ---------------------------------------------------------------------------------------
+    return await this._call("sendProving", { signedData });
+  }
 
   worker: Worker;
 
@@ -114,8 +82,17 @@ export default class ZkappWorkerClient {
     this.nextId = 0;
 
     this.worker.onmessage = (event: MessageEvent<ZkappWorkerReponse>) => {
-      this.promises[event.data.id].resolve(event.data.data);
+      const pending = this.promises[event.data.id];
+      if (!pending) return;
+      if (event.data.error) pending.reject(new Error(event.data.error));
+      else pending.resolve(event.data.data);
       delete this.promises[event.data.id];
+    };
+    this.worker.onerror = (event) => {
+      for (const pending of Object.values(this.promises)) {
+        pending.reject(new Error(event.message || "Berkeley zkApp worker failed"));
+      }
+      this.promises = {};
     };
   }
 

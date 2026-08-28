@@ -56,13 +56,10 @@ export default function WalletConnect() {
 
   const [state, setState] = useState({
     zkappWorkerClient: null as null | ZkappWorkerClient,
-    hasWallet: null as null | boolean,
     hasBeenSetup: false,
-    accountExists: false,
     currentNum: null as null | Field,
     publicKey: null as null | PublicKey,
     zkappPublicKey: null as null | PublicKey,
-    creatingTransaction: false,
   });
 
   // Open Auro Wallet function
@@ -193,11 +190,9 @@ export default function WalletConnect() {
           setBuildZkLog(`Using key:${publicKey.toBase58()}`);
           setBuildZkLog("Checking if fee payer account exists...");
 
-          const res = await zkappWorkerClient.fetchAccount({
+          await zkappWorkerClient.fetchAccount({
             publicKey: publicKey!,
           });
-          const accountExists = res.error == null;
-
           await zkappWorkerClient.loadContract();
 
           setBuildZkLog("Compiling zkApp...");
@@ -214,18 +209,14 @@ export default function WalletConnect() {
           setState({
             ...state,
             zkappWorkerClient,
-            hasWallet: true,
             hasBeenSetup: true,
             publicKey,
             zkappPublicKey,
-            accountExists,
             currentNum,
           });
           isInited = true;
         }
         if (isInited || state.hasBeenSetup) {
-          setState({ ...state, creatingTransaction: true });
-
           setBuildZkLog("Creating a transaction...");
 
           await zkappWorkerClient!.createUpdateTransaction();

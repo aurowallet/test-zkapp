@@ -1,17 +1,20 @@
 {
   "name": "ui",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "private": true,
   "packageManager": "npm@10.9.4",
   "scripts": {
     "dev": "next dev",
     "prebuildPro": "node scripts/deploy.js",
-    "build": "next build",
-    "start": "next build && next start",
+    "build": "STATIC_EXPORT=true next build",
+    "build:server": "next build",
+    "start": "next start",
+    "preview": "npm run build:server && npm run start",
+    "build:static": "npm run build",
     "lint": "next lint",
     "ts-watch": "tsc --noEmit --incremental --watch",
-    "export": "next export",
-    "deploy": "next build && next export && touch out/.nojekyll && node ./ghp-postbuild && git add -f out && git commit -m \"Deploy gh-pages\" && cd .. && git subtree push --prefix ui/out origin gh-pages"
+    "export": "npm run build",
+    "deploy": "yarn build:static && touch out/.nojekyll && node ./ghp-postbuild && git add -f out && git commit -m \"Deploy gh-pages\" && cd .. && git subtree push --prefix ui/out origin gh-pages"
   },
   "dependencies": {
     "@aurowallet/mina-provider": "1.0.12",
@@ -22,7 +25,9 @@
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.3",
     "next": "14.2.3",
-    "o1js": "2.15.0",
+    "o1js": "3.0.0",
+    "o1js-berkeley": "npm:o1js@2.15.0",
+    "o1js-mesa": "npm:o1js@3.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "styled-components": "^6.0.8",

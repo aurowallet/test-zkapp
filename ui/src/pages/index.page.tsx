@@ -4,17 +4,16 @@ import { GithubCorner } from "@/components/GithubCorner";
 import { AppLinksBox } from "@/components/HomeComponents/AppLinkBox";
 import { BaseActionBox } from "@/components/HomeComponents/BasicActionBox.tsx";
 import { CreateNullifierBox } from "@/components/HomeComponents/CreateNullifierBox";
-import { CredentialBox } from "@/components/HomeComponents/CredentialBox";
 import { MinaSendBox } from "@/components/HomeComponents/SendBox.tsx";
 import { SignFieldsBox } from "@/components/HomeComponents/SignFieldsBox.tsx";
 import { SignMessageBox } from "@/components/HomeComponents/SignMessageBox.tsx";
-import { SignTransactionBox } from "@/components/HomeComponents/SignTransactionBox";
 import { SignTypeMessageBox } from "@/components/HomeComponents/SignTypeMessageBox";
 import { StakingBox } from "@/components/HomeComponents/StakingBox.tsx";
 import { SwitchChainBox } from "@/components/HomeComponents/SwitchChainBox";
 import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
 import { PageHead } from "@/components/PageHead";
 import { VersionBox } from "@/components/VersionBox";
+import { MesaSignTransactionBox } from "@/components/HomeComponents/MesaSignTransactionBox";
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import {
   Container,
@@ -25,11 +24,21 @@ import {
   StyledStatusRowWrapper,
 } from "@/styles/HomeStyles.ts";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import StyledComponentsRegistry from "./registry";
 
-export default function Home() {
+const SignTransactionBox = dynamic(
+  () => import("@/components/HomeComponents/SignTransactionBox").then((module) => module.SignTransactionBox),
+  { ssr: false }
+);
+const CredentialBox = dynamic(
+  () => import("@/components/HomeComponents/CredentialBox").then((module) => module.CredentialBox),
+  { ssr: false }
+);
+
+export function HomePage({ berkeleyOnly = false }: { berkeleyOnly?: boolean }) {
   const { provider } = useMinaProvider();
 
   const [currentAccount, setCurrentAccount] = useState("");
@@ -42,34 +51,26 @@ export default function Home() {
   }, []);
 
   const initNetwork = useCallback(async () => {
-    console.log('initNetwork==0');
     if (!provider) {
       return;
     }
     const network: ChainInfoArgs = await provider
       .requestNetwork()
       .catch((err: any) => err);
-      console.log('initNetwork==1',network);
     if (!network?.networkID) {
       return;
     }
-    console.log('initNetwork==2');
     setCurrentNetwork(network);
   }, [provider]);
 
   useEffect(() => {
     /** account change listener */
     provider?.on("accountsChanged", async (accounts: string[]) => {
-      // console.log("accountsChanged", accounts);
-      console.log('page Accounts changed:', accounts);
       if (accounts.length > 0) {
         setCurrentAccount(accounts[0]);
-      } else {
-        console.log("disconnect"); // handled disconnect here
       }
     });
     provider?.on("chainChanged", async (chainInfo: ChainInfoArgs) => {
-      console.log("chainChanged",chainInfo);
       if (!chainInfo?.networkID) {
         return;
       }
@@ -91,10 +92,6 @@ export default function Home() {
   }, [provider]);
   useEffect(() => {
     initAccount();
-  }, [provider]);
-
-  useEffect(() => {
-    console.log("provider", provider);
   }, [provider]);
 
   return (
@@ -134,10 +131,17 @@ export default function Home() {
           <StakingBox />
         </Container>
         <Container>
-          <SignTransactionBox
-            currentAccount={currentAccount}
-            network={currentNetwork}
-          />
+          {berkeleyOnly ? (
+            <SignTransactionBox
+              currentAccount={currentAccount}
+              network={currentNetwork}
+            />
+          ) : (
+            <MesaSignTransactionBox
+              currentAccount={currentAccount}
+              network={currentNetwork}
+            />
+          )}
         </Container>
         <Container>
           <CreateNullifierBox />
@@ -161,4 +165,8 @@ export default function Home() {
       <Toaster />
     </StyledComponentsRegistry>
   );
+}
+
+export default function Home() {
+  return <HomePage />;
 }
