@@ -40,13 +40,20 @@ describe('Add', () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await zkApp.deploy();
     });
+    const transactionJSON = txn.toJSON();
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
     await txn.sign([deployerKey, zkAppPrivateKey]).send();
+    return transactionJSON;
   }
 
   it('generates and deploys the `Add` smart contract', async () => {
-    await localDeploy();
+    const transaction = JSON.parse(await localDeploy());
+    expect(transaction.accountUpdates.length).toBeGreaterThan(0);
+    for (const accountUpdate of transaction.accountUpdates) {
+      expect(accountUpdate.body.update.appState).toHaveLength(32);
+      expect(accountUpdate.body.preconditions.account.state).toHaveLength(32);
+    }
     const num = zkApp.num.get();
     expect(num).toEqual(Field(1));
   });

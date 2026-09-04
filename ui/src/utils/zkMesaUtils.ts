@@ -1,6 +1,25 @@
-import { Field, Mina, PublicKey, UInt64 } from "o1js-mesa";
+import { Field, Mina, PublicKey, UInt64 } from "o1js";
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
+
+export function assertMesaTransactionShape(transaction: unknown) {
+  const command = typeof transaction === "string" ? JSON.parse(transaction) : transaction as any;
+  const updates = command?.accountUpdates;
+  if (!Array.isArray(updates) || updates.length === 0) {
+    throw new Error("Mesa transaction has no account updates");
+  }
+
+  for (const [index, update] of updates.entries()) {
+    const appStateLength = update?.body?.update?.appState?.length;
+    const preconditionStateLength = update?.body?.preconditions?.account?.state?.length;
+    if (appStateLength !== 32 || preconditionStateLength !== 32) {
+      throw new Error(
+        `Expected Mesa 32-state account update at index ${index}, got ` +
+        `appState=${appStateLength ?? "none"}, preconditionState=${preconditionStateLength ?? "none"}`
+      );
+    }
+  }
+}
 
 export function serializeMesaTransaction(tx: Transaction) {
   const length = tx.transaction.accountUpdates.length;
@@ -18,15 +37,6 @@ export function serializeMesaTransaction(tx: Transaction) {
     sender: tx.transaction.feePayer.body.publicKey.toBase58(),
     nonce: tx.transaction.feePayer.body.nonce.toBigint().toString(),
   });
-}
-
-export function mesaTransactionParams(serializedTransaction: string) {
-  const { fee, sender, nonce } = JSON.parse(serializedTransaction);
-  return {
-    fee: UInt64.fromJSON(fee),
-    sender: PublicKey.fromBase58(sender),
-    nonce: Number(nonce),
-  };
 }
 
 export function mesaSignedTransactionParams(signedData: string) {

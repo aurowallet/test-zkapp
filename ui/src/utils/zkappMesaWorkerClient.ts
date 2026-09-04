@@ -1,4 +1,4 @@
-import { Field, PublicKey } from "o1js-mesa";
+import { Field, PrivateKey, PublicKey } from "o1js";
 import type {
   MesaWorkerFunctions,
   MesaWorkerRequest,
@@ -54,7 +54,7 @@ export default class ZkappMesaWorkerClient {
 
   proveUpdateTransaction() { return this.call("proveUpdateTransaction", {}); }
 
-  createDeployTransaction(privateKey: import("o1js-mesa").PrivateKey, feePayer: string) {
+  createDeployTransaction(privateKey: PrivateKey, feePayer: string) {
     return this.call("createDeployTransaction", {
       privateKey58: privateKey.toBase58(),
       feePayer,
@@ -64,6 +64,14 @@ export default class ZkappMesaWorkerClient {
   sendProving(signedData: string) { return this.call("sendProving", { signedData }); }
 
   getTransactionJSON() { return this.call("getTransactionJSON", {}); }
+
+  terminate(reason = "Mesa zkApp worker terminated") {
+    this.worker.terminate();
+    for (const pending of Object.values(this.promises)) {
+      pending.reject(new Error(reason));
+    }
+    this.promises = {};
+  }
 
   private call(fn: MesaWorkerFunctions, args: any) {
     return new Promise((resolve, reject) => {

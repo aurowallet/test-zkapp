@@ -5,9 +5,9 @@ import {
   PrivateKey,
   PublicKey,
   fetchAccount,
-} from "o1js-mesa";
+} from "o1js";
 
-import type { AddMesa } from "../contracts/AddMesa";
+import type { Add } from "auro-e2e-test-zkapp/Add";
 import { getRealGqlUrl } from "./index";
 import {
   deserializeMesaTransaction,
@@ -17,10 +17,11 @@ import {
 
 type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 type VerificationKeyData = { data: string; hash: Field };
+type O1jsNetworkID = "mainnet" | "testnet" | { custom: string };
 
 const state = {
-  AddMesa: null as null | typeof AddMesa,
-  zkapp: null as null | AddMesa,
+  Add: null as null | typeof Add,
+  zkapp: null as null | Add,
   transaction: null as null | Transaction,
   verificationKey: null as null | VerificationKeyData,
   serializeTx: "",
@@ -31,18 +32,18 @@ const functions = {
     Mina.setActiveInstance(buildNetworkInstance(args.gqlUrl, args.networkID));
   },
   loadContract: async () => {
-    const { AddMesa } = await import("../contracts/AddMesa");
-    state.AddMesa = AddMesa;
+    const { Add } = await import("auro-e2e-test-zkapp/Add");
+    state.Add = Add;
   },
   compileContract: async () => {
-    const { verificationKey } = await state.AddMesa!.compile();
+    const { verificationKey } = await state.Add!.compile();
     state.verificationKey = verificationKey;
   },
   fetchAccount: async (args: { publicKey58: string }) => {
     await fetchAccount({ publicKey: PublicKey.fromBase58(args.publicKey58) });
   },
   initZkappInstance: async (args: { publicKey58: string }) => {
-    state.zkapp = new state.AddMesa!(PublicKey.fromBase58(args.publicKey58));
+    state.zkapp = new state.Add!(PublicKey.fromBase58(args.publicKey58));
   },
   getNum: async () => JSON.stringify((await state.zkapp!.num.get()).toJSON()),
   createUpdateTransaction: async () => {
@@ -87,13 +88,13 @@ const functions = {
     const { fee, sender, nonce } = mesaSignedTransactionParams(args.signedData);
     await fetchAccount({ publicKey: sender });
     await fetchAccount({ publicKey: zkappPublicKey });
-    const { AddMesa } = await import("../contracts/AddMesa");
-    const zkapp = new AddMesa(zkappPublicKey);
+    const { Add } = await import("auro-e2e-test-zkapp/Add");
+    const zkapp = new Add(zkappPublicKey);
     const txNew = await Mina.transaction({ sender, fee, nonce }, async () => {
       await zkapp.setValue(Field.fromJSON(value));
     });
     const tx = deserializeMesaTransaction(serializedTransaction, txNew, args.signedData);
-    await AddMesa.compile();
+    await Add.compile();
     await tx.prove();
     const sent = await tx.send();
     return String(sent.hash || "");
@@ -121,10 +122,22 @@ if (typeof window !== "undefined") {
 }
 
 function buildNetworkInstance(gqlUrl: string, networkID: string) {
-  const networkId = networkID === "mina:mainnet" ? "mainnet" : "testnet";
+  if (!gqlUrl?.trim()) throw new Error("GraphQL URL is required");
+  if (!networkID?.trim()) throw new Error("Network ID is required");
+
+  const graphqlUrl = getRealGqlUrl(gqlUrl);
   return Mina.Network({
-    networkId,
-    mina: getRealGqlUrl(gqlUrl),
-    archive: getRealGqlUrl(gqlUrl),
+    networkId: resolveO1jsNetworkID(networkID),
+    mina: graphqlUrl,
+    archive: graphqlUrl,
   });
+}
+
+function resolveO1jsNetworkID(networkID: string): O1jsNetworkID {
+  if (typeof networkID !== "string" || !networkID.trim()) return "testnet";
+
+  const [namespace, suffix] = networkID.split(":");
+  if (namespace === "mina") return suffix === "mainnet" ? "mainnet" : "testnet";
+  if (namespace === "zeko" && suffix === "mainnet") return { custom: "zeko-mainnet" };
+  return "testnet";
 }

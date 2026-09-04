@@ -14,6 +14,7 @@ import { InfoRow, InfoType } from "@/components/InfoRow.tsx";
 import { PageHead } from "@/components/PageHead";
 import { VersionBox } from "@/components/VersionBox";
 import { MesaSignTransactionBox } from "@/components/HomeComponents/MesaSignTransactionBox";
+import dynamic from "next/dynamic";
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import {
   Container,
@@ -24,21 +25,16 @@ import {
   StyledStatusRowWrapper,
 } from "@/styles/HomeStyles.ts";
 import { ChainInfoArgs, ProviderError } from "@aurowallet/mina-provider";
-import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import StyledComponentsRegistry from "./registry";
 
-const SignTransactionBox = dynamic(
-  () => import("@/components/HomeComponents/SignTransactionBox").then((module) => module.SignTransactionBox),
-  { ssr: false }
-);
 const CredentialBox = dynamic(
   () => import("@/components/HomeComponents/CredentialBox").then((module) => module.CredentialBox),
   { ssr: false }
 );
 
-export function HomePage({ berkeleyOnly = false }: { berkeleyOnly?: boolean }) {
+export function HomePage() {
   const { provider } = useMinaProvider();
 
   const [currentAccount, setCurrentAccount] = useState("");
@@ -131,17 +127,10 @@ export function HomePage({ berkeleyOnly = false }: { berkeleyOnly?: boolean }) {
           <StakingBox />
         </Container>
         <Container>
-          {berkeleyOnly ? (
-            <SignTransactionBox
-              currentAccount={currentAccount}
-              network={currentNetwork}
-            />
-          ) : (
-            <MesaSignTransactionBox
-              currentAccount={currentAccount}
-              network={currentNetwork}
-            />
-          )}
+          <MesaSignTransactionBox
+            currentAccount={currentAccount}
+            network={currentNetwork}
+          />
         </Container>
         <Container>
           <CreateNullifierBox />
@@ -156,6 +145,7 @@ export function HomePage({ berkeleyOnly = false }: { berkeleyOnly?: boolean }) {
         <Container>
           <CredentialBox currentAccount={currentAccount} />
         </Container>
+
         <StyledRowTitle>Dev</StyledRowTitle>
         <Container>
           <AppLinksBox />

@@ -27,13 +27,8 @@ const StyledBaseTextarea = styled.textarea`
   margin-bottom: 10px;
 `;
 
-export const CredentialBox = ({
-  currentAccount,
-}: {
-  currentAccount: string;
-}) => {
+export const CredentialBox = ({ currentAccount }: { currentAccount: string }) => {
   const { provider } = useMinaProvider();
-
   const [isStoring, setIsStoring] = useState(false);
   const [isLoading, setIsLoading] = useState<string | undefined>(undefined);
   const [credential, setCredential] = useState<{
@@ -42,11 +37,12 @@ export const CredentialBox = ({
   }>();
 
   const onGenerateCredential = useCallback(async () => {
-    const { issueCredential } = require("@/utils/credential");
+    const { issueCredential } = await import("@/utils/credential");
     const data = issueCredential(currentAccount);
     setCredential(data);
-    navigator.clipboard.writeText(data.credential);
+    await navigator.clipboard.writeText(data.credential);
   }, [currentAccount]);
+
   const onStoreCredential = useCallback(async () => {
     try {
       setIsStoring(true);
@@ -55,11 +51,8 @@ export const CredentialBox = ({
           credential: JSON.parse(credential?.credential as string),
         })
         .catch((err: any) => err);
-      if (storeResult.credential) {
-        toast.success("Store Successfully!");
-      } else {
-        toast.error("Store Failed!");
-      }
+      if (storeResult?.credential) toast.success("Store Successfully!");
+      else toast.error("Store Failed!");
     } catch (error) {
       console.log("onStoreCredential error", error);
       toast.error("Store Failed!");
@@ -70,25 +63,22 @@ export const CredentialBox = ({
 
   const onRequestPresentation = useCallback(async () => {
     setIsLoading("Loading...");
-    const { createRequest, verifyLogin } = require("@/utils/credential");
-
-    const step1_request = await createRequest(UInt64.from(Date.now()));
-    const step1_res = PresentationRequest.toJSON(step1_request);
-    let presentationSource: string;
     try {
+      const { createRequest, verifyLogin } = await import("@/utils/credential");
+      const request = await createRequest(UInt64.from(Date.now()));
+      const requestJson = PresentationRequest.toJSON(request);
       setIsLoading("Awaiting proof from wallet...");
       const verifyResult: IRequestPresentation = await provider
         ?.requestPresentation({
           presentation: {
-            presentationRequest: JSON.parse(step1_res as string),
+            presentationRequest: JSON.parse(requestJson as string),
           },
         })
         .catch((err: any) => err);
-      presentationSource = verifyResult.presentation;
-      await verifyLogin(presentationSource);
+      await verifyLogin(verifyResult.presentation);
       toast.success("Login Successfully!");
     } catch (error) {
-      console.log("storeResult==error", error);
+      console.log("request presentation error", error);
       toast.error("Request Presentation Failed!");
     } finally {
       setIsLoading(undefined);
@@ -97,29 +87,16 @@ export const CredentialBox = ({
 
   return (
     <Box>
-      <StyledBoxTitle>Mina Credential</StyledBoxTitle>
-      <StyledBaseTextarea
-        readOnly
-        value={JSON.stringify(credential, null, 2)}
-      />
+      <StyledBoxTitle>Mina Credential <small>(developing)</small></StyledBoxTitle>
+      <StyledBaseTextarea readOnly value={JSON.stringify(credential, null, 2)} />
       <StyledButtonGroup>
-        <Button onClick={onGenerateCredential}>
-          Generate Credential & Copy
-        </Button>
-        <Button
-          checkConnection={true}
-          disabled={isStoring}
-          onClick={onStoreCredential}
-        >
+        <Button onClick={onGenerateCredential}>Generate Credential &amp; Copy</Button>
+        <Button checkConnection={true} disabled={isStoring} onClick={onStoreCredential}>
           {isStoring ? "Storing..." : "Store Credential"}
         </Button>
       </StyledButtonGroup>
       <StyledDividedLine />
-      <Button
-        checkConnection={true}
-        disabled={!!isLoading}
-        onClick={onRequestPresentation}
-      >
+      <Button checkConnection={true} disabled={!!isLoading} onClick={onRequestPresentation}>
         {isLoading ?? "Anonymous Login"}
       </Button>
     </Box>

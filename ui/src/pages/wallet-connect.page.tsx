@@ -1,12 +1,13 @@
 // wallet-connect.page.tsx
 import { VersionBox } from "@/components/VersionBox";
-import { getErrorMessage, timeout } from "@/utils";
+import { getErrorMessage } from "@/utils";
 import {
   getCurrentSession,
   initWalletConnect,
   WalletConnectClient,
 } from "@/utils/walletConnect";
-import ZkappWorkerClient from "@/utils/zkappWorkerClient";
+import { assertMesaTransactionShape } from "@/utils/zkMesaUtils";
+import ZkappMesaWorkerClient from "@/utils/zkappMesaWorkerClient";
 import { Field, PublicKey } from "o1js";
 import { CSSProperties, useCallback, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -36,7 +37,6 @@ export default function WalletConnect() {
   const [client, setClient] = useState<WalletConnectClient | null>(null);
   const [session, setSession] = useState<any | null>(null);
   const [paymentResult, setPaymentResult] = useState<string | null>(null);
-  const [signedMessage, setSignedMessage] = useState<string | null>(null);
   const [selectedChain, setSelectedChain] = useState<string>("mina:mainnet");
   const [loading, setLoading] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -51,16 +51,30 @@ export default function WalletConnect() {
     setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
   }, []);
 
-  const chainOptions = ["mina:mainnet", "mina:devnet", "zeko:testnet","zeko:mainnet"];
+  const chainOptions = ["mina:mainnet", "mina:devnet"];
   const chromeScheme = isMobile ? "com.android.chrome" : "";
 
   const [state, setState] = useState({
-    zkappWorkerClient: null as null | ZkappWorkerClient,
+    zkappWorkerClient: null as null | ZkappMesaWorkerClient,
     hasBeenSetup: false,
     currentNum: null as null | Field,
     publicKey: null as null | PublicKey,
     zkappPublicKey: null as null | PublicKey,
   });
+
+  const resetZkappState = useCallback(() => {
+    setState({
+      zkappWorkerClient: null,
+      hasBeenSetup: false,
+      currentNum: null,
+      publicKey: null,
+      zkappPublicKey: null,
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => state.zkappWorkerClient?.terminate();
+  }, [state.zkappWorkerClient]);
 
   // Open Auro Wallet function
   const openAuroWallet = () => {
@@ -116,12 +130,16 @@ export default function WalletConnect() {
 
   // Update session state dynamically
   const updateSessionState = (currentSession: any) => {
+    resetZkappState();
     if (currentSession) {
       setSession(currentSession);
-      const minaAccounts = currentSession.namespaces?.mina?.accounts || [];
+      const minaAccounts: string[] = currentSession.namespaces?.mina?.accounts || [];
       if (minaAccounts.length > 0) {
-        const minaAddress = minaAccounts[0].split(":")[2];
-        setAccount(minaAddress);
+        const accountId = minaAccounts.find((item) => item.startsWith(`${selectedChain}:`)) ?? minaAccounts[0];
+        const [namespace, network, address] = accountId.split(":");
+        const sessionChain = `${namespace}:${network}`;
+        setAccount(address ?? accountId);
+        if (chainOptions.includes(sessionChain)) setSelectedChain(sessionChain);
       } else {
         setError("No accounts found in session");
       }
@@ -160,9 +178,9 @@ export default function WalletConnect() {
       setClient(null);
       setError(null);
       setPaymentResult(null);
-      setSignedMessage(null);
       setShowPrompt(false);
       setPromptDetail({ action: "", method: "" });
+      resetZkappState();
     } catch (error: any) {
       setError(getErrorMessage(error, "Failed to disconnect"));
       console.error("Disconnect error:", error);
@@ -170,17 +188,16 @@ export default function WalletConnect() {
   };
 
   const getZkTxBody = useCallback(
-    async (config: any, currentAccount: string, forceInit?: boolean) => {
+    async (config: any, currentAccount: string) => {
+      let initializingWorker: ZkappMesaWorkerClient | null = null;
       try {
         let isInited = state.hasBeenSetup;
         let zkappWorkerClient = state.zkappWorkerClient;
-        if (!state.hasBeenSetup || forceInit) {
+        if (!isInited) {
           setBuildZkLog("Loading web worker...");
-          zkappWorkerClient = new ZkappWorkerClient();
-          await timeout(5);
-
-          setBuildZkLog("Done loading web worker");
-          await zkappWorkerClient.setActiveInstanceToBerkeley(
+          zkappWorkerClient = new ZkappMesaWorkerClient();
+          initializingWorker = zkappWorkerClient;
+          await zkappWorkerClient.setActiveInstanceToMesa(
             config.gqlUrl,
             config.networkID
           );
@@ -214,25 +231,30 @@ export default function WalletConnect() {
             zkappPublicKey,
             currentNum,
           });
+          initializingWorker = null;
           isInited = true;
         }
-        if (isInited || state.hasBeenSetup) {
-          setBuildZkLog("Creating a transaction...");
-
-          await zkappWorkerClient!.createUpdateTransaction();
-
-          setBuildZkLog("Creating proof...");
-          await zkappWorkerClient!.proveUpdateTransaction();
-
-          setBuildZkLog("Requesting send transaction...");
-          const transactionJSON = await zkappWorkerClient!.getTransactionJSON();
-          setBuildZkLog(
-            "getZkTxBody," + JSON.stringify(transactionJSON).slice(0, 100)
-          );
-          return transactionJSON;
+        if (!isInited || !zkappWorkerClient) {
+          throw new Error("Mesa zkApp worker initialization failed");
         }
+        setBuildZkLog("Creating a transaction...");
+
+        await zkappWorkerClient.createUpdateTransaction();
+
+        setBuildZkLog("Creating proof...");
+        await zkappWorkerClient.proveUpdateTransaction();
+
+        setBuildZkLog("Requesting send transaction...");
+        const transactionJSON = await zkappWorkerClient.getTransactionJSON();
+        assertMesaTransactionShape(transactionJSON);
+        setBuildZkLog(
+          "getZkTxBody," + JSON.stringify(transactionJSON).slice(0, 100)
+        );
+        return transactionJSON;
       } catch (error) {
+        initializingWorker?.terminate();
         setBuildZkLog("build err:" + getErrorMessage(error));
+        throw error;
       }
     },
     [state]
@@ -251,26 +273,27 @@ export default function WalletConnect() {
           networkID: "mina:mainnet",
           zkAddress: "B62qqFbciM2QqnwWeXQ8xFLZUYvhhdko1aBWhrneoEzgaVD9xFwNPpJ",
         },
-        "zeko:testnet": {
-          gqlUrl: process.env.NEXT_PUBLIC_ZEKOTESTNET_GQL,
-          networkID: "zeko:testnet",
-          zkAddress: "B62qkHdJ9R8oJSVMr8JLVQzvi9Mc8cWcFREAa3ewYaBkrPaGMCfu1A5",
-        },
-        "zeko:mainnet": {
-          gqlUrl: process.env.NEXT_PUBLIC_ZEKOMAINNET_GQL,
-          networkID: "zeko:mainnet",
-          zkAddress: "B62qjBfhtY61cvTUX8FAu3scnNVyEek5x17pFuwxaMmrKTRqQanwjCr",
-        },
+        // "zeko:testnet": {
+        //   gqlUrl: process.env.NEXT_PUBLIC_ZEKOTESTNET_GQL,
+        //   networkID: "zeko:testnet",
+        //   zkAddress: "B62qkHdJ9R8oJSVMr8JLVQzvi9Mc8cWcFREAa3ewYaBkrPaGMCfu1A5",
+        // },
+        // "zeko:mainnet": {
+        //   gqlUrl: process.env.NEXT_PUBLIC_ZEKOMAINNET_GQL,
+        //   networkID: "zeko:mainnet",
+        //   zkAddress: "B62qjBfhtY61cvTUX8FAu3scnNVyEek5x17pFuwxaMmrKTRqQanwjCr",
+        // },
       };
-      const networkIDs = Object.keys(testConfig);
-      if (networkIDs.indexOf(chainId) == -1) {
-        toast.custom("not support build zk");
-        return;
+      const nextConfig = testConfig[chainId as keyof typeof testConfig];
+      if (!nextConfig) {
+        throw new Error(`Unsupported zkApp network: ${chainId}`);
       }
-      const nextConfig = (testConfig as any)[chainId];
+      if (!nextConfig.gqlUrl?.trim()) {
+        throw new Error(`Missing GraphQL URL for ${chainId}`);
+      }
       return await getZkTxBody(nextConfig, currentAccount);
     },
-    []
+    [getZkTxBody]
   );
 
   // Handle sending zkApp transaction
@@ -280,11 +303,10 @@ export default function WalletConnect() {
       setError("Please connect wallet first");
       return;
     }
-    const zkTransaction = await getZkBuildBody(selectedChain, account);
-
-    setError(null);
-    setPaymentResult(null);
     try {
+      setError(null);
+      setPaymentResult(null);
+      const zkTransaction = await getZkBuildBody(selectedChain, account);
       const zkRequest = {
         topic: session.topic,
         chainId: selectedChain,
@@ -555,6 +577,7 @@ export default function WalletConnect() {
   // Handle chain selection change
   const handleChainChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedChain(event.target.value);
+    resetZkappState();
   };
 
   // Event listeners for WalletConnect updates
@@ -575,12 +598,14 @@ export default function WalletConnect() {
         setAccount(null);
         setError("No accounts available after change");
       }
+      resetZkappState();
     };
 
     const handleChainChanged = (event: CustomEvent) => {
       const newChain = event.detail;
       if (chainOptions.includes(newChain)) {
         setSelectedChain(newChain);
+        resetZkappState();
       } else {
         setError(`Unsupported chain: ${newChain}`);
       }
@@ -592,9 +617,9 @@ export default function WalletConnect() {
       setClient(null);
       setError("Session disconnected by wallet");
       setPaymentResult(null);
-      setSignedMessage(null);
       setShowPrompt(false);
       setPromptDetail({ action: "", method: "" });
+      resetZkappState();
     };
 
     window.addEventListener(
@@ -626,7 +651,7 @@ export default function WalletConnect() {
       );
       window.removeEventListener("sessionDeleted", handleSessionDeleted);
     };
-  }, [client]);
+  }, [client, resetZkappState]);
 
   // Prompt message based on detail
   const getPromptMessage = () => {
@@ -850,26 +875,6 @@ export default function WalletConnect() {
           >
             {paymentResult}
           </div>
-        </div>
-      )}
-      {signedMessage && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Signed Message:</h3>
-          <pre
-            style={{
-              background: "#f5f5f5",
-              padding: "10px",
-              borderRadius: "5px",
-              maxWidth: "100%",
-              width: "100%",
-              whiteSpace: "pre-wrap",
-              wordWrap: "break-word",
-              height: "500px",
-              overflowY: "auto",
-            }}
-          >
-            {signedMessage}
-          </pre>
         </div>
       )}
       {error && <p style={{ color: "red", marginTop: "15px" }}>{error}</p>}

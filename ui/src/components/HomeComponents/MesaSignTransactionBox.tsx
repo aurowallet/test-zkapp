@@ -1,6 +1,7 @@
 import { useMinaProvider } from "@/context/MinaProviderContext";
 import { Box, StyledBoxTitle, StyledDividedLine } from "@/styles/HomeStyles";
 import { getErrorMessage, hasErrorCode } from "@/utils";
+import { assertMesaTransactionShape } from "@/utils/zkMesaUtils";
 import ZkappMesaWorkerClient from "@/utils/zkappMesaWorkerClient";
 import {
   ChainInfoArgs,
@@ -9,7 +10,7 @@ import {
   SendZkTransactionResult,
   SignedZkappCommand,
 } from "@aurowallet/mina-provider";
-import { Field, PrivateKey, PublicKey } from "o1js-mesa";
+import { Field, PrivateKey, PublicKey } from "o1js";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
@@ -41,20 +42,6 @@ const StyledRoute = styled.div`
   cursor: pointer;
 `;
 
-function assertMesaTransactionShape(transaction: unknown) {
-  const command = typeof transaction === "string" ? JSON.parse(transaction) : transaction as any;
-  const updates = command?.accountUpdates;
-  if (!Array.isArray(updates) || updates.length === 0) throw new Error("Mesa transaction has no account updates");
-  const appStateLengths = [...new Set(updates.map((update) => update?.body?.update?.appState?.length).filter(Number.isInteger))];
-  const preconditionStateLengths = [...new Set(updates.map((update) => update?.body?.preconditions?.account?.state?.length).filter(Number.isInteger))];
-  if (!appStateLengths.includes(32) || !preconditionStateLengths.includes(32)) {
-    throw new Error(
-      `Expected Mesa 32-state command, got appState=${appStateLengths.join("|") || "none"}, ` +
-      `preconditionState=${preconditionStateLengths.join("|") || "none"}`
-    );
-  }
-}
-
 export const MesaSignTransactionBox = ({ currentAccount, network }: { currentAccount: string; network: ChainInfoArgs }) => {
   const { provider } = useMinaProvider();
   const [gqlUrl, setGqlUrl] = useState("");
@@ -84,31 +71,45 @@ export const MesaSignTransactionBox = ({ currentAccount, network }: { currentAcc
 
   const initialize = useCallback(async () => {
     if (!zkAddress) throw new Error("Please input contract first!");
-    if (state.hasBeenSetup) return state.workerClient!;
+    if (!gqlUrl.trim()) throw new Error("Please input GraphQL URL first!");
+    if (!network.networkID) throw new Error("Please connect to a network first!");
     if (!provider) throw new Error("Auro Wallet not detected");
+
+    if (state.hasBeenSetup) return state.workerClient!;
 
     setDisplayText("Loading Mesa web worker...");
     const workerClient = new ZkappMesaWorkerClient();
-    await workerClient.setActiveInstanceToMesa(gqlUrl, network.networkID);
-    const accounts = await provider.requestAccounts();
-    if (!Array.isArray(accounts) || accounts.length === 0) {
-      throw new Error(getErrorMessage(accounts, "Please connect wallet first"));
+    try {
+      await workerClient.setActiveInstanceToMesa(gqlUrl, network.networkID);
+      const accounts = await provider.requestAccounts();
+      if (!Array.isArray(accounts) || accounts.length === 0) {
+        throw new Error(getErrorMessage(accounts, "Please connect wallet first"));
+      }
+      const publicKey = PublicKey.fromBase58(accounts[0]);
+      await workerClient.fetchAccount({ publicKey });
+      await workerClient.loadContract();
+      setDisplayText("Compiling Mesa zkApp...");
+      await workerClient.compileContract();
+      const zkappPublicKey = PublicKey.fromBase58(zkAddress);
+      await workerClient.initZkappInstance(zkappPublicKey);
+      await workerClient.fetchAccount({ publicKey: zkappPublicKey });
+      const currentNum = await workerClient.getNum();
+      setState({
+        workerClient,
+        hasBeenSetup: true,
+        publicKey,
+        zkappPublicKey,
+        currentNum,
+      });
+      setUpdateBtnStatus(false);
+      setInitBtnStatus(true);
+      setDisplayText("");
+      return workerClient;
+    } catch (error) {
+      workerClient.terminate();
+      throw error;
     }
-    const publicKey = PublicKey.fromBase58(accounts[0]);
-    await workerClient.fetchAccount({ publicKey });
-    await workerClient.loadContract();
-    setDisplayText("Compiling Mesa zkApp...");
-    await workerClient.compileContract();
-    const zkappPublicKey = PublicKey.fromBase58(zkAddress);
-    await workerClient.initZkappInstance(zkappPublicKey);
-    await workerClient.fetchAccount({ publicKey: zkappPublicKey });
-    const currentNum = await workerClient.getNum();
-    setState({ workerClient, hasBeenSetup: true, publicKey, zkappPublicKey, currentNum });
-    setUpdateBtnStatus(false);
-    setInitBtnStatus(true);
-    setDisplayText("");
-    return workerClient;
-  }, [gqlUrl, network.networkID, provider, state.hasBeenSetup, state.workerClient, zkAddress]);
+  }, [currentAccount, gqlUrl, network.networkID, provider, state, zkAddress]);
 
   const requestWalletTransaction = useCallback(async (transaction: unknown, onlySign = false) => {
     if (!provider) throw new Error("Auro Wallet not detected");
@@ -153,27 +154,42 @@ export const MesaSignTransactionBox = ({ currentAccount, network }: { currentAcc
     setUpdateBtnStatus(true);
     setSendTxStatus(true);
     setNextSendTxBody(undefined);
-    setState((current) => ({ ...current, hasBeenSetup: false, workerClient: null, currentNum: null }));
-  }, [zkAddress]);
+    setState((current) => ({
+      ...current,
+      hasBeenSetup: false,
+      workerClient: null,
+      currentNum: null,
+    }));
+  }, [currentAccount, gqlUrl, network.networkID, zkAddress]);
+
+  useEffect(() => {
+    return () => state.workerClient?.terminate();
+  }, [state.workerClient]);
 
   const createContract = useCallback(async (privateKey: PrivateKey, address: PublicKey) => {
     if (!currentAccount) throw new Error("Need connect wallet first");
+    if (!gqlUrl.trim()) throw new Error("Please input GraphQL URL first!");
+    if (!network.networkID) throw new Error("Please connect to a network first!");
     setCreateHash("");
     setCreateText("Loading Mesa web worker...");
     const workerClient = new ZkappMesaWorkerClient();
-    await workerClient.setActiveInstanceToMesa(gqlUrl, network.networkID);
-    await workerClient.fetchAccount({ publicKey: PublicKey.fromBase58(currentAccount) });
-    await workerClient.loadContract();
-    setCreateText("Compiling Mesa zkApp...");
-    await workerClient.compileContract();
-    await workerClient.initZkappInstance(address);
-    await workerClient.createDeployTransaction(privateKey, currentAccount);
-    await workerClient.proveUpdateTransaction();
-    const transaction = await workerClient.getTransactionJSON();
-    assertMesaTransactionShape(transaction);
-    setCreateText("waiting wallet confirm");
-    setCreateHash(JSON.stringify(await requestWalletTransaction(transaction)));
-    setCreateText("");
+    try {
+      await workerClient.setActiveInstanceToMesa(gqlUrl, network.networkID);
+      await workerClient.fetchAccount({ publicKey: PublicKey.fromBase58(currentAccount) });
+      await workerClient.loadContract();
+      setCreateText("Compiling Mesa zkApp...");
+      await workerClient.compileContract();
+      await workerClient.initZkappInstance(address);
+      await workerClient.createDeployTransaction(privateKey, currentAccount);
+      await workerClient.proveUpdateTransaction();
+      const transaction = await workerClient.getTransactionJSON();
+      assertMesaTransactionShape(transaction);
+      setCreateText("waiting wallet confirm");
+      setCreateHash(JSON.stringify(await requestWalletTransaction(transaction)));
+      setCreateText("");
+    } finally {
+      workerClient.terminate();
+    }
   }, [currentAccount, gqlUrl, network.networkID, requestWalletTransaction]);
 
   useEffect(() => {
@@ -246,7 +262,6 @@ export const MesaSignTransactionBox = ({ currentAccount, network }: { currentAcc
     <Box>
       <StyledBoxTitle>
         Mesa zkApp Signing
-        <StyledRoute><Link href="/berkeley">Berkeley zkApp</Link></StyledRoute>
         <StyledRoute><Link href="/wallet-connect">Android/iOS Wallet Connect</Link></StyledRoute>
       </StyledBoxTitle>
       * need input url and generate Key first

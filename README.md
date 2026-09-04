@@ -1,6 +1,8 @@
 # Auro-e2e-test-zkApp 
 This is an example of how zkApp interacts with Auro Wallet. 
 
+The project targets the Mesa protocol only and uses `o1js@3.0.0`.
+
 ## Project Structure
 **contracts**
 
@@ -15,25 +17,28 @@ Code for interaction between zkApp and Auro Wallet.
 ## Local Development
 
 ### Dependencies
-- `npm 8.x.x` 
-- `yarn 1.22.19`
-- `node v16.x.x` 
+- `Node.js >=22.19.5`
+- `npm 10.x`
 
 ### Run in local
 
-1. Init contract in `contracts` folder
+1. Install and build the contract in the `contracts` folder
 ```sh
-yarn install
-yarn build
+cd contracts
+npm install
+npm run build
 ```
 
 2. Start serve
 
 ```sh
-yarn install
-yarn prebuildPro
-yarn dev 
+cd ../ui
+npm install
+npm run dev
 ```
+
+Configure only contracts deployed from `contracts/src/Add.ts` with
+`o1js@3.0.0`.
 
 ## Source
 

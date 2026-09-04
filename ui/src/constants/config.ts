@@ -2,8 +2,6 @@ export const DefaultSupportNetorkIDs:{ [key: string]: string } = {
   Mainnet: "mina:mainnet",
   Testnet: "mina:devnet",
   // Devnet: "mina:devnet",
-  zekotestnet:"zeko:testnet",
-  zekomainnet:"zeko:mainnet"
 };
 
 

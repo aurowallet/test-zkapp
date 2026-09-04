@@ -6,7 +6,7 @@ import { Web3Modal } from "@web3modal/standalone";
 const web3Modal = new Web3Modal({
   walletConnectVersion: 2,
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECY_ID as string,
-  standaloneChains: ["mina:mainnet", "mina:devnet", "zeko:testnet","zeko:mainnet"],
+  standaloneChains: ["mina:mainnet", "mina:devnet"],
 });
 
 export interface WalletConnectClient extends InstanceType<typeof SignClient> {
@@ -24,12 +24,6 @@ interface SessionEvent {
   params: SessionEventParams;
 }
 
-// Utility to get URL parameters
-const getUrlParameter = (name: string): string | null => {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(name);
-};
-
 // Initialize WalletConnect
 export const initWalletConnect = async (): Promise<WalletConnectClient> => {
   try {
@@ -45,28 +39,16 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
       logger: "warn",
     });
 
-    // const disableCache = getUrlParameter("useCache") === "false";
-    // if (!disableCache) {
     const existingSessions = client.session.getAll();
     if (existingSessions.length > 0) {
       console.log("Using cached session:", existingSessions[0]);
       setupEventListeners(client);
       return client;
     }
-    // } else {
-    // const sessions = client.session.getAll();
-    // for (const session of sessions) {
-    //   await client.disconnect({
-    //     topic: session.topic,
-    //     reason: { code: 6000, message: "Clearing cache" },
-    //   });
-    // }
-    // }
-
     const connectParams = {
       requiredNamespaces: {
         mina: {
-          chains: ["mina:mainnet", "mina:devnet", "zeko:testnet","zeko:mainnet"],
+          chains: ["mina:mainnet", "mina:devnet"],
           methods: [
             "mina_sendPayment",
             "mina_sendStakeDelegation",
@@ -92,8 +74,6 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
       const deepLink = `aurowallet://wc?uri=${encodeURIComponent(
         uri
       )}&scheme=${encodeURIComponent(scheme)}`;
-      console.log("Auro Wallet Deep Link:", deepLink);
-
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       if (isMobile) {
@@ -108,7 +88,6 @@ export const initWalletConnect = async (): Promise<WalletConnectClient> => {
     }
 
     const session = await approval();
-    console.log("New session established:", JSON.stringify(session, null, 2));
     web3Modal.closeModal();
 
     // Additional prompt for iOS after approval
@@ -135,11 +114,6 @@ const openDeepLink = (deepLink: string) => {
   link.click();
   document.body.removeChild(link);
 };
-const openAppLink = (deepLink: string) => {
-  console.log('openAppLink, ', deepLink);
-  window.location.href = deepLink;
-};
-
 // Set up WalletConnect event listeners
 const setupEventListeners = (client: WalletConnectClient) => {
   console.log("Setting up event listeners...");

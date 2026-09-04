@@ -13,6 +13,16 @@
   "type": "module",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/src/index.d.ts",
+      "import": "./build/src/index.js"
+    },
+    "./Add": {
+      "types": "./src/Add.ts",
+      "import": "./src/Add.ts"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "buildw": "tsc --watch",
@@ -36,9 +46,9 @@
     "typescript": "^5.1"
   },
   "dependencies": {
-    "o1js": "2.14.0"
+    "o1js": "3.0.0"
   },
   "engines": {
-    "node": ">=18.14.0"
+    "node": ">=22.19.5"
   }
 }

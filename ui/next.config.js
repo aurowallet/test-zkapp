@@ -4,13 +4,9 @@ const isStaticExport = process.env.STATIC_EXPORT === "true";
 const nextConfig = {
   reactStrictMode: false,
   pageExtensions: ['page.tsx', 'page.ts', 'page.jsx', 'page.js'],
-
-
+  transpilePackages: ['auro-e2e-test-zkapp'],
   webpack(config) {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      // o1js: require('path').resolve('node_modules/o1js')
-    };
+    config.resolve.symlinks = false;
     config.experiments = { ...config.experiments, topLevelAwait: true };
     config.optimization.minimizer = [];
     return config;

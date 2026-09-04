@@ -2,11 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0]
+### Enhancements
+- Make Mesa and o1js 3.0.0 the sole UI transaction runtime
+- Remove Berkeley routes, contracts, workers, and signing UI; limit WalletConnect to Mina mainnet and devnet
+- Use the shared contract package for zkApp deployment, updates, and sign-only transactions
+- Simplify static export and server preview builds with explicit Node.js and environment requirements
+
+### Fixes
+- Validate Mesa 32-state account updates before signing
+- Serialize worker data and errors while preserving wallet-signed transaction authorizations
+- Reset and terminate workers when the account, network, endpoint, or contract changes
+- Keep the Mina Credential demo marked as developing with npm peer compatibility configured
+
 ## [3.0.0]
 ### Enhancements
-- Upgrade the Mesa runtime to o1js 3.0.0 while preserving Berkeley compatibility with o1js 2.15.0
-- Add dedicated Mesa and Berkeley zkApp signing modules, routes, contracts, and isolated web workers
-- Support Mesa 32-state and Berkeley 8-state transaction validation and wallet signing flows
+- Upgrade the UI and contract runtime to o1js 3.0.0 with Mesa-only transaction support
+- Use the Mesa 32-state zkApp worker for both the main site and WalletConnect flow
+- Remove Berkeley dependencies, routes, contracts, signing components, and workers
+- Use the contract package as the single source for both contract tests and the UI worker
 - Add zkApp key generation, contract deployment, update, and sign-only transaction actions
 - Separate static export builds from local server previews and remove the redundant legacy export step
 
@@ -14,7 +28,9 @@ All notable changes to this project will be documented in this file.
 - Prevent o1js internal values from crossing worker boundaries by serializing transaction data and worker errors
 - Preserve lazy authorization and blinding values when proving a wallet-signed transaction
 - Remove obsolete zkApp test transaction APIs and temporary diagnostic state
-- Configure npm peer-dependency resolution for the required Berkeley/Mesa o1js versions
+- Remove the o1js 2-only credential dependency and its peer-resolution compatibility configuration
+- Reject non-32-state commands before wallet signing
+- Reset and terminate zkApp workers when the account, network, endpoint, or contract changes
 
 
 ## [2.1.0]
