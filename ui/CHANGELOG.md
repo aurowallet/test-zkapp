@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.1]
+### Enhancements
+- Upgrade o1js 3.0.0 to 3.1.0
+
 ## [4.0.0]
 ### Enhancements
 - Make Mesa and o1js 3.0.0 the sole UI transaction runtime

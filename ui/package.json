@@ -1,6 +1,6 @@
 {
   "name": "ui",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "private": true,
   "packageManager": "npm@10.9.4",
   "engines": {
@@ -28,7 +28,7 @@
     "eslint-config-next": "14.2.3",
     "mina-attestations": "0.5.0",
     "next": "14.2.3",
-    "o1js": "3.0.0",
+    "o1js": "3.1.0",
     "auro-e2e-test-zkapp": "file:../contracts",
     "react": "18.3.1",
     "react-dom": "18.3.1",

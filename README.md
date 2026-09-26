@@ -1,7 +1,7 @@
 # Auro-e2e-test-zkApp 
 This is an example of how zkApp interacts with Auro Wallet. 
 
-The project targets the Mesa protocol only and uses `o1js@3.0.0`.
+The project targets the Mesa protocol only and uses `o1js@3.1.0`.
 
 ## Project Structure
 **contracts**
@@ -38,7 +38,7 @@ npm run dev
 ```
 
 Configure only contracts deployed from `contracts/src/Add.ts` with
-`o1js@3.0.0`.
+`o1js@3.1.0`.
 
 ## Source
 
