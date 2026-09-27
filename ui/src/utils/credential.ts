@@ -34,7 +34,7 @@ function randomName() {
 function randomBirthTime() {
   const start = new Date(1920, 0, 1).getTime();
   const end = new Date(2025, 11, 31).getTime();
-  return start + Math.random() * (end - start);
+  return Math.floor(start + Math.random() * (end - start));
 }
 
 function randomCountryCode() {
